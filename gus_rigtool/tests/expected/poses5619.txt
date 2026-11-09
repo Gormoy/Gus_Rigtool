@@ -1,0 +1,8 @@
+{'pose': 'Surprised', 'attrs': ['Surprised'], 'controls': 4} None
+PASS saved: a chain of three posed links and the mouth (5.6.18 stopped half way)
+{'L_Ear_03_FK_ctrl': [0.0, -0.0, 0.0, 0.5, 0.0, 0.0], 'L_Ear_02_FK_ctrl': [0.0, -0.0, 10.0, 0.0, 0.0, 0.0], 'L_Ear_01_FK_ctrl': [0.0, -0.0, 20.0, 0.0, 0.0, 0.0], 'L_Mouth_fol_06_ctrl': [0.0, -0.0, 0.0, 0.0, 1.0, 0.0]}
+PASS each link only its own move: 01 turned 20, 02 turned 10 (not 30, not swung), 03 moved 0.5 (not swung)
+PASS the chain at rest after (each link's layer under its parent)
+PASS a save that stops is taken back (the face as posed, the poses as they were) - 5.6.20 by hand
+PASS a name already there: Save as new beside it (default), or Replace
+5/5 passed

@@ -1,0 +1,34 @@
+copied at 10: (1, 10)
+pasted on the twin at 30: 10 | tx: [(30.0, 5.0)] | ty (the pose): []
+slider range: (0.0, 20.0) | copied: (1, 3)
+range pasted at 40 (the key at 45 replaced): [(30.0, 5.0), (40.0, 0.0), (50.0, 5.0), (60.0, 2.0)]
+merge keeps it: True
+nothing selected: select controls first.
+add 2 after 5 (selection): [(0, 0.0), (12, 5.0), (22, 2.0)] | tail untouched: [(0, 0.0), (20, 30.0)]
+remove 2: [(0, 0.0), (10, 5.0), (20, 2.0)]
+character: arm [(11, 5.0), (21, 2.0)] | tail [(0, 0.0), (21, 30.0)]
+everything: [(10, 5.0), (20, 2.0)] [(0, 0.0), (20, 30.0)]
+offset cascade: 1 | arm (first stays): (0, 0.0) | tail +3: [(3, 0.0), (23, 30.0)]
+same: 2 | arm (2, 0.0) | tail (5, 0.0)
+remembered in the scene: True {'tail_ctrl_rotateZ': 5.0, 'L_arm_ctrl_translateX': 2.0}
+back to original: 2 | arm (0.0, 0.0) | tail [(0.0, 0.0), (20.0, 30.0)]
+kept as original: nothing was offset (or it was kept as the original). [(4.0, 0.0), (24.0, 30.0)]
+  copy_keys         ('ok', 'copied 9 key(s) of 1 control(s).')
+  paste_keys        ('ok', 'pasted 9 key(s).')
+  paste_merge       ('ok', 'pasted 9 key(s).')
+  inbetween_add     ('ok', 'added 1 frame(s) after this one (10 curves).')
+  inbetween_remove  ('ok', 'removed 1 frame(s) after this one (10 curves).')
+  scope_2           ('ok', 'inbetweens now on: the whole character.')
+  offset_plus       ('ok', 'offset 1 control(s) by +1.')
+  offset_minus      ('ok', 'offset 1 control(s) by -1.')
+  omode_2           ('ok', 'offset mode: cascade.')
+  offset_back       ('warn', 'nothing was offset (or it was kept as the original).')
+  offset_keep       ('ok', 'the current timing is the new original.')
+  copy_anim         ('ok', 'copied 10 curve(s).')
+  paste_anim        ('ok', 'pasted 10 curve(s).')
+time slider menu hooked: True | nothing of ours before Maya builds its own: True
+menu opens: Maya's own command first: updateTimeSliderMenu TimeSliderMenu | then ours at the end: True ['Copy keys (this frame / highlighted range)', 'Paste keys here', 'Paste keys here, keep mine (merge)']
+a menu left with only ours (3.1.0) is emptied for Maya: ['gusAnimtoolTimeSliderDiv', 'gusAnimtoolTimeSliderSub']
+turned off: False
+new hotkeys: [(']', False), ('[', False)]
+toolbar keeps old choices: ['copy_keys', 'paste_keys', 'offset_plus', 'key']

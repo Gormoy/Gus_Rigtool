@@ -1,0 +1,16 @@
+PASS vertices over the influence limit: the ribbon surface is skipped
+PASS Post skin: no 'don't add up to 1' warning
+PASS Post skin: noted as fine in its facts
+PASS Repair: no 'normalise' offered for a Post skin
+PASS Interactive skin: still warned, and Repair offers it
+warn | skinned joints with no label (1) | cheek_jnt - Skin tab > Label joints
+warn | twin names used by more than one joint (1) | 2 joints named R_Brow_02_jnt - rename the extra one, so the left joint finds its twin
+ok | 3 joint(s) skinning a mesh read |
+PASS ribbon driver joints aren't label-checked
+PASS an unlabelled joint is listed once (no label), not as 'wrong side'
+PASS a twin name used twice says so
+PASS joint_labels.twin_count
+PASS duplicates of the scene's own: FAIL check
+PASS duplicates inside a referenced file: their own WARN check
+PASS the new check is listed as WARN
+12/12 passed

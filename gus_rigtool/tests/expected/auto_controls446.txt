@@ -1,0 +1,13 @@
+PASS every animatable curve found, any naming
+PASS not: hidden-for-good spline, templated, locked, driven
+PASS controls hidden by an IK/FK switch still count
+PASS is_control agrees (the rest of Gus Animtool sees the same)
+    14 controls found automatically: 10 by their channels (hand-made), 1 by name (_ctl), 1 by name (_con), 1 by name (_ctrl), 1 by a controls set
+PASS how they were found is said
+PASS left / right tokens found: Lf_ / Rt_
+PASS twins by name
+PASS your own suffix: only those names
+PASS missing controls listed
+PASS added on a page 'New controls', your page untouched
+PASS nothing missing after
+ALL OK

@@ -1,0 +1,14 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 129 bind joints. Skin your model to skeleton_grp's joints.
+    ['L_elbow_bend_ctrl', 'L_femur_bend_ctrl', 'L_humerus_bend_ctrl', 'L_knee_bend_ctrl', 'L_radius_bend_ctrl', 'L_tibia_bend_ctrl', 'R_elbow_bend_ctrl', 'R_femur_bend_ctrl', 'R_humerus_bend_ctrl', 'R_knee_bend_ctrl', 'R_radius_bend_ctrl', 'R_tibia_bend_ctrl']
+PASS L_knee_bend_ctrl made, with 'roundness' 0-1 (0 at rest)
+PASS R_knee_bend_ctrl made, with 'roundness' 0-1 (0 at rest)
+PASS L_elbow_bend_ctrl made, with 'roundness' 0-1 (0 at rest)
+PASS R_elbow_bend_ctrl made, with 'roundness' 0-1 (0 at rest)
+PASS it follows the knee joint
+PASS the thigh piece's end follows the knee control
+PASS the shin piece's start follows the knee control
+PASS roundness turns both ends (thigh end towards the shin, shin start towards the thigh)
+PASS roundness drives the turn (x 0.5: half way at 1)
+PASS the limb knows its bend controls (select the limb, IK/FK keys them)
+ALL OK

@@ -1,0 +1,12 @@
+[info] arm placed on 4 joint(s): clavicle=L_Clavicule, humerus=L_Shoulder, radius=L_Elbow, wrist=L_Wrist. Check the settings, then Build picked.
+stored uuids: ['clavicle', 'humerus', 'radius', 'wrist'] | positions: ['clavicle', 'humerus', 'radius', 'wrist']
+  [warn] arm (L): attach 'spine:shoulder' - no module 'spine' built before it; it goes under the root.
+  [info] built 1 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+map finds the right L_Wrist despite the duplicate: L_wrist_jnt | lost: []
+skinCluster1:
+  L_Clavicule                  -> L_clavicle_jnt
+  L_Wrist                      -> L_wrist_jnt
+moved: (2, [])
+calls: [('move', ['L_Clavicule', 'L_clavicle_jnt']), ('remove', 'L_Clavicule'), ('add', 'L_wrist_jnt'), ('move', ['L_Wrist', 'L_wrist_jnt']), ('remove', 'L_Wrist')]
+skin now: ['L_clavicle_jnt', 'L_wrist_jnt']
+checker after: []

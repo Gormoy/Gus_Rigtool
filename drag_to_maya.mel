@@ -1,0 +1,15 @@
+// Gus_Rigtool installer: drag this file into Maya's viewport.
+// It installs (or updates) Gus_Rigtool from the "gus_rigtool" folder next to this file.
+
+global proc gusRigtoolInstallerLocator() {}
+
+{
+    string $where = `whatIs "gusRigtoolInstallerLocator"`;
+    string $file = `substitute "Mel procedure found in: " $where ""`;
+    string $dir = dirname($file);
+    $dir = substituteAllString($dir, "\\", "/");
+    python("import importlib.util as _gr_u");
+    python("_gr_s = _gr_u.spec_from_file_location('gus_rigtool_install', r'" + $dir + "/gus_rigtool/install.py')");
+    python("_gr_m = _gr_u.module_from_spec(_gr_s); _gr_s.loader.exec_module(_gr_m)");
+    python("_gr_m.install(r'" + $dir + "')");
+}

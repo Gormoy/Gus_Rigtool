@@ -1,0 +1,12 @@
+ok picked pivot (a locator)
+ok add follow: picked pivot, the control's own axes
+ok added: no jump
+ok the follow sits on the pivot
+ok the follow has the control's own axes
+ok driver turns 20: the control turns 10 round the pivot, on its axes
+ok move follow pivot: the driver's pivot and axes
+ok moved the pivot: no jump
+ok the follow is on the driver now
+ok driver turns 20: the control turns 10 round the driver
+ok remove follow
+ok removed: the control is back home

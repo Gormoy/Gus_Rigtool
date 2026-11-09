@@ -1,0 +1,18 @@
+PASS update: weight / pivot / axes changed, same driver, no jump
+PASS copy: the other control follows the same way
+PASS update refuses a posed driver
+PASS mapping: same name kept, a removed joint goes to the nearest
+PASS merge: weights add up into the kept joints
+  [info] 2 joint(s) now copy their controls (direct connections); nothing moved, skin kept.
+PASS switch to copying: joints copy their controls, nothing moved
+PASS each joint in its own group, axes of its control
+  [info] 2 joint(s) now follow their controls by constraints (point + orient), on the ribbon; nothing moved, skin kept.
+PASS and back to constraints
+PASS a face part remembers its edges and settings
+PASS redo refuses a ribbon the Face tab didn't make
+  [info] 2 joint(s) now copy their controls (direct connections); nothing moved, skin kept.
+PASS repair finds: ribbon copying, constraint with no target
+  [info] 2 joint(s) now follow their controls by constraints (point + orient), on the ribbon; nothing moved, skin kept.
+PASS repair applies them
+PASS after repair: nothing left of those
+ALL OK

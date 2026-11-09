@@ -1,0 +1,29 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+preview has them: ['L_ankle_cor_jnt', 'L_femur_cor_jnt', 'L_humerus_cor_jnt', 'L_radius_cor_jnt', 'L_tibia_cor_jnt', 'L_wrist_cor_jnt', 'R_ankle_cor_jnt', 'R_femur_cor_jnt', 'R_humerus_cor_jnt', 'R_radius_cor_jnt', 'R_tibia_cor_jnt', 'R_wrist_cor_jnt']
+  [info] built 10 module(s), 109 bind joints. Skin your model to skeleton_grp's joints.
+  L_humerus_cor_jnt under L_clavicle_jnt, half way between ['L_clavicle_jnt', 'L_humerus_jnt']
+  L_radius_cor_jnt under L_humerus_jnt, half way between ['L_humerus_jnt', 'L_radius_jnt']
+  L_wrist_cor_jnt under L_radius_jnt, half way between ['L_radius_jnt', 'L_wrist_jnt']
+  R_humerus_cor_jnt under R_clavicle_jnt, half way between ['R_clavicle_jnt', 'R_humerus_jnt']
+  R_radius_cor_jnt under R_humerus_jnt, half way between ['R_humerus_jnt', 'R_radius_jnt']
+  R_wrist_cor_jnt under R_radius_jnt, half way between ['R_radius_jnt', 'R_wrist_jnt']
+  L_femur_cor_jnt under hips_jnt, half way between ['hips_jnt', 'L_femur_jnt']
+  L_tibia_cor_jnt under L_femur_jnt, half way between ['L_femur_jnt', 'L_tibia_jnt']
+  L_ankle_cor_jnt under L_tibia_jnt, half way between ['L_tibia_jnt', 'L_ankle_jnt']
+  R_femur_cor_jnt under hips_jnt, half way between ['hips_jnt', 'R_femur_jnt']
+  R_tibia_cor_jnt under R_femur_jnt, half way between ['R_femur_jnt', 'R_tibia_jnt']
+  R_ankle_cor_jnt under R_tibia_jnt, half way between ['R_tibia_jnt', 'R_ankle_jnt']
+bind joints include them: 12
+  [info] back to the guides: adjust them, then Build again.
+  [info] built 10 module(s), 109 bind joints. Skin your model to skeleton_grp's joints.
+after a rebuild: 12
+labelled on bind: (1, 'radius_cor') (2, 'radius_cor')
+  [info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+  [info] built 9 module(s), 149 bind joints. Skin your model to skeleton_grp's joints.
+quadruped: 16 corrective joints
+  L_femur_cor_jnt under hips_jnt, half way between ['hips_jnt', 'L_femur_jnt']
+  L_tibia_cor_jnt under L_femur_jnt, half way between ['L_femur_jnt', 'L_tibia_jnt']
+  L_metatarsus_cor_jnt under L_tibia_jnt, half way between ['L_tibia_jnt', 'L_metatarsus_jnt']
+  L_ball_cor_jnt under L_metatarsus_jnt, half way between ['L_metatarsus_jnt', 'L_ball_jnt']
+missing twin made: ['R_humerus_extra_jnt'] | under: R_humerus_jnt | at: [-30.0, 140.0, 0.0] | into the skin: ['R_humerus_extra_jnt'] | labels: (1, 'humerus_extra') (2, 'humerus_extra')
+again: nothing to do: []

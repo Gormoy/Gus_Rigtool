@@ -1,0 +1,7 @@
+twin of L driven: R_Eyelids_fol_01_ctrl_driven | twin of L_Eye_ctrl: R_Eye_ctrl
+bad links: [('L_Eye_ctrl', 'R_Eye_joint13_ctrl', 'R_Eye_ctrl'), ('L_Eyelids_fol_01_ctrl_driven', 'R_Eyelids_fol_01_ctrl', 'R_Eyelids_fol_01_ctrl_driven'), ('R_Eye_joint13_ctrl', 'L_Eye_ctrl', None), ('R_Eyelids_fol_01_ctrl', 'L_Eyelids_fol_01_ctrl_driven', 'L_Eyelids_fol_01_ctrl')]
+SDK row: R_Eye_ctrl.Blink -> R_Eyelids_fol_01_ctrl_driven.translateZ   [auto: keep, by name: link pointed to R_Eye_joint13_ctrl, by name: link pointed to R_Eyelids_fol_01_ctrl]
+fixed: [('L_Eye_ctrl', 'R_Eye_ctrl'), ('L_Eyelids_fol_01_ctrl_driven', 'R_Eyelids_fol_01_ctrl_driven'), ('R_Eyelids_fol_01_ctrl', 'L_Eyelids_fol_01_ctrl')] | left: []
+links now: R_Eyelids_fol_01_ctrl_driven L_Eyelids_fol_01_ctrl_driven R_Eye_ctrl | bad: []
+ribbon control under offset: L_Eyelids_fol_01_ctrl | groups between: ['L_Eyelids_fol_01_ctrl_driven']
+R control linked back to L control: L_Eyelids_fol_01_ctrl | R_Eye_joint13_ctrl link: None

@@ -1,0 +1,30 @@
+attrs: ['curl', 'spread', 'fist', '_Fingers', 'thumb']
+labels: ['curl   (double)', 'spread   (double)', 'fist   (double)', '------ Fingers', 'thumb   (double)']
+move thumb top: ['thumb', 'curl', 'spread', 'fist', '_Fingers']
+move curl+spread down: ['fist', 'curl', 'spread', '_Fingers', 'thumb']
+move separator up: ['curl', 'spread', '_Fingers', 'fist', 'thumb']
+move fist bottom: ['curl', 'spread', '_Fingers', 'thumb', 'fist']
+to move: ['_Fingers', 'thumb', 'curl', 'spread', 'fist']
+only the tail moves: ['thumb', '_Fingers']
+undo off refused: undo is turned off in Maya - the reorder | attrs untouched: True
+moved 5 -> ['_Fingers', 'thumb', 'curl', 'spread', 'fist'] | undo calls: 5
+kept: fist 0.7 | key ['curl_key'] | drives ['driven.tx'] | separator locked True
+same again changes nothing: 0
+add int: count long
+add enum: mode off:on
+add separator: _Extra_Stuff True
+refused: '9x': use letters, numbers and _ (not first a number).
+refused: L_hand_ctrl already has 'count'.
+refused: type the enum names (e.g. off:on or world, root, chest).
+renamed: True False
+  edit L_hand_ctrl.amount ['hasMinValue', 'minValue']
+  edit L_hand_ctrl.amount ['defaultValue']
+edit: ['min 1', 'default 2']
+copied: ['_Fingers', 'curl', 'fist', 'mode'] [] | b: ['_Fingers', 'curl', 'fist', 'mode'] | curl keyed on b: ['curl_key'] | fist 0.7
+deleted separator: False
+list: cc   (double) | light: 2 controls - 1 of them have other attributes than C_spine_ctrl: each gets the order of the ones it has.
+pending: ['cc', 'aa', 'bb'] | note: C_spine_ctrl - order changed: Apply to use it
+  [info] new order on 2 control(s) (6 attribute(s) moved). Ctrl+Z can't undo it: use 'Back to the old order'.
+spine: ['cc', 'aa', 'bb'] | neck: ['cc', 'aa', 'bb', 'zz']
+  [info] old order back on 2 control(s).
+back: ['aa', 'bb', 'cc'] ['cc', 'bb', 'aa', 'zz']

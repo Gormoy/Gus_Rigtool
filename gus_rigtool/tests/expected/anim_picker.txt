@@ -1,0 +1,18 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+tabs: {'Body': 67, 'Side': 67, 'Face': 30}
+front: L hand on the right: True | head above the hips: True
+inside the canvas: True
+overlapping buttons: 0
+face tab has lips / eyes: ['L_brow_inner_ctrl', 'L_brow_mid_ctrl', 'L_brow_outer_ctrl', 'L_cheek_ctrl']
+click: ['L_wrist_IK_ctrl']
+shift-click adds: ['L_wrist_IK_ctrl', 'R_wrist_IK_ctrl']
+Gus Animtool: picker: 164 control(s).
+picker buttons: 164
+saved: wave_hand_ 1 | files: ['wave_hand_.json'] | list: ['wave_hand_']
+half: 2.0 1.0
+right only leaves the left: 2.0
+mirrored: 1 | R: 4.0 2.0 | L untouched: 0.0
+selection only: 0
+grid items: 1
+deleted: []

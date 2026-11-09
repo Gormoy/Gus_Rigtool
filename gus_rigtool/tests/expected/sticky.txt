@@ -1,0 +1,36 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+the skin under the control (3 nearest vertices): {'L_lip_corner_jnt': 0.5, 'head_jnt': 0.2, 'jaw_jnt': 0.3}
+joints the control moves: ['L_lip_corner_jnt']
+what it follows (its own joint's share to the joint above): {'head_jnt': 0.7, 'jaw_jnt': 0.3}
+  [info] 1 control(s) ride on body_geo (stick 0-1 on each; translation only).
+stuck: under L_lip_corner_stick_grp | follows {'head_jnt': 0.7, 'jaw_jnt': 0.3} | through ['head_jnt', 'jaw_jnt']
+no hidden mesh, no pin: True | skin weights on the add node: [0.7, 0.3]
+world-driven group: True | anchor: L_lip_corner_mouth_drv_grp | blend on stick: ['L_lip_corner_ctrl.stick'] | translation only: True
+twice refused: already stuck: L_lip_corner_ctrl - Unstick first.
+  [info] 1 control(s) ride on body_geo (stick 0-1 on each; turning with the skin).
+added later: True {'head_jnt': 0.6, 'jaw_jnt': 0.4} | turning with the skin: True
+unstuck: parent L_lip_corner_mouth_drv_grp | stick attr: False | its nodes gone: True | the other still stuck: True
+  [info] 1 control(s) ride on body_geo (stick 0-1 on each; translation only).
+don't follow head: {'jaw_jnt': 1.0}
+after Build picked: stuck again: True | under: L_lip_corner_stick_grp | still not head: True
+old-style unstick: pin and copy gone: True True
+control: |rig_grp|controls_grp|world_offset|world_ctrl|root_offset|root_ctrl|face_ctrls_grp|L_lip_corner_jawFollow_grp|L_lip_corner_mouthAt_grp|L_lip_corner_mouth_drv_grp|L_lip_corner_offset|L_lip_corner_ctrl   mesh: |body_geo   skin: body_skin
+groups above (top to bottom):
+  rig_grp
+  controls_grp
+  world_offset
+  world_ctrl
+  root_offset
+  root_ctrl
+  face_ctrls_grp   [translate <- face_ctrls_grp_parentConstraint1.constraintTranslate; translate <- face_ctrls_grp_scaleConstraint1.constraintTranslate; rotate <- face_ctrls_grp_parentConstraint1.constraintRotate; rotate <- face_ctrls_grp_scaleConstraint1.constraintRotate]   constraints: parentConstraint, scaleConstraint
+  L_lip_corner_jawFollow_grp   [translate <- L_lip_corner_jawFollow_grp_parentConstraint1.constraintTranslate; rotate <- L_lip_corner_jawFollow_grp_parentConstraint1.constraintRotate]   constraints: parentConstraint
+  L_lip_corner_mouthAt_grp
+  L_lip_corner_mouth_drv_grp   [translate <- mouth_ctrl.translate; rotate <- mouth_ctrl.rotate; scale <- mouth_ctrl.scale]
+  L_lip_corner_offset
+  L_lip_corner_ctrl
+skin at the control: {'L_lip_corner_jnt': 0.333, 'head_jnt': 0.267, 'jaw_jnt': 0.4}
+joints this control moves (never followed): ['L_lip_corner_jnt']
+it would follow: {'head_jnt': 0.6, 'jaw_jnt': 0.4}
+stuck now: no
+diagnose: lines 18 | has groups / skin / moves / follow: True

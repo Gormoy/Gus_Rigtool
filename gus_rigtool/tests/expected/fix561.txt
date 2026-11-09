@@ -1,0 +1,15 @@
+[('moves the mesh', 'undone - it changed the mesh at rest (BodyShape: 1 vertices, up to 0.5)'), ('harmless', 2)]
+PASS a fix that moves the mesh at rest: undone, and it says which vertices
+PASS a fix that doesn't: kept
+PASS fixes meant to change the mesh (normalise, symmetric ribbons...) aren't checked
+PASS moved(): nothing moved -> []
+PASS skins with ngSkinTools layers found (not the others)
+PASS influence limit: only the mesh without layers is offered (the body's weights are ngSkinTools')
+PASS the checker doesn't count vertices over the limit on ngSkinTools skins
+PASS the top joint and the -1 scaled one: own scale x global (-1 kept); the one under the top one: left alone (Segment Scale Compensate off: it inherits)
+PASS no scale constraint made
+error: Global_ctrl already exists (Global_ctrl1) - delete or rename it first.
+PASS a Global_ctrl1 left from before: refused, names it
+PASS failing half way: its own step undone (no half-made Global_ctrl1)
+PASS the scale check lists by part ('L_Sleeve 2, Mouth 1')
+12/12 passed

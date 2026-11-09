@@ -1,0 +1,13 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+  [info] skin saved for body_skin.
+  [info] skin put back on 1 mesh(es): 2 joint slot(s) kept bound
+  [info] rebuilt: L:arm, L:fingers.
+after Build picked: [['L_humerus_jnt'], ['L_radius_jnt'], ['spine_jnt']] | holders left: False
+new bind matrix set: True | waiting: []
+  [info] skin saved for body_skin: it comes back with Build picked / Build.
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+while at guides: [['L_humerus_jnt_skinHolder'], ['L_radius_jnt_skinHolder'], ['spine_jnt']]
+  [info] skin put back on 1 mesh(es): 2 joint slot(s) kept bound
+  [info] built: L:arm, L:fingers.
+back: [['L_humerus_jnt'], ['L_radius_jnt'], ['spine_jnt']] | pending: []

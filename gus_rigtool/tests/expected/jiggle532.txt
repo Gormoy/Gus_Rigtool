@@ -1,0 +1,18 @@
+PASS marked as the 5.3.2 jiggle (Repair knows which are older)
+PASS reads the movement and the turn of what it hangs from
+PASS no setAttr / getAttr / xform: undo stays clean
+PASS towards the body (up +): at most jiggle_limit_body for the whole chain (a third per group)
+PASS the side axis: jiggle_limit_out both ways
+PASS a header Repair can read back
+PASS the expression compiles as C (its statements are well formed)
+slide +Z, tip rotateY: ['0.00', '0.00', '5.73', '9.45', '11.02', '10.61', '8.70', '0.13', '-6.74', '-11.23', '-13.13', '-12.69']
+PASS standing still: nothing
+PASS starts sliding +Z: the tip lags (-Z, so rotateY +)
+PASS stops: it swings past (the other way) and settles
+drop -Y, tip rotateZ: ['0.00', '0.00', '3.33', '2.83', '2.01', '-16.14', '-28.24', '-33.68', '-32.99', '-27.48', '-18.95', '-9.29']
+PASS drops: the tip flies up towards the body, but no further than the limit (10 for the chain)
+turn +Y, tip rotateY: ['0.00', '0.00', '-2.50', '-6.62', '-11.42', '-16.04', '-19.83', '-22.39', '-23.57']
+PASS turns +Y: the tip lags (rotateY -)
+PASS a jump in time: back to rest
+PASS starting on a moving shot: no kick (steady speed swings nothing)
+14/14 passed

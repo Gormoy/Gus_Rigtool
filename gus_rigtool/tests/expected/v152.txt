@@ -1,0 +1,20 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+head_end joint: False | head joint axes: [[0.0, 0.996, 0.085], [-1.0, 0.0, 0.0], [0.0, -0.085, 0.996]]
+settings ctrl L / R: [ 70.  129.2  -0. ] [-70.  129.2  -0. ] mirrored: True
+clav ctrl pivot == clav joint: True
+common options: ['options.bendy', 'options.bone_length', 'options.correctives', 'options.default_space', 'options.extra_spaces', 'options.ik_mirror', 'options.ik_orient', 'options.no_flip', 'options.pin', 'options.soft_ik', 'options.spaces', 'options.stretch', 'options.twist_count']
+  [info] L:arm, R:arm, L:leg, R:leg: stretch False -> True. Build picked to see it on the rig.
+  [dialog] The modules hanging from them are built / rebuilt too:  L:fingers R:fingers
+  [info] rebuilt: L:leg, R:leg, L:arm, R:arm, L:fingers, R:fingers.
+L_wrist_settings_ctrl True
+R_wrist_settings_ctrl True
+L_ankle_settings_ctrl True
+R_ankle_settings_ctrl True
+duplicate names: []
+  [info] C:neck: head end False -> True. Build picked to see it on the rig.
+  [dialog] The modules hanging from them are built / rebuilt too:  C:face
+  [info] rebuilt: C:neck, C:face.
+head_end joint after apply+rebuild: True
+duplicate names: []

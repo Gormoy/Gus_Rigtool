@@ -1,0 +1,63 @@
+PASS the Hare's L_ankle_IK button under the 'L Leg' text: a click hits the button (animating and in Edit)
+PASS the text: picked in Edit off the button, nothing while animating
+PASS a frame title placed in the middle: clicked there, not on the old bar
+PASS two buttons close in a row: a straight line (5.6.25 looped)
+PASS ... not in line: a gentle curve that stays between them
+PASS rename: find / replace, cut, case, prefix / suffix, numbers
+PASS the shape library: the picker's own + the rig tool's (gear, foot, arrows...)
+PASS a rig tool shape on a button: an outline (poly) with its points, named
+PASS a picker shape: by name
+PASS a control's curve from the front: 0..1, round
+PASS the most alike to a circle: round shapes first (['circle', 'sphere', 'root'])
+PASS ... to a square: square ones (['rect', 'square', 'rectangle'])
+PASS buttons take their control's colour
+PASS 31 Maya colours
+PASS limb titles
+PASS a frame per limb round its buttons (not the cog)
+PASS badges from the name: IK, FK, PV, S; yours wins; '-' none
+PASS a folded frame: its buttons hidden, not clicked
+PASS copy / paste onto another page: new ids, moved, their connector too
+PASS find on every page
+PASS page templates: a new page from yours (new ids)
+PASS saved versions: newest first, when, pages, buttons
+PASS ... only the last ones kept
+PASS gaps to the neighbours
+PASS nearly half way: nudged to equal gaps
+PASS the page's middle lines to snap to
+PASS undo history: the steps listed
+PASS ... back to before step 1 at once (redo can bring them back)
+PASS a layer following a rig switch: hidden when the switch is off
+PASS ... shown when on
+Gus Animtool: picker: 105 button(s), automatic; 105 controls found automatically: 105 by name (_ctrl).
+PASS Edit: Undo / Redo / History / Preview on the band
+Gus Animtool: 1 item(s) copied - Ctrl+V pastes (any page, any picker in this Maya).
+PASS Ctrl+C / Ctrl+V: a copy, picked
+PASS Z (like Maya): undoes the paste
+PASS Shift+Z: redoes it
+PASS Alt+drag in Edit: a copy dragged off, the original stays
+PASS two picked: 8 handles round both (no turn handle)
+PASS drag the corner: both scale as one box (twice as wide, twice as tall)
+PASS Shift on a side handle: its proportions kept (80 x 40)
+PASS the turn handle: a quarter turn (Shift: 15 degree steps)
+PASS Shift while dragging: only across
+PASS ... the distances to the neighbours shown
+PASS Preview: drawn as the animators see it (no handles, no dots)
+PASS ... a click ends it
+Gus Animtool: 2 item(s) renamed.
+PASS rename the picked at once
+Gus Animtool: 1 limb frame(s) made.
+PASS Limbs: a frame round the limb's buttons
+PASS the fold arrow (right of the title): folded
+PASS the button list as an outline: the group, its buttons indented under it
+PASS Item panel: sections for a button (no Connector, no Toggle)
+PASS no Channel Box pick: the control's attributes to choose from
+PASS IK / FK fade: in FK the IK button fades, the FK one doesn't
+Gus Animtool: 1 page(s) copied - Save keeps them.
+PASS pages from another character
+PASS find: none here - Enter goes to the page that has it
+Gus Animtool: an older version is back - Save keeps it, Undo takes it away.
+PASS a saved version back (Undo can take it away)
+PASS undo history: back one step from the list
+PASS a page bigger than the window: the minimap
+PASS ... click it: the view goes there
+56/56 passed

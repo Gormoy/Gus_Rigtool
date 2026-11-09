@@ -1,0 +1,4 @@
+rows: [('arm_ctrls', 'controls'), ('body_geo', 'geo')]
+menus: [3, 1]
+after changing row 2 to leave: [('arm_ctrls', 'controls'), ('body_geo', 'leave')]
+light: Plan: 1 of 2 top-level item(s) move. Change any row, then Organize.

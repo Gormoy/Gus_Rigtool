@@ -1,0 +1,19 @@
+L_Brow_02_ctrl.translateY (positive side) x -4 -> L_Brow_02_sdk.rotateX
+  R_Brow_02_ctrl.translateY (positive side) x -4 -> R_Brow_02_sdk.rotateX
+PASS preview: this side and the other
+['L_Brow_02_ty_to_Brow_02_sdk_clamp', 'L_Brow_02_ty_to_Brow_02_sdk_md', 'R_Brow_02_ty_to_Brow_02_sdk_clamp', 'R_Brow_02_ty_to_Brow_02_sdk_md']
+PASS made: a clamp and a multiplyDivide on each side, named
+PASS positive side only: clamp 0 .. big
+PASS x -4 into the sdk's rotateX
+PASS fed by the control's translateY
+PASS the other side: the same amount (not flipped)
+PASS a channel already driven is skipped, with the reason
+PASS negative side up to 2: clamp -2 .. 0
+PASS flipped on the other side: -10
+PASS both ways, no limit: just the multiply, this side only
+[('L_Brow_01_ctrl.translateZ', 'L_Brow_01_sdk.scaleY'), ('L_Brow_02_ctrl.translateZ', 'L_Brow_02_sdk.scaleY'), ('L_Brow_03_ctrl.translateZ', 'L_Brow_03_sdk.scaleY')]
+PASS pattern: pairs by what * stands for
+PASS connected with a multiply in between
+PASS one driver, many driven
+PASS nothing matching says so
+14/14 passed

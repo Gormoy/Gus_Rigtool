@@ -1,0 +1,19 @@
+PASS master: the L_ side (at -X)
+PASS controls off (all 3 axes): 26 (0.011), 18 (0.008), 28 (0.001); 24 is exact
+PASS follicles off: 26 only
+control Mouth_fol_26_ctrl: moved 0.0110
+control Mouth_fol_28_ctrl: moved 0.0014
+control Mouth_fol_18_ctrl: moved 0.0075
+follicle Mouth_fol_26: moved 0.0141, still 0.0020 off (the surface is lopsided there)
+PASS Mouth_fol_26 is now the exact mirror of L_Mouth_fol_02
+PASS Mouth_fol_18 is now the exact mirror of L_Mouth_fol_10
+PASS Mouth_fol_28 is now the exact mirror of L_Mouth_fol_38
+PASS its joint came along
+PASS the mesh stays: the moved joints' bind pose is their new place
+PASS the master side didn't move
+PASS the follicle went to its twin's mirror spot
+PASS a follicle the surface can't place exactly says how far it still is
+PASS afterwards: the controls are exact
+PASS with no tolerance, Repair still offers the follicle the surface can't reach
+PASS 5.3.4: within the skin mirror tolerance (0.002 < 0.01) it isn't offered again
+14/14 passed

@@ -1,0 +1,24 @@
+// Gus Animtool installer: drag this file into Maya's viewport.
+// It copies the gus_animtool folder (next to this file) and gus_anim.py into your maya/scripts folder,
+// makes the "Gus_Animtool" shelf (every tool, with icons) and opens the window.
+
+global proc gusAnimtoolInstallerLocator() {}
+
+{
+    string $where = `whatIs "gusAnimtoolInstallerLocator"`;
+    string $file = `substitute "Mel procedure found in: " $where ""`;
+    string $dir = substituteAllString(dirname($file), "\\", "/");
+    python("import os, shutil, sys");
+    python("import maya.cmds as _ga_c; _ga_dst = os.path.join(_ga_c.internalVar(userAppDir=True), 'scripts')");
+    python("os.makedirs(_ga_dst, exist_ok=True)");
+    python("_ga_pkg = os.path.join(_ga_dst, 'gus_animtool'); _ga_keep = os.path.join(_ga_pkg, 'defaults.json')");
+    python("_ga_old = open(_ga_keep).read() if os.path.isfile(_ga_keep) and not os.path.isfile(r'" + $dir + "/gus_animtool/defaults.json') else None");
+    python("shutil.rmtree(_ga_pkg, ignore_errors=True)");
+    python("shutil.copytree(r'" + $dir + "/gus_animtool', _ga_pkg, ignore=shutil.ignore_patterns('__pycache__'))");
+    python("open(_ga_keep, 'w').write(_ga_old) if _ga_old else None");
+    python("shutil.copy2(r'" + $dir + "/gus_anim.py', os.path.join(_ga_dst, 'gus_anim.py'))");
+    python("sys.path.insert(0, _ga_dst) if _ga_dst not in sys.path else None");
+    python("[sys.modules.pop(_m) for _m in list(sys.modules) if _m.startswith('gus_animtool') or _m == 'gus_anim']");
+    python("import gus_animtool, gus_animtool.toolbar as _ga_t; _ga_t.make_shelf(); gus_animtool.show()");
+    print("Gus Animtool installed in your maya/scripts folder.\n");
+}

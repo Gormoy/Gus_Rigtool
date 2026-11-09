@@ -1,0 +1,7 @@
+copied average: {'j1': 0.75, 'j2': 0.25}
+  [warn] not in the skin, skipped: jX
+pasted: 1 (['body.vtx[3]'], {'transformValue': [('j1', 1.0)], 'normalize': True})
+smoothed: 1
+  -> [('body.vtx[3]', [('j1', 0.25), ('j2', 0.25), ('j3', 0.5)])]
+moved meshes: 1 [('addInfluence', 'j4'), (['body.vtx[0]'], {'transformMoveWeights': ['j1', 'j4']})]
+refused: jZ isn't in body's skin.

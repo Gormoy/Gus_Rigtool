@@ -1,0 +1,12 @@
+[info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+biped constrained controls: []
+biped locked shown: 0
+biped guides shown: [] after fix: 0 []
+  [info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+  [info] built 9 module(s), 133 bind joints. Skin your model to skeleton_grp's joints.
+quadruped constrained controls: []
+quadruped locked shown: 0
+quadruped guides shown: [] after fix: 0 []
+shown by hand: ['guides_grp'] after fix: 1 []
+all checks: 37 help for each: True

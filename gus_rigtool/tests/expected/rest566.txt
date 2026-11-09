@@ -1,0 +1,9 @@
+PASS the constraint node is not 'other things'; the driven group is the reason
+['|controls_grp|Eyes_ctrl_offset|Eyes_ctrl_rest|Eyes_ctrl'] []
+PASS done, nothing skipped: under a new Eyes_ctrl_rest, under the offset
+PASS the control reads 0 / 1
+PASS nothing moved
+PASS the offset is still the constraint's (untouched)
+PASS found by name: its keys cut, its value back, the record gone
+PASS none found: refused, says so, the record kept (none of the 1 keyed channels were found )
+7/7 passed

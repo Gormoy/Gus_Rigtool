@@ -1,0 +1,60 @@
+Gus Animtool: reset 1 control(s).
+// Performing AutoSave at 2026/10/20 16:46:07:
+//    master file:    H:/Assignments/Potato Chips/Tubero/scenes/CHR_Tubero_Rig_V10.ma
+//    AutoSave file: H:/Assignments/Potato Chips/Tubero/autosave/CHR_Tubero_Rig_V10.0009.ma
+# Warning: Exporting Render Setup secondary layer content and Light Editor light groups
+select -r Body_HighPoly ;
+import maya.cmds as cmds
+js = sorted(j for j in cmds.ls(type="joint") if j.lower().startswith("mouth"))
+lab = {j: (cmds.getAttr(j + ".side"), cmds.getAttr(j + ".otherType")) for j in js}
+for j in js:
+    s, t = lab[j]
+    p = cmds.xform(j, q=True, ws=True, t=True)
+    twin = [k for k in js if k != j and lab[k][1] == t and lab[k][0] != s]
+    off = ""
+    if twin:
+        q = cmds.xform(twin[0], q=True, ws=True, t=True)
+        off = round(max(abs(p[0] + q[0]), abs(p[1] - q[1]), abs(p[2] - q[2])), 3)
+    print(j, "side", s, "label", t, "->", twin[0] if twin else "(none)", off, [round(v, 2) for v in p])
+Mouth_ribbon_fol_01_bind side 0 label jaw -> (none)  [7.43, 44.92, 36.04]
+Mouth_ribbon_fol_01_jnt side 0 label jaw -> (none)  [7.43, 44.81, 35.98]
+Mouth_ribbon_fol_02_jnt side 0 label jaw -> (none)  [8.36, 44.92, 35.08]
+Mouth_ribbon_fol_03_bind side 0 label jaw -> (none)  [8.88, 44.93, 34.02]
+Mouth_ribbon_fol_03_jnt side 0 label jaw -> (none)  [8.88, 44.72, 33.94]
+Mouth_ribbon_fol_04_jnt side 0 label jaw -> (none)  [8.94, 43.95, 33.26]
+Mouth_ribbon_fol_05_bind side 0 label jaw -> (none)  [8.82, 43.36, 32.78]
+Mouth_ribbon_fol_05_jnt side 0 label jaw -> (none)  [8.82, 43.43, 32.81]
+Mouth_ribbon_fol_06_jnt side 0 label jaw -> (none)  [8.38, 42.89, 32.41]
+Mouth_ribbon_fol_07_bind side 0 label jaw -> (none)  [6.79, 41.32, 32.34]
+Mouth_ribbon_fol_07_jnt side 0 label jaw -> (none)  [6.79, 41.5, 32.48]
+Mouth_ribbon_fol_08_jnt side 0 label jaw -> (none)  [5.27, 40.63, 33.05]
+Mouth_ribbon_fol_09_bind side 0 label jaw -> (none)  [3.69, 39.98, 33.63]
+Mouth_ribbon_fol_09_jnt side 0 label jaw -> (none)  [3.69, 39.98, 33.62]
+Mouth_ribbon_fol_10_jnt side 0 label jaw -> (none)  [1.89, 39.42, 33.85]
+Mouth_ribbon_fol_11_bind side 0 label jaw -> (none)  [-0.0, 39.12, 33.69]
+Mouth_ribbon_fol_11_jnt side 0 label jaw -> (none)  [0.0, 39.21, 33.77]
+Mouth_ribbon_fol_12_jnt side 0 label jaw -> (none)  [-1.89, 39.42, 33.85]
+Mouth_ribbon_fol_13_bind side 0 label jaw -> (none)  [-3.69, 39.98, 33.63]
+Mouth_ribbon_fol_13_jnt side 0 label jaw -> (none)  [-3.69, 39.98, 33.62]
+Mouth_ribbon_fol_14_jnt side 0 label jaw -> (none)  [-5.27, 40.63, 33.05]
+Mouth_ribbon_fol_15_bind side 0 label jaw -> (none)  [-6.79, 41.32, 32.34]
+Mouth_ribbon_fol_15_jnt side 0 label jaw -> (none)  [-6.79, 41.5, 32.48]
+Mouth_ribbon_fol_16_jnt side 0 label jaw -> (none)  [-8.38, 42.89, 32.41]
+Mouth_ribbon_fol_17_bind side 0 label jaw -> (none)  [-8.82, 43.36, 32.78]
+Mouth_ribbon_fol_17_jnt side 0 label jaw -> (none)  [-8.82, 43.43, 32.81]
+Mouth_ribbon_fol_18_jnt side 0 label jaw -> (none)  [-8.94, 43.95, 33.25]
+Mouth_ribbon_fol_19_bind side 0 label jaw -> (none)  [-8.88, 44.93, 34.02]
+Mouth_ribbon_fol_19_jnt side 0 label jaw -> (none)  [-8.88, 44.71, 33.94]
+Mouth_ribbon_fol_20_jnt side 0 label jaw -> (none)  [-8.42, 44.91, 35.02]
+Mouth_ribbon_fol_21_bind side 0 label jaw -> (none)  [-7.44, 44.92, 36.03]
+Mouth_ribbon_fol_21_jnt side 0 label jaw -> (none)  [-7.44, 44.8, 35.97]
+Mouth_ribbon_fol_22_jnt side 0 label jaw -> (none)  [-5.64, 44.42, 36.63]
+Mouth_ribbon_fol_23_bind side 0 label jaw -> (none)  [-3.75, 45.01, 37.82]
+Mouth_ribbon_fol_23_jnt side 0 label jaw -> (none)  [-3.75, 44.88, 37.75]
+Mouth_ribbon_fol_24_jnt side 0 label jaw -> (none)  [-1.88, 45.12, 38.56]
+Mouth_ribbon_fol_25_bind side 0 label jaw -> (none)  [-0.0, 45.36, 38.83]
+Mouth_ribbon_fol_25_jnt side 0 label jaw -> (none)  [-0.0, 45.28, 38.81]
+Mouth_ribbon_fol_26_jnt side 0 label jaw -> (none)  [1.88, 45.12, 38.56]
+Mouth_ribbon_fol_27_bind side 0 label jaw -> (none)  [3.75, 45.01, 37.82]
+Mouth_ribbon_fol_27_jnt side 0 label jaw -> (none)  [3.75, 44.88, 37.75]
+Mouth_ribbon_fol_28_jnt side 0 label jaw -> (none)  [5.64, 44.43, 36.63]

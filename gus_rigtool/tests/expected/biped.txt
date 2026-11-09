@@ -1,0 +1,28 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+preview names: 166
+  [info] built 10 module(s), 138 bind joints. Skin your model to skeleton_grp's joints.
+ik_spline twist joints: 32 | bend ctrls: 12 | L settings attrs: ['_IK_FK', 'ikfk', 'stretch', '_fingers', 'spread', 'thumb_curl', 'index_curl', 'middle_curl', 'ring_curl', 'pinky_curl']
+  [info] matched 1 limb(s) to FK.
+  match fk ok, ikfk = 0
+  [info] matched 1 limb(s) to IK.
+  match ik ok, ikfk = 1
+  [info] matched 1 limb(s).
+  toggle ok, R leg ikfk = 1
+  [info] back to the guides: adjust them, then Build again.
+  back: True | joints left: 0 | guides visible: True
+  [info] built 10 module(s), 138 bind joints. Skin your model to skeleton_grp's joints.
+ribbon twist joints: 32 | bend ctrls: 12 | L settings attrs: ['_IK_FK', 'ikfk', 'stretch', '_fingers', 'spread', 'thumb_curl', 'index_curl', 'middle_curl', 'ring_curl', 'pinky_curl']
+  [info] matched 1 limb(s) to FK.
+  match fk ok, ikfk = 0
+  [info] matched 1 limb(s) to IK.
+  match ik ok, ikfk = 1
+  [info] matched 1 limb(s).
+  toggle ok, R leg ikfk = 1
+  [info] back to the guides: adjust them, then Build again.
+  back: True | joints left: 0 | guides visible: True
+neck guides now: ['c0', 'c1', 'head']
+custom names: C_spine_JNT L_humerus_FK_ctrl
+template modules: 10
+loaded: 10 | neck roles: ['c0', 'c1', 'head']
+  [info] built 10 module(s), 139 bind joints. Skin your model to skeleton_grp's joints.
+rebuilt from template OK; neck joints: []

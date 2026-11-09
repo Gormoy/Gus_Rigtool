@@ -1,0 +1,8 @@
+suggested: chest = Chest_ctrl, cog = COG_ctrl, hips = Hips_ctrl, root = World_ctrl
+  [info] adopted 'spine' (C): 3 controls, 0 IK/FK limb(s), spaces: chest, cog, hips, root.
+  [warn] arm (L): attach 'spine:shoulder' - 'spine' has no joint 'shoulder' (it has: chest_jnt, hips_jnt).
+  [warn] arm (L): space 'nothing': 'Missing_ctrl' not found.
+  [info] built 1 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+radius_pv -> [('limb', 'L_wrist_IK_ctrl'), ('root', 'World_ctrl')] default: 0
+wrist_ik -> [('root', 'World_ctrl'), ('cog', 'COG_ctrl'), ('chest', 'Chest_ctrl'), ('head', 'Head_ctrl')] default: 0
+IK hand space attr: True

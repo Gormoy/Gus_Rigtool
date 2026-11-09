@@ -1,0 +1,22 @@
+PASS point_of an object = its position
+PASS point_of several = their centre
+PASS point_of nothing raises
+PASS added
+PASS space at the picked pivot
+PASS space keeps the lid's own axes
+PASS no jump on add
+PASS meta remembers pivot and axes
+PASS L_upLid_ctrl turns around the picked pivot on its own axes
+PASS L_upLid_bind turns around the picked pivot on its own axes
+PASS pivot 'control' = on the control
+PASS axes 'world'
+PASS default still at the driver
+PASS move_pivot count
+PASS move_pivot: no jump
+PASS move_pivot: space moved
+PASS move_pivot: meta updated
+PASS move_pivot: lid + its joint stay
+PASS move_pivot: joint's space at the driver
+PASS move_pivot refuses when not at rest
+PASS remove
+ALL OK

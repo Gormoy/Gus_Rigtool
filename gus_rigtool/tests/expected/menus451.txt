@@ -1,0 +1,7 @@
+PASS the menu lists what's there when the window opens
+PASS the fake menu refuses item 2 like Maya
+PASS clicking its control: no error, the menu lists it and picks it
+PASS menu_select never asks for an item that isn't there
+PASS space value 2 with 2 names: shown as 'space 2 (no name)', no error
+PASS space value 1: 'chest' picked
+ALL OK

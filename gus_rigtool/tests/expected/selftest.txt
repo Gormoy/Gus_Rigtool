@@ -1,0 +1,84 @@
+[info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+  [info] L:arm: 3 of your hook-up(s) put back (children, constraints, driven keys...).
+  [info] L:arm: L_clavicle_FK_offset: constraint re-made at the new spot (fresh offset)
+  [info] built: L:arm, L:fingers.
+  [info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+  [info] built 9 module(s), 133 bind joints. Skin your model to skeleton_grp's joints.
+Gus_Rigtool | sections: ['== biped', '== quadruped']
+checks per row kind: ['FAIL', 'PASS', 'SKIP']
+crashed: []
+IK mirror R_ankle_IK_ctrl: same values, mirror places
+IK mirror R_ball_IK_ctrl: same values, mirror places
+IK mirror R_front_ball_IK_ctrl: same values, mirror places
+IK mirror R_wrist_IK_ctrl: same values, mirror places
+IK/FK match L_ankle_settings_ctrl: to FK
+IK/FK match L_ankle_settings_ctrl: to IK
+IK/FK match L_ball_settings_ctrl: to FK
+IK/FK match L_ball_settings_ctrl: to IK
+IK/FK match L_front_ball_settings_ctrl: to FK
+IK/FK match L_front_ball_settings_ctrl: to IK
+IK/FK match L_wrist_settings_ctrl: to FK
+IK/FK match L_wrist_settings_ctrl: to IK
+IK/FK match R_ankle_settings_ctrl: to FK
+IK/FK match R_ankle_settings_ctrl: to IK
+IK/FK match R_ball_settings_ctrl: to FK
+IK/FK match R_ball_settings_ctrl: to IK
+IK/FK match R_front_ball_settings_ctrl: to FK
+IK/FK match R_front_ball_settings_ctrl: to IK
+IK/FK match R_wrist_settings_ctrl: to FK
+IK/FK match R_wrist_settings_ctrl: to IK
+fingers
+fingers L index: curl turns every joint
+fingers L middle: curl turns every joint
+fingers L pinky: curl turns every joint
+fingers L ring: curl turns every joint
+fingers L thumb: curl turns every joint
+fingers L: spread opens the outer fingers
+fingers R index: curl turns every joint
+fingers R middle: curl turns every joint
+fingers R pinky: curl turns every joint
+fingers R ring: curl turns every joint
+fingers R thumb: curl turns every joint
+fingers R: spread opens the outer fingers
+head axes match the neck
+head spaces: switching at rest doesn't turn the head
+length per bone L leg: upper_length 1.5
+length per bone R leg: upper_length 1.5
+lips follow the jaw
+no-flip
+no-flip L leg: knee_mode 1 at rest, no pop
+no-flip L leg: turning the foot turns the knee
+no-flip R leg: knee_mode 1 at rest, no pop
+no-flip R leg: turning the foot turns the knee
+pin / length
+pin L leg: the knee is on the pole vector
+pin R leg: the knee is on the pole vector
+rebuild keeps your constraint
+rebuild keeps your constraint: the clavicle goes to its moved guide
+soft IK
+soft IK L arm: close in, the wrist is on the control
+soft IK L arm: straight pull stays soft
+soft IK R arm: close in, the wrist is on the control
+soft IK R arm: straight pull stays soft
+spine mid: chest stays
+spine mid: hips stay
+spine mid: middle joints move
+spine volume
+spine volume: stretched, the middle gets thinner
+stretch
+stretch L back_leg: ball stays on the paw
+stretch L back_leg: bones stretch evenly
+stretch L front_leg: ball stays on the paw
+stretch L front_leg: bones stretch evenly
+stretch R back_leg: ball stays on the paw
+stretch R back_leg: bones stretch evenly
+stretch R front_leg: ball stays on the paw
+stretch R front_leg: bones stretch evenly
+toes
+toes L back_leg stay on the toe joint
+toes L front_leg stay on the toe joint
+toes R back_leg stay on the toe joint
+toes R front_leg stay on the toe joint
+skips: ["SKIP  lips follow the jaw  (the jaw control didn't turn the jaw)", 'SKIP  toes  (no legs with toes)', 'SKIP  stretch  (no quadruped legs with stretch)', "SKIP  lips follow the jaw  (the jaw control didn't turn the jaw)", 'SKIP  fingers  (no fingers with curl attributes)', 'SKIP  soft IK  (no arms with soft IK)', 'SKIP  pin / length  (no legs with pin or length per bone)', 'SKIP  no-flip  (no legs with no-flip)', 'SKIP  spine volume  (no spine with volume)', 'SKIP  rebuild keeps your constraint  (no left arm)']

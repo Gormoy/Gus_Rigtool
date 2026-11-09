@@ -1,0 +1,2 @@
+installers in the folder: ['drag_to_maya_animtool.mel']
+the toolkit has one too: ['drag_to_maya_animtool.mel']

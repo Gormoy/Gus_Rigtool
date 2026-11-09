@@ -1,0 +1,384 @@
+Gus Animtool 5.6.22 - picker: Item panel, text size, pins, 2D slider, side by side, styles, clean up
+
+Picker (Gus Animtool):
+- The Item panel (Edit, beside the page): the picked button's text, tooltip, place (x, y), size, turn, shape,
+  colour, border colour and width, corners, text size (0: automatic), text colour, bold, where the text goes
+  (in it / above / below / left / right), locked, pinned - type the numbers, pick the colours.
+- Text + / Text - quick buttons; text size and colour per button.
+- Turn any button (an arrow pointing anywhere): it's clicked on its turned shape.
+- 2D slider (Add here > 2D slider): pick two attributes in the Channel Box (across, then up) - one handle
+  drives both, in their ranges (eyes, mouth corners). Double-click: back to rest.
+- Pin (quick button, right-click, the Item panel): a pinned button stays in its corner of the window whatever
+  the zoom, the pan or the page shown - you choose which.
+- Side by side: another page shown beside this one (Body with Face) - click on both.
+- Styles: save a button's style by name (FK blue, IK orange...) and apply it to others - kept on this computer.
+- Clean up (quick button, and the orange bar when there's something to clean): buttons twice on a page, buttons
+  for controls that are gone. 5.6.21's Mirror made a second button for a middle control (Pants_fol_01, Tail_00,
+  Collar_fol_21...) - it doesn't any more.
+- Library > Get the rig's poses: the poses delivered with the rig (they come in by themselves the first time).
+
+Gus Animtool 5.6.21 - picker: groups, text, shapes, quick buttons, clothes page
+
+Picker (Gus Animtool) - Edit:
+- Quick buttons (icon + word) above the edit bar: Left, Centre, Right, Top, Middle, Bottom, Spread across / down,
+  Same size, Page centre, Mirror, Group, Ungroup, Text, Front, Back, Up, Down, Lock, Grid, Copy style, Paste
+  style.
+- Groups (frames): pick buttons, Group (Ctrl+G), give it a title - a see-through rounded panel with a title bar
+  behind them. Click its title: every control in it is selected (Shift / Ctrl as on buttons). In Edit, drag it:
+  its buttons come along; double-click its title: rename; Colour / Frame see-through; Ungroup (Ctrl+Shift+G)
+  takes it away and leaves the buttons. Frames menu (animators): show / hide each frame and its buttons.
+- Text: a title or a note you place anywhere (Add here > Text, or Text) - colour, Bigger / Smaller, left /
+  centre / right, bold; double-click to change it.
+- Order: Bring to front / Up one / Down one / Send to back (Ctrl+Shift+] / Ctrl+] / Ctrl+[ / Ctrl+Shift+[);
+  frames always stay behind the buttons.
+- More shapes: pill, ring, triangle, hexagon, star, plus, arrow up / down / left / right (clicks follow the
+  shape).
+- Lock (Ctrl+L): locked buttons / frames can't be moved or resized by accident (a red corner in Edit).
+- Grid: snap to a grid, its dots shown; the arrow picks the size (4, 8, 16, 32).
+- Copy style / Paste style: shape, colour, size and text style from one onto others.
+- Move to page (right-click): the picked - with a frame, its buttons - to another page or a new one, same place
+  and look.
+
+Picker - automatic layout:
+- Clothes get their own page (collar, cape, sleeves, pants, belt, hood, bandages...): the Hare's collar was split
+  between Face (the front, near the chin) and Body.
+- The fingers stay on Hands and also come as small buttons under each hand on Body.
+- Your saved picker isn't changed: Auto layout... makes a new one (or Move to page your collar buttons to a
+  Clothes page).
+
+Gus Animtool 4.0.0 - the big update
+
+- Picker: made automatically to fit the rig - four-legged rigs (Tubero, the hare) are seen from the side in
+  three-quarter (the legs don't pile on each other, the head forward), upright ones from the front; no giant
+  buttons (none bigger than about 2.5x the usual one); face controls by name go to the Face page; the character's
+  silhouette (from its meshes) behind the buttons. Auto layout (in the picker's menu) redoes it for a rig you
+  already have a picker for.
+- Overlap, Cycle in place / forward, Bake / reduce keys, Playblast with HUD (preview 2).
+- Blocking / spline, Slower / faster, Continue cycle (3.3 - 3.5).
+- Fixes: Time Slider menu, the 'Controls' toolbar button, set driven keys left alone by key tools, undo safety,
+  faster Reduce keys (previews 1 and 5).
+
+Decisions I made (tell me to change any)
+- Which view: a rig longer front to back than it is tall (and much longer than wide) gets the side view.
+- In the side view the left side sits a little up and to the right of the right side, so both show.
+
+Gus Animtool 3.99.5 - 4.0 preview 5: fixes from the Maya check
+
+- Temporary pivot / world space on a control that is already in one: a clear message (Bake back first) instead
+  of a Maya connection error.
+- Reduce keys: many times faster (reads the curves through Maya's API); rotation curves compared in the right
+  units.
+
+Gus Animtool 3.99.2 - 4.0 preview 2: overlap, cycle in place, bake / reduce, playblast HUD
+
+- Overlap (Limbs tab, toolbar / shelf 'Overlap'): select a chain base to tip (tail, ears, antenna - or only its
+  first control); over the frame range each control swings behind what it hangs on, springs and settles, baked
+  to rotation keys. Stiffness, damping, amount, 'tip looser'; Cycle: loops with no jump. Right-click: softer,
+  stiffer, as a cycle.
+- Cycle in place / Cycle forward (Pose tab > Cycles): the walk loops on the spot (the root / COG's steady travel
+  taken out; bounce and sway stay), and back - remembered in the scene, so the round trip is exact.
+- Bake keys / Reduce keys (Keys tab > Bake / reduce): a key every N frames over the range; or fewer keys with the
+  same motion (tolerance: a share of each curve's range; first, last, highs and lows stay).
+- Playblast (View tab > Playblast): HUD with shot, artist + date, focal length, frame / total; saved as
+  <folder>/<shot>_v001, v002... (never overwrites); your folder, shot and artist remembered. Maya's own HUDs
+  come back after.
+
+Gus Animtool 3.99.1 - 4.0 preview 1: fixes
+
+- Time Slider right-click menu: sometimes only Gus Animtool's items showed. After a Reset / Update in the same
+  Maya session the hook lost Maya's own menu command. Now it's remembered across reloads (and Maya's default is
+  used if needed), and our items are taken out before Maya builds its own each time.
+- The toolbar's 'Controls' button (hide / show controls) didn't work: it was mistaken for a body-part button.
+- Key tools no longer touch set driven keys: copy / paste keys and animation, inbetweens, offset, reverse, time
+  scale, Slower / faster, blocking, cycles, clean up and Euler work only on keys in time.
+- An empty selection set in a rig profile made every node in the scene count as a control.
+- Tween slider and space-jump check: Maya's undo is put back exactly as it was (it could be turned on when it
+  had been off).
+- Picker: closing it while dragging a slider left Maya's undo inside an open chunk.
+- Blocking -> spline is much faster on big scenes.
+
+Gus Animtool 3.5.0 - Blocking / spline
+
+Blocking / spline (Keys tab > Tangents, toolbar next to Stepped, shelf)
+- One click: every key of the character stepped for blocking - and new keys you set are stepped too.
+- Click again: back to spline. Each key gets its own tangent back (auto, flat, linear... as it was before),
+  and new keys go back to your usual tangent.
+- Right-click: Blocking / Spline directly, or the scope (whole character - the default - or selected controls).
+
+Decisions I made (tell me to change any)
+- Going back reads each key's in tangent (stepped only changes the out side), so nothing has to be saved.
+- The button toggles by what most keys are now: mostly stepped -> spline, otherwise -> blocking.
+
+Gus Animtool 3.4.0 - Slower / faster
+
+Slower / faster (Keys tab > Retime, toolbar and shelf: 'Slower / faster')
+- The whole character's motion over the Time Slider range becomes the length you type: 1-24 -> 36 frames is
+  1.5 times slower. Faster works the same way (a shorter length).
+- New length in frames, or a % (they update each other). Right-click the button: 125%, 150%, 200%, 75%, 50%.
+- Keys after the range move with it, so nothing overlaps; a cycle's loop frame stays right after the range.
+- The Time Slider follows the new length. Keys land on whole frames. One undo.
+- To stretch only part of the shot, shift-drag that part in the Time Slider first.
+
+Decisions I made (tell me to change any)
+- Whole character = every control of the selected control's character (the same as Continue cycle).
+- The button asks for the length, starting at 150% of the current one.
+
+Gus Animtool 3.3.0 - cycles: Mirror cycle fixed, Continue cycle
+
+Mirror cycle (Pose tab > Cycles, toolbar, shelf)
+- Fix: it used the whole frame range as the cycle, so with the Time Slider at 1-120 it made a 120-frame cycle.
+  Now your keys say it: key the first half (1 = left contact ... 13 = right contact), Mirror cycle makes 13-25
+  (25 = frame 1, the loop frame). Or shift-drag the first half in the Time Slider to pick it yourself.
+- The Time Slider is set to the cycle (1-24 here: it loops cleanly).
+- Pressing it again after a mirror doesn't double the cycle.
+
+Continue cycle (new button, next to Mirror cycle)
+- The cycle repeats N more times as real keys (default 3; right-click: 1, 3, 7).
+- Keep going forward (on by default): controls that travel in the cycle (root / COG translate) carry on from where
+  the last cycle ended instead of jumping back - the character walks forward.
+- Whole character by default (right-click or the checkbox: only the selected controls).
+- Run it again: it replaces the earlier repeats (keys after the cycle) - highlight the cycle in the Time Slider
+  if the animation is already longer than one cycle.
+- Right-click > 'Loop the curves instead (no new keys)': cycle infinity, travelling curves with offset.
+
+Decisions I made (tell me to change any)
+- Highlighted range: the first HALF for Mirror cycle, the WHOLE cycle for Continue cycle.
+- Only translate counts as travelling (a rotation that changes over the cycle is treated as a pose, not a turn).
+- The Time Slider follows: Mirror shows one cycle, Continue shows all the repeats.
+
+Gus Animtool 3.2.2 - review and clean-up
+
+- Fix: with Gus Animtool installed on its own (without Gus_Rigtool), Maya didn't record the order you selected
+  things in, so Attach ('what follows, then what it holds on to'), cascade Offset (base to tip) and other
+  order-based tools could take them the wrong way round. Gus Animtool now turns Maya's 'track selection order' on.
+- Mirror inside a span (clips applied mirrored) now also runs the Euler filter like the other mirrors.
+- Clean-up: one frame-range helper and one name helper instead of six copies; one routine keys every mirrored
+  pose (mirror animation, mirror cycle, mirrored clips); an unused helper removed.
+
+Gus Animtool 3.2.1
+
+- Limbs tab > Jiggle: 'Bake jiggle to keys' - the follow-through of Gus_Rigtool chains built with the Jiggle
+  option becomes keys over the frame range.
+
+Gus Animtool 3.2.0 - attach props, cycles, hider, clips, ghosts, crash backup
+
+Attach props (Space tab, toolbar)
+- Select what FOLLOWS, then what it holds on to, Attach: from this frame it follows, with no jump.
+  A box then the hand: the box follows the hand (fingers never move it). The IK hand then the box: the hand
+  follows the box. Attach again later to something else (the other hand, a table) - each switch without a jump.
+- Release: from this frame it stays where it is. Change the grip: Release, move the hand, Attach again at the
+  same frame. The prop's own keys keep working on top while it's held.
+- Bake to keys (plain keys every frame of the range, the attach goes) or Remove (no bake). List shows what's
+  attached to what, from which frame. Coloured Time Slider bookmarks show the held stretches (Maya 2020+).
+
+Mirror half cycle (Pose tab > Mirror animation, toolbar)
+- Frame range = the whole cycle (1-24 or 1-25). Animate the first half, press Mirror cycle: the first half,
+  mirrored (left <-> right, middle controls flipped), becomes the second half; the loop frame gets the first
+  frame's pose; the curves loop (untick 'Loop the curves', or right-click the icon, to skip that).
+
+Body parts hider (Pick tab, toolbar)
+- Hide / show a part, or show only that part: Head & face, Torso, L / R arm, L / R hand, L / R leg, Tail & ears -
+  found from the control names; their controls, the meshes you add to a part, or both. Add selected / Take out /
+  Reset parts; saved in the rig profile. The rig's own visibility switches are never touched (LOD visibility).
+
+Animation library (header 'Clips', Pick tab, toolbar)
+- Save the selection's keys over the frame range as a clip with a picture (nothing selected: every control).
+- Apply at the current frame: replace the keys there, merge, or insert (the later keys move after the clip);
+  mirrored (left <-> right) or not; only on the selected controls if you like. Any copy of the character.
+
+Ghosts and arcs (Pick tab > View, toolbar)
+- Ghosts: see-through copies of the character a few frames before (blue) and after (orange), every N frames;
+  they update when you change keys. Clear with right-click.
+- Arcs now show frame markers (the spacing) and bigger keys.
+
+Crash backup (Settings)
+- Off until you turn it on. Every 2 / 5 / 10 / 15 minutes, if the scene changed, a copy goes to
+  <maya>/gus_anim_backups/<scene>/ (your scene is untouched); the last 3 / 5 / 10 are kept.
+- Recover...: the backups by time - open one. Back up now: a copy right away.
+
+Decisions I made (tell me to change any)
+- Attach works through the follower's offsetParentMatrix (a control whose offsetParentMatrix is already driven
+  is refused - attach its group instead).
+- A 1-24 range is read as a 24-frame cycle with its loop frame at 25.
+- Ghosts default: 2 before, 2 after, every 2 frames. Backup default: every 5 minutes, keep 5.
+
+Gus Animtool 3.1.1 - Time Slider menu fix
+
+- The Time Slider's right-click menu showed only Gus Animtool's items: Maya builds its own items (playblast,
+  delete keys...) only into an empty menu, and ours were put there first. Now ours are added only after Maya has
+  built its own, at the end under a divider. A menu left with only ours by 3.1.0 is emptied for Maya to rebuild.
+  (Or: Settings > untick 'Gus Animtool in the Time Slider's right-click menu' to leave it alone.)
+
+Gus Animtool 3.1.0 - copy / paste keys, inbetweens, offset, Time Slider menu
+
+Copy / paste keys (the animator way)
+- Copy keys: the selected controls' keys at the current frame (no key there: their pose, every channel), or every
+  key in the range you shift-drag in the Time Slider.
+- Paste keys: from the current frame on, matched by control name (one control copied: pasted on every selected
+  one); a range keeps its spacing. The keys already in that span go first, unless 'Merge' is ticked (Keys tab) or
+  you right-click > merge.
+- The old 'copy / paste the whole animation' is on their right-click menus.
+
+Time Slider right-click menu
+- A 'Gus Animtool' submenu (tear-off): copy keys, paste keys (merge), add / remove inbetween, offset earlier /
+  later, back to original, keep as original, whole animation copy / paste. Added when Gus Animtool or its toolbar
+  opens; Settings can turn it off.
+
+Add / remove inbetween
+- Add: every key after the current frame moves later by the step; Remove: the frames after the current one go and
+  the rest moves earlier. Step 1 / 2 / 3 / 5 / 10. On: selected controls, the whole character, or everything
+  animated in the scene (dropdown, or right-click the buttons). Hotkeys: Alt+] / Alt+[.
+
+Offset with 'back to original'
+- Offset - / +: every key of the selected controls moves by the step - all the same, or cascade (select base to
+  tip: the first stays, each next one a step more).
+- Back to original: the timing from before any offset comes back (remembered in the scene, so it survives saving
+  and closing Maya). Keep as original: the current timing becomes the new original.
+
+Tidy-up
+- The old Retime 'Insert / Remove frames' and 'Offset chain' are replaced by the above. Reverse and Time scale are
+  in a 'Retime' section. Toolbar / shelf / window icons updated (7 new icons); a toolbar you customised keeps its
+  choices (old buttons are swapped for the new ones).
+
+Decisions I made (tell me to change any)
+- Copy at one frame copies the whole pose (every keyable channel), so pasting gives a full key even where the
+  source had no key.
+- Paste replaces the keys in the pasted span by default; Merge keeps them.
+- Inbetween scope starts on 'Selected controls'; cascade offsets keep the first control still.
+- Hotkeys Alt+] / Alt+[ (the free ones next to the others).
+
+Gus Animtool 3.0.1 - fixes
+
+- Toolbar: only the first few icons showed (up to Key). A button with a right-click menu named the menu after its
+  full path, which Maya refuses, and the toolbar stopped building there. Every button shows now.
+- Window icon row: its second row was cut off (one-row height). Now two rows that stretch with the window, so
+  every icon is always visible.
+- Toolbar a little taller so the icons aren't clipped by the scroll bar.
+- Key (toolbar / shelf / window): a control with no keys yet now gets a normal key (before: nothing happened).
+- Picker: if the new picker can't open, the simple one opens instead with the reason in the Script Editor.
+- Picker: faster while dragging buttons in Edit mode (controls aren't looked up again on every mouse move).
+- Clean-up: the old 'add a shelf button' code (the Gus_Animtool shelf replaced it) and other unused code removed;
+  one helper now makes every icon button (toolbar, shelf row, window), so they all behave the same.
+- Tests: the test Maya now refuses UI names with '|' like real Maya, so this kind of bug gets caught.
+
+Gus Animtool 3.0.0 - looks and works like a real animator toolkit
+
+Install: drag drag_to_maya_animtool.mel into Maya (or Update... in the window). It makes the Gus_Animtool shelf.
+
+The window
+- The tabs fill the window and stretch with it (before, everything was squeezed into a small strip).
+- Buttons share the width and grow with the window.
+- An icon row at the top with the everyday tools (key, tangents, mirror, flip, reset, twin, IK/FK, copy / paste
+  animation, push / pull, arcs, hide controls, isolate, playblast). Right-click an icon for more.
+- Floating by default; drag its tab onto Maya's side to dock it (Maya remembers). Settings can open it docked next
+  to the Channel Box instead.
+
+Shelf and toolbar (both, as you asked)
+- 'Gus_Animtool' shelf: every tool with its own icon, grouped; right-click buttons for the variants. Made when
+  you install, or Settings > Make the shelf.
+- Toolbar under the Time Slider (Settings > 'Toolbar under the Time Slider', off by default): icons plus a tween
+  slider. 'Toolbar buttons...' picks which tools it shows.
+- New icon set (37 icons), coloured by family: open, tween, keys / tangents, pose, animation, curves, space, view.
+
+New picker (Qt)
+- Automatic layout, rebuilt: pages Body, Face, Hands, Tweaks. Each button is shaped and sized like its control
+  seen from the front; left and right are mirror images; nothing overlaps; labels show when there's room.
+- Hands page: a column per finger (thumb inside, a row lower), knuckle to tip, both hands.
+- Use: click (Shift add / take away, Ctrl take away), drag a box, double-click selects the limb, right-click:
+  select limb / twin, IK/FK, mirror / flip, reset, key. Wheel zooms, middle drag (or Alt+drag) pans, F frames.
+  Buttons light up with Maya's selection.
+- Edit mode: pick buttons (click / box / Shift), drag to move, corner square to resize, arrows nudge (Shift x10).
+  Shape (round, square, ellipse, diamond, outline), colour, label, bigger / smaller / same size, align,
+  distribute, mirror to the other side (twin linked), duplicate, delete, 'use the selected controls'.
+  Add: a button per selected control, one button for several controls, a slider or a check box for a Channel
+  Box attribute, a command button (Python). Pages: add, rename, delete, background picture. Undo / redo, Auto
+  layout again.
+- Save keeps it in the rig profile: every scene with this rig (any namespace) gets your picker.
+- Without Qt the old simple picker still opens.
+
+Everyday tools (toolbar, shelf, Keys and Pick tabs)
+- Tangents: auto, spline, linear, flat, stepped - selected Graph Editor keys, or the keys at this frame.
+- Copy / paste animation by control name (one control copied: pasted on every selected one); paste at the
+  current frame or merge with your keys.
+- Reverse the frame range; time scale from the current frame (x0.5 to x2, snapped to whole frames).
+- Smooth and noise on the selected Graph Editor keys.
+- Arcs: a motion trail per selected control (clear them); hide / show controls; isolate the selection.
+- Playblast the frame range (50 / 75 / 100 %) into the project's movies folder.
+
+Decisions I made (tell me to change any)
+- Window: floating by default (you said "what you recommend"); the icon row is on (it's the fix you asked for -
+  Settings can hide it).
+- Toolbar: off until you turn it on; its default buttons are the everyday ones (Toolbar buttons... to change).
+- Picker pages: names with thumb / index / middle / ring / pinky / finger go to Hands; tweak / bendy / ribbon to
+  Tweaks; small controls near the head or named eye / lid / brow / lip / mouth / jaw / cheek / nose / tongue to
+  Face. Ears stay on Body (animated like limbs).
+- Picker buttons: at least 16 units; Face and Tweaks buttons at most 80 x 48 so one big control can't take the page.
+- Copy / paste animation lives for this Maya session (not saved to a file).
+- Noise default 5 % of each curve's range; time scale default x1.25.
+- Tests: Qt can't be installed in my test machine, so the picker window was tested with a stand-in Qt; its layout
+  and editing logic were tested fully. Tell me anything that looks or feels off in Maya.
+
+Gus Animtool 2.1.0
+
+Graph Editor keys (Keys tab) - ideas from Aaron Koressel's ackPushPull / ackNegateKeys / ackDeleteRedundant,
+written again in Python
+- Pull: the selected keys' values move towards the pivot key (softer). Push: away from it (bigger).
+- Negate: the selected keys flipped upside down around the pivot key (the opposite pose / motion).
+- Delete redundant: among the selected keys, the ones with the same value as both neighbours go.
+- Each curve is worked on its own. Pivot (dropdown): the key on the left, on the right, or the last selected
+  key. Factor (dropdown): 0.95, 0.9, 0.8, 0.75, 0.5.
+
+Hotkeys (Settings, off until you turn them on)
+- Alt+- pull, Alt+= push, Alt+Shift+- negate (with the nudge / tween ones). All of them are also in the Hotkey
+  Editor > Custom Scripts > Gus Animtool, so you can bind your own keys there.
+
+Temporary spaces (Space tab)
+- World: a locator per selected control follows it over the frame range (baked), then the control follows the
+  locator - animate in world space.
+- Camera: the same, seen from the camera you look through (arcs, screen spacing).
+- Pivot: a locator at the control - move it, then turn it to rotate around a new pivot.
+- Bake back: the controls keep the motion as keys over the range; the helpers are deleted.
+
+Selection sets (Pick tab)
+- Your own groups of controls (mouth, L hand...), saved in the rig profile - every scene with this rig has them,
+  whatever the namespace. Save, Select (or double-click), Add, Remove.
+
+Rotate order (Keys tab)
+- The selected controls get a new rotate order; their rotation keys are re-made so the motion doesn't change
+  (Euler filter after). Without keys, the pose stays.
+
+Decisions I made (tell me to change any)
+- Default pivot: the key on the left; default factor 0.9 (like the ack scripts).
+- Push divides by the factor, so a pull then a push gets you back where you were.
+- Delete redundant tolerance: 0.00001.
+- Temporary spaces bake over the frame range in the header; locked channels are skipped.
+- Selection sets store names without namespace.
+
+Gus Animtool 2.0.0 (was Gus Anim 1.2)
+
+Now its own package, its own window and its own updates
+- One window with tabs, like Gus_Rigtool: Pick, Pose, Keys, Space, Limbs, Settings - every section has a '?'.
+  The header has Picker, Poses and Update...; the tab you used last opens again.
+- Install: drag drag_to_maya_animtool.mel (its own zip, or Gus_Rigtool's anim folder). From Gus_Rigtool:
+  Build > 5 > Open Gus Animtool (installs it with your naming and opens it). Updating Gus_Rigtool updates
+  it too. 'import gus_anim; gus_anim.show()' and the old shelf button keep working (the button is renamed).
+- Works on any rig; on Gus_Rigtool rigs it reads the builder's limbs, IK/FK and spaces by itself.
+
+Rig profiles (Settings)
+- How to read THIS rig: control suffix, left / right tokens, a selection set holding the controls, or a group
+  (every curve under it is a control). Saved by rig name in the shared folder (gus_anim_library/profiles), so
+  every scene with this rig - any namespace (hare1:, hare2:...) - uses it.
+
+New tools
+- Tween / pose slider (Pose): Between keys (-100 previous key, 0 half way, 100 next; more for overshoot),
+  From rest (push / pull), Mirror (towards the twin's pose). Live while you drag, one undo when you let go,
+  keyed ('Key it', or auto key). Quick buttons -100 ... 100.
+- Keys tab: nudge keys (Graph Editor selection, or the selection's keys at this frame; the frame follows),
+  insert / remove frames after the current one, key without changing the curve, clean up (keys and curves
+  that change nothing), Euler filter, offset chain (overlap down a tail).
+- Copy / paste pose (Pose): by name, to another character too.
+- Space switch key cleanup (Space): finds keyed space changes that make the control jump; Fix keys it in place
+  there (and the frame before) and makes the space key stepped.
+- Hotkeys (Settings, off at first): Alt+, / Alt+. nudge keys; Alt+Shift+, / Alt+Shift+. a third towards the
+  previous / next key. A 'Gus_Animtool' hotkey set is made (Maya's default set can't change).
+- Bake for taught limbs: Limbs > Bake to FK / IK already works on limbs you taught (other rigs).

@@ -1,0 +1,6 @@
+first install: True | kept: {'gusAnimtool_tsOriginal': 'updateTimeSliderMenu TimeSliderMenu'}
+menu opens: ['Playblast', 'Keys', 'Sound', 'gusAnimtoolTimeSliderDiv', 'gusAnimtoolTimeSliderSub']
+after a reload, original: updateTimeSliderMenu TimeSliderMenu
+menu opens: ['Playblast', 'Keys', 'Sound', 'gusAnimtoolTimeSliderDiv', 'gusAnimtoolTimeSliderSub']
+no record either -> Maya's default: updateTimeSliderMenu TimeSliderMenu | ['Playblast', 'Keys', 'Sound', 'gusAnimtoolTimeSliderDiv', 'gusAnimtoolTimeSliderSub']
+ours taken out before Maya runs: ['Playblast', 'Keys', 'Sound', 'gusAnimtoolTimeSliderDiv', 'gusAnimtoolTimeSliderSub']

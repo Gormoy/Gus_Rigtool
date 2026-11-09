@@ -1,0 +1,30 @@
+Mouth_main_ctrl: 9 control(s) - Mouth_fol_00_ctrl 1.00, Mouth_fol_01_ctrl 1.00, Mouth_fol_02_ctrl 1.00, Mouth_fol_03_ctrl 1.00, Mouth_fol_04_ctrl 1.00 ...
+Upper_Lip_ctrl: 5 control(s) - Mouth_fol_02_ctrl 1.00, Mouth_fol_01_ctrl 0.88, Mouth_fol_03_ctrl 0.88, Mouth_fol_04_ctrl 0.30, Mouth_fol_00_ctrl 0.30
+Lower_Lip_ctrl: 5 control(s) - Mouth_fol_06_ctrl 1.00, Mouth_fol_05_ctrl 0.88, Mouth_fol_07_ctrl 0.88, Mouth_fol_04_ctrl 0.30, Mouth_fol_00_ctrl 0.30
+L_Mouth_Corner_ctrl: 4 control(s) - Mouth_fol_04_ctrl 1.00, Mouth_fol_03_ctrl 0.47, Mouth_fol_05_ctrl 0.47, L_Facial_fol_03_ctrl 0.19
+R_Mouth_Corner_ctrl: 3 control(s) - Mouth_fol_00_ctrl 1.00, Mouth_fol_01_ctrl 0.47, Mouth_fol_07_ctrl 0.47
+PASS five group controls planned
+PASS left corner: its own corner 1, the lip next to it less, the far corner nothing
+PASS the cheek follows the left corner a little, the brow (far) not at all
+PASS upper lip: the middle 1, the upper side less, the lower lip not
+PASS the lower lip goes under the jaw; the right corner mirrored
+['Mouth_main_ctrl', 'Upper_Lip_ctrl', 'Lower_Lip_ctrl', 'L_Mouth_Corner_ctrl', 'R_Mouth_Corner_ctrl']
+PASS all five made - through Maya's unit conversions (5.6.8 crashed on the second one)
+PASS (the rotate sum really is behind a unit conversion here)
+PASS the lower lip under the jaw, the rest under the head
+PASS the corner control has ONE layer above it, shared
+PASS its layer sums the main, the lower lip... and the left corner (4)
+PASS nothing moved
+PASS right corner's group: a clean mirror in the world (X -1, Y 1, Z 1)
+PASS the corner's move in the corner control's axes (not turned: the same axes)
+PASS a lip control turned 60 degrees: the upper lip's sideways move turned into its axes (cos 60 = 0.50)
+PASS R_Test_ctrl under the scaled head: its group's world size 1, 1, 1 ([1.0, 1.0, 1.0]), axes [-1, 1, 1]
+PASS L_Test_ctrl under the scaled head: its group's world size 1, 1, 1 ([1.0, 1.0, 1.0]), axes [1, 1, 1]
+PASS ...so its move isn't blown up (5.6.8: 9.275 for 1): length 1.000
+PASS set weight: changed (0.8), added (the brow 0.2), taken off (the corner)
+PASS ...the weight is on its node
+PASS removed: no group controls left
+PASS ...and no layers: the lip control back under its own group
+PASS vertices where the scale takes them: no error, x2
+PASS one vertex short: found (22% of the size)
+23/23 passed

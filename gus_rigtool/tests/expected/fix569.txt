@@ -1,0 +1,6 @@
+[('|L_Mouth_fol_22_bind', '|L_Mouth_fol_06_bind')]
+PASS the dead twin found, with its working twin
+PASS safe to take out: only where it has no weight
+PASS taken out of the ribbon's skin, kept in the body's (weight 0.3)
+PASS every small-range number field has a step (none missing)
+4/4 passed

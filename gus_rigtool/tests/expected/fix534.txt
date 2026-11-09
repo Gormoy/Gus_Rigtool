@@ -1,0 +1,19 @@
+PASS found
+PASS turned off; the locked channel it drives was unlocked during the edit and is locked again
+[('good', 3), ('bad', 'failed (nothing of it left changed): Destination is locked.')]
+PASS the good one done, the failed one says so and was undone at once
+PASS each repair its own undo step
+PASS a constraint with a target that drives nothing is found
+PASS Repair deletes it
+PASS kept in the scene
+[('ok', 'Scene: Duplicate names inside a referenced file (8)  (accepted)'), ('ok', 'Joints: Joint twisted against its parent (7)  (accepted)'), ('warn', 'Controls: Controls not at zero (1)')]
+PASS accepted rows pass, marked '(accepted)'; the others still warn
+PASS something new on an accepted line: it warns again, and says it changed
+PASS Forget: nothing accepted, the node gone
+['joint1']
+PASS joint1 (with joint2 under it) offered, the skinned one not
+['L_Cape01_02_jnt', 'L_Cape01_end_jnt'] 1
+PASS the chain's joints added once each (the root already in, picked twice: skipped)
+PASS the hand-hidden group is found, the switched one isn't
+PASS Fix shows it again
+14/14 passed

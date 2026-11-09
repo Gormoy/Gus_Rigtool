@@ -1,0 +1,7 @@
+[('import', 'H:/model/Geo_Hare_08_MovedTail.mb'), ('merge', 'Geo_Hare_07')]
+['model imported: Geo_Hare_08_MovedTail.mb', 'namespace merged away: Geo_Hare_07:', "1 duplicate name(s) renamed (the model's copies of Belt, Gums_UP...)"]
+PASS the model imported (no reference left)
+PASS its namespace merged away; Maya's UI / shared left
+PASS the duplicate names it leaves renamed, without asking
+PASS unsaved changes: refused, asks to save first
+4/4 passed

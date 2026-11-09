@@ -1,0 +1,12 @@
+R_IK_KNEE_02_ctrl (0.0, 12.083045973594572, "stays behind (doesn't follow the world)")
+   L_knee_ctrl (180.0, 5.0990195135927845, 'turns 180 degrees (the world turned 90)')
+PASS the world control turned on Y by 90
+PASS a control under the world comes along: not listed
+PASS the knee turned twice: 180
+PASS the pole outside the world: stays behind
+PASS the world is put back
+PASS nothing on the undo list (recording off, then back)
+PASS the world control is found by itself (highest, its name)
+PASS loops: Maya's cycles, grouped, each node once
+PASS loops: none when Maya finds none
+9/9 passed

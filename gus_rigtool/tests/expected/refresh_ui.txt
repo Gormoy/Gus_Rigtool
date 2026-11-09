@@ -1,0 +1,9 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+events on the list: ['NewSceneOpened', 'Redo', 'SceneOpened', 'SelectionChanged', 'Undo']
+modules: 10
+stale after a hand delete: True
+after selection changed: 9 | fingers listed: False | still picked: ['L:arm']
+after new scene: ['(no modules yet)'] | rows: 0
+  [info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] list refreshed: 10 module(s).
+Refresh button: 10 modules

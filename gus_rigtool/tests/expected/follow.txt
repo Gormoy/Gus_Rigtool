@@ -1,0 +1,7 @@
+done: ['L_lipCorner_ctrl', 'lowLip_ctrl'] []
+L_lipCorner_ctrl follows the jaw by half around its pivot: True
+lowLip_ctrl follows the jaw by half around its pivot: True
+lowLip_bind follows the jaw by half around its pivot: True
+list: [('L_lipCorner_ctrl', 'Jaw_ctrl', 'L_lipCorner_ctrl.follow', ['rotate'], 'Jaw_ctrl'), ('lowLip_ctrl', 'Jaw_ctrl', 'lowLip_ctrl.follow', ['rotate'], 'Jaw_ctrl')]
+weight now: 0.25
+removed: 2 | lip back home: True | bind back home: True | groups left: [] | attr left: False

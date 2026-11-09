@@ -1,0 +1,11 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+ankle | R offset scaleX: -1.0 | L offset scaleX: 1.0 | hold: ['R_ankle_ik_hold_grp']
+   same values -> mirror: pos L [13.08, 11.0, -1.98] R [-13.08, 11.0, -1.98] | x mirrored: True | X axis mirrored: [0.94, 0.0, -0.342] [-0.94, -0.0, -0.342]
+   set_world on itself keeps the values: True
+wrist | R offset scaleX: -1.0 | L offset scaleX: 1.0 | hold: ['R_wrist_ik_hold_grp']
+   same values -> mirror: pos L [73.02, 142.04, -0.0] R [-73.02, 142.04, -0.0] | x mirrored: True | X axis mirrored: [0.94, 0.0, -0.342] [-0.94, 0.0, -0.342]
+   set_world on itself keeps the values: True
+pv offset: -1.0
+space groups unscaled: [('R_ankle_ik_space_grp', 1.0), ('R_tibia_pv_space_grp', 1.0), ('R_wrist_ik_space_grp', 1.0), ('R_radius_pv_space_grp', 1.0)]
+heel pivot under hold: True | world X axis [0.94, 0.0, 0.342]

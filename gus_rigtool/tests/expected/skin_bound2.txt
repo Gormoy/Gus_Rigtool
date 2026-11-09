@@ -1,0 +1,15 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 101 bind joints. Skin your model to skeleton_grp's joints.
+arm joints: main 5 | with twists and what hangs below: 43 | twist joints in it: 4
+  [info] skin saved for body_skin: it comes back with Build picked / Build.
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+at guides, slots held: ['L_humerus_jnt_skinHolder', 'L_humerus_twist_01_jnt_skinHolder', 'L_radius_twist_02_jnt_skinHolder', 'L_index_02_jnt_skinHolder', 'spine_jnt']
+  [info] skin put back on 1 mesh(es): 4 joint slot(s) kept bound
+  [info] built: L:arm, L:fingers.
+rebuilt, slots back on the new joints: ['L_humerus_jnt', 'L_humerus_twist_01_jnt', 'L_radius_twist_02_jnt', 'L_index_02_jnt', 'spine_jnt'] | pending: []
+  [info] skin saved for body_skin: it comes back with Build picked / Build.
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+  [info] skin put back on 1 mesh(es): 3 joint slot(s) kept bound
+  [warn] body_skin: no single joint 'L_radius_twist_02_jnt' - its weights stay on L_radius_twist_02_jnt_skinHolder (Skin 6 > Move weights)
+  [info] built: L:arm, L:fingers.
+twist_count 2 -> 1: ['L_humerus_jnt', 'L_humerus_twist_01_jnt', 'L_radius_twist_02_jnt_skinHolder', 'L_index_02_jnt', 'spine_jnt']

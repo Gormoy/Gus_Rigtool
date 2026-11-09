@@ -1,0 +1,25 @@
+mirror range from keys 1-13: (1.0, 25.0) | time slider: 1.0 - 24.0
+again after mirroring (keys 1-25): same half, not doubled: (1.0, 25.0)
+highlighted 1-9 = the half: (1.0, 17.0)
+no keys: key the first half of the cycle (e.g. 1 = left contact, 13 = right contact), or highlight it in the Time Slider (shift-drag).
+travel tz / ty / rx: 100.0 0.0 0.0
+root tz keys: [(1.0, 0.0), (13.0, 50.0), (25.0, 100.0), (37.0, 150.0), (49.0, 200.0), (61.0, 250.0), (73.0, 300.0)]
+root ty keys: [(1.0, 0.0), (7.0, 5.0), (13.0, 0.0), (19.0, 5.0), (25.0, 0.0), (31.0, 5.0), (37.0, 0.0), (43.0, 5.0), (49.0, 0.0), (55.0, 5.0), (61.0, 0.0), (67.0, 5.0), (73.0, 0.0)]
+leg rx keys: [(1.0, 30.0), (13.0, -30.0), (25.0, 30.0), (37.0, -30.0), (49.0, 30.0), (61.0, -30.0), (73.0, 30.0)]
+infinity: [('root_tz', ('cycleRelative', 'cycleRelative'))] | slider: 1.0 - 72.0
+cycle 1-25 repeated 2 more time(s): now 1-73, 3 curve(s), 1 moving forward.
+highlighted cycle 1-25, +1: last tz key (49.0, 200.0) | keys past 49 cleared: True
+not forward: tz at 25 / 49: 0.0 100.0
+loop curves: [('leg_rx', ('cycle', 'cycle')), ('root_ty', ('cycle', 'cycle')), ('root_tz', ('cycleRelative', 'cycleRelative'))]
+3 curve(s) loop after the cycle, 1 moving forward - no new keys (Graph Editor > View > Infinity to see them).
+0 times: repeat at least once.
+stretch 1-24 -> 36 frames: scaled ['leg_rx', 'root_ty', 'root_tz'] x1.50
+  root ty keys: [1.0, 10.0, 19.0, 28.0, 37.0] | slider: 1.0 - 36.0
+  1-24 (24 frames) is now 1-36 (36 frames), x1.50 on 2 control(s), snapped to whole frames.
+then 50%: [1.0, 6.0, 10.0, 14.0, 19.0] | slider: 1.0 - 18.0
+highlighted 1-6 range: (1.0, 6.0)
+refused: the new length is too short.
+refused: give the new length in frames (or a %).
+blocking -> True | leg out: ['step', 'step', 'step'] | new keys: step
+toggle   -> False | leg out: ['auto', 'flat', 'linear'] | new keys: auto
+Spline: 3 curve(s), new keys as before.

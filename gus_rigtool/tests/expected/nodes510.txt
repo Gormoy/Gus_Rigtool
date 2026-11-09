@@ -1,0 +1,27 @@
+rotateX <- unitConversion2.output  [x 0.0175]
+  input <- multiplyDivide2.outputX  [multiply by (1.6, 0, 0)]
+    input1X <- clamp2.outputR  [clamp (0, 0, 0) .. (999, 0, 0)]
+      inputR <- L_Brow_03_ctrl.translateY  [transform]
+PASS trace: back to the control through uc, md, clamp, with values
+PASS trace: nothing drives it says so
+rotate <- L_Brow_cons_sdk_parentConstraint1.constraintRotate  [parentConstraint]
+  target L_Brow_02_ctrl  weight 1
+  target L_Brow_03_ctrl  weight 1
+PASS trace: a constraint lists its targets and weights
+L_Brow_02_ctrl / R_Brow_02_ctrl:  only on L_Brow_02_ctrl: multiplyDivide Brow_02.t -> Brow_02_sdk (no operation by (0, 0, 0))
+L_Brow_02_ctrl / R_Brow_02_ctrl:  only on L_Brow_02_ctrl: parentConstraint  -> Brow_cons_sdk (weights Brow_02 1, Brow_03 1)
+L_Brow_03_ctrl / R_Brow_03_ctrl:  multiplyDivide Brow_03.ty -> Brow_03_sdk: multiply by (1.6, 0, 0) vs multiply by (1, 0, 0)
+L_Brow_03_ctrl / R_Brow_03_ctrl:  only on L_Brow_03_ctrl: parentConstraint  -> Brow_cons_sdk (weights Brow_02 1, Brow_03 1)
+PASS compare: Brow_03's factor differs (1.6 vs 1)
+PASS compare: a piece only the left has
+PASS compare: Brow_02's chain matches (not listed)
+L_Brow_04_ctrl / R_Brow_04_ctrl:  only on L_Brow_04_ctrl: clamp Brow_04.ty -> Brow_04_sdk (clamp (0, 0, 0) .. (999, 0, 0)) - R_Brow_04_sdk is fed by R_Brow_02_ctrl instead
+L_Brow_04_ctrl / R_Brow_04_ctrl:  only on L_Brow_04_ctrl: multiplyDivide Brow_04.ty -> Brow_04_sdk (multiply by (1, 0, 0)) - R_Brow_04_sdk is fed by R_Brow_02_ctrl instead
+L_Brow_04_ctrl / R_Brow_04_ctrl:  only on L_Brow_04_ctrl: unitConversion Brow_04.ty -> Brow_04_sdk (x 0.0175) - R_Brow_04_sdk is fed by R_Brow_02_ctrl instead
+PASS compare: a node fed by another control says which
+[('|L_Brow_03_sdk.translateX', 2.0, 0.0, 'L_Brow_03_ctrl')]
+PASS at rest: an offset left in a network
+PASS at rest: a control not at rest is named
+PASS no loops in the brows (constraints don't count against themselves)
+PASS a loop is found, with its nodes
+11/11 passed

@@ -1,0 +1,11 @@
+PASS belt pieces in a constrained group follow the rig
+PASS a loose mesh is still listed
+PASS tongue (0.6) and tail (1.2) on a 100 tall rig: centre, not listed
+PASS a control clearly on one side is still listed
+PASS 'Fix all safe' leaves the side renaming out
+  [info] fixed 1 item(s) with the safe fixes. Running the checks again...
+PASS fix_all runs the others, not the renaming
+PASS a centred control drawn to the side: not listed
+PASS Fix: cancelled in the list, nothing renamed
+PASS Fix: accepted, renamed
+9/9 passed

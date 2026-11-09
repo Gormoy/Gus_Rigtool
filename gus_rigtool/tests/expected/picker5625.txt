@@ -1,0 +1,45 @@
+PASS old settings still mean the same place: a button's 'right' -> outside-right, a frame's 'inside' -> top-left, a text 'left' -> left
+PASS its own place wins
+PASS text boxes: top-left in the corner, bottom-right in the other, above over it, outside-left before it
+PASS a sticky note: a text, yellow, text from the top-left, wrapped
+PASS a connector a -> b (curved, an arrow at the end); not twice between the same two
+PASS curved: leaves a's right side, arrives at b's left side
+PASS straight: two points
+PASS elbow: right angles only
+PASS hit: the straight one, near it
+PASS bends (Nuke dots) go in order along it
+PASS curved through bends passes them
+PASS a point 3/4 along (the label)
+PASS heads: an arrow (filled), open lines, a dot, none
+PASS a page copy: its connectors join the copies
+PASS an item deleted: its connectors go
+PASS connectors from the rig's hierarchy: hips -> spine -> chest; made again: not doubled; yours stay
+PASS a layer shown: the top one hit
+PASS hidden: not hit, not in a box
+PASS locked: picked through in Edit, still selects while animating
+PASS a layer deleted: its items stay, on no layer
+PASS no changes: the usual
+PASS yours: Favourites first, the order kept, hidden left out, a gone tool dropped, a section you took away comes back with what's left in it
+PASS move a tool up, to another section; a section up (a hidden one kept in its section)
+PASS pairs: Collar_fol_01 (no side, 3% of the height off the line) left alone; L_Lone (a side) listed
+PASS triangles' box
+Gus Animtool: picker: 105 button(s), automatic; 105 controls found automatically: 105 by name (_ctrl).
+PASS the text's place drawn and recorded (Ctrl+drag finds it)
+PASS Ctrl+drag the text: the words moved (30, -20), the button didn't
+PASS Item panel: text place 'below'
+PASS drag from a blue dot to another button: a connector (leaves from the right), picked
+PASS Item panel on the connector: width 4, elbow, a dot at the start, dashed
+PASS click the line: picked
+PASS Ctrl+click it: a bend there
+PASS drag the bend
+PASS right-click the connector: its menu
+PASS Delete: the connector goes, the buttons stay
+PASS a new layer with the picked on it
+PASS layer hidden: its button not drawn, not hit
+PASS a sticky note with two lines
+Gus Animtool: your toolbar saved (on this computer).
+PASS your toolbar: File first, Undo hidden
+PASS back to the usual: Create first, the Connect section there
+Gus Animtool: silhouette picture behind 'Body' (3 triangles) - Page > Background... sets its opacity. Save keeps it (the animators get it).
+PASS silhouette picture from the meshes' triangles: kept in the picker, where they land on the page
+41/41 passed

@@ -1,0 +1,8 @@
+PASS before: the whole chain is found (only the top one was before 5.6.2)
+PASS Segment Scale Compensate: the parent joint's own scale doesn't count for the joint below
+{'targets': 0, 'follicles': 0, 'groups': 0, 'limbs': 0, 'joints': 2, 'rest': 0, 'twice': 0, 'before': 4, 'after': 4, 'undone': None, 'why': None}
+PASS each joint with Segment Scale Compensate gets the global scale (x its own)
+PASS the one without it inherits from its parent: left alone (not scaled twice)
+PASS nothing left to fix
+PASS anything moved at rest: all of it undone, and it says where
+6/6 passed

@@ -1,0 +1,12 @@
+PASS a section made in a page gets open / close commands
+PASS 5.6.2: opening it sizes the whole page by the tool itself (Maya's own measure went stale)
+{'fcol': 64, 'pg': 336}
+PASS an open section: its inside sized to its buttons
+PASS the page: everything on it added up (+ a little room) - nothing below the edge
+PASS folded: the page shrinks to the title bar's height
+PASS cmds.frameLayout is back to Maya's own after the page
+PASS modelPanel4 hides curves
+PASS Repair shows curves there again
+'Mirror: L_Sleeve_fol_01_ctrl ...\nL_Sleeve_fol_13_ctrl -> R_Sleeve_fol_01_ctrl ... ...'
+PASS a long new label: two lines (its height), no wider than a narrow page, the whole text in the tooltip
+9/9 passed

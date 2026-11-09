@@ -1,0 +1,27 @@
+PASS sorted by name
+Visibility_ctrl: new, above Head_ctrl (follows it; open while you rig, Publish locks it)
+Body_Ctrls: 4 control(s) - e.g. COG_ctrl, Head_ctrl, L_wrist_IK_ctrl, Tail_00_ctrl
+Face_Ctrls: 2 control(s) - e.g. L_Brow_ctrl, Mouth_fol_14_ctrl
+Secondary_Ctrls: 2 control(s) - e.g. Cape_Ribbon_fol_04_ctrl, L_Sleeve_fol_05_ctrl
+Joints: skeleton_grp
+Geometry: geo_grp
+PASS the plan: a new control above Head_ctrl, the counts
+{'control': '|HARE_RIG|controls_grp|Head_ctrl|Visibility_offset|Visibility_ctrl', 'controls': {'Body_Ctrls': 3, 'Face_Ctrls': 2, 'Secondary_Ctrls': 2}, 'skipped': ['|HARE_RIG|controls_grp|L_wrist_IK_ctrl'], 'groups': ['Joints -> skeleton_grp', 'Geometry -> geo_grp', 'Geo_Display -> geo_grp'], 'released': [], 'riders': 0}
+PASS Visibility_ctrl made, under the head (follows it)
+PASS its switches
+PASS Global_ctrl left out; the counts (Body: COG, Head, Tail; Face 2; Secondary 2)
+PASS the shape is switched, not the control or its group
+PASS a shape driven already (IK / FK) left alone, and said
+PASS Joints / Geometry / Geo_Display on the groups' drawing overrides
+PASS moved to another switch
+PASS the switch control itself is on no switch
+PASS Checker: a control made after the switches is on none
+PASS ...fixed: on Face
+PASS made again: nothing doubled, nothing re-sorted
+  [info] eyes aimed: Eye_Left -> L_Eye_ctrl, Eye_Right -> R_Eye_ctrl (under Eyes_ctrl). The skin didn't change.
+[('L_Eye_ctrl', 'Eye_Left', True), ('R_Eye_ctrl', 'Eye_Right', True)] {'L': '|HARE_RIG|controls_grp|Eyes_ctrl|L_Eye_offset|L_Eye_ctrl', 'R': '|HARE_RIG|controls_grp|Eyes_ctrl|R_Eye_offset|R_Eye_ctrl'}
+PASS left = +X: Eye_Left aimed at L_Eye_ctrl, Eye_Right at R_Eye_ctrl, keeping their rest
+PASS the eye controls under the rig's own Eyes_ctrl
+PASS the joints stay where they are, under the head
+PASS one joint: refused (select the two eye joints (left and right).)
+17/17 passed

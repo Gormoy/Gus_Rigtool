@@ -1,0 +1,13 @@
+PASS found: the rig's top group and its controls
+  [info] rig published: default pose saved on 3 controls; 3 groups locked; 0 locked channels hidden; joints hidden (1 chain(s)); selection sets: rig_ctrls_set (0 module sets), bind_joints_set (0 joints).
+    ['default pose saved on 3 controls', '3 groups locked', '0 locked channels hidden', 'joints hidden (1 chain(s))', 'selection sets: rig_ctrls_set (0 module sets), bind_joints_set (0 joints)']
+PASS the groups above the controls are locked (offset, controls group, top)
+PASS other nodes untouched, controls still free
+PASS the skeleton is hidden, not a chain holding a control
+PASS default pose remembered on every control
+PASS sets: every control
+PASS published (state kept on the top group)
+  [info] rig unpublished: channels, sets and visibility are back as they were.
+PASS Unpublish: every channel and visibility exactly as before
+PASS Unpublish: the sets are gone
+ALL OK

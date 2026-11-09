@@ -1,0 +1,4 @@
+PASS every Guide step opens a real tool and section
+PASS pages: start, the 5 steps, toolbox, animators
+PASS the web page has every page
+ALL OK

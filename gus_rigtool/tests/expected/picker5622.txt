@@ -1,0 +1,11 @@
+PASS turned 90: clicked on its upright shape, not where it lay
+PASS Mirror: the arm gets its twin, the middle control none (no second button)
+PASS found: Pants_fol_01 twice, Test_shift_frame gone
+PASS cleaned: those two go, the first Pants button stays
+PASS 2D slider: across lookX -2..2, up lookY -1..1
+PASS the handle three quarters across, at the top: lookX 1, lookY 1; read back the same
+PASS double-click: back to rest (0, 0)
+PASS style presets kept (on this computer), applied like a paste
+PASS ... applied: colour, shape, text size
+PASS ... and deleted
+10/10 passed

@@ -1,0 +1,10 @@
+['L_Brow_ctrl', 'Mouth_fol_33_ctrl', 'Snout_wiggle']
+PASS pose controls: by name + inside the face box (Snout_wiggle) - not the head, neck, arm, slider control
+PASS custom number attributes: curl - not ikfk
+{'L_Ear_02_FK_ctrl': [-0.0, 0.0, 0.0, 0.0, -0.0, 10.0], 'L_Upper_Eyelids_ctrl': [0.0, 0.0, 2.0, 0.0, -0.0, 0.0], 'L_Eyelids_fol_01_ctrl': [0.0, -1.5, 0.0, 0.0, -0.0, 0.0], 'L_Ear_01_FK_ctrl': [0.0, 0.0, 0.0, 0.0, -0.0, 20.0], 'Tongue_01_FK_ctrl': [0.0, 0.0, 0.0, 0.0, -0.0, 30.0]}
+PASS the lid's closing kept (down 1.5 - it comes from the driven-key group above it)
+PASS the ear chain: each link its own turn (20, 10)
+PASS the curl kept: the tongue control turned 30 (curl to its default while the rest was measured)
+PASS after: curl at its default, ikfk left as it was (a switch)
+PASS the name field empties after a save; Save as new the default, Replace after Edit picked pose
+7/7 passed

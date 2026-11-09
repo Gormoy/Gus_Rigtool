@@ -1,0 +1,15 @@
+joints: 250
+labelled: 250
+  L_Eye                      side 1  Eye
+  R_Eye                      side 2  Eye
+  Mouth_ribbon_fol_07_jnt    side 1  Mouth_ribbon_fol_07_jnt
+  Mouth_ribbon_fol_15_jnt    side 2  Mouth_ribbon_fol_07_jnt
+  Mouth_ribbon_fol_01_jnt    side 1  Mouth_ribbon_fol_01_jnt
+  Mouth_ribbon_fol_21_jnt    side 2  Mouth_ribbon_fol_01_jnt
+  Mouth_ribbon_fol_11_jnt    side 0  Mouth_ribbon_fol_11_jnt
+  Mouth_ribbon_fol_25_jnt    side 0  Mouth_ribbon_fol_25_jnt
+  Head                       side 0  Head
+  L_Bk_Digit_02              side 1  Bk_Digit_02
+  R_Bk_Digit_02              side 2  Bk_Digit_02
+labels with exactly one Left + one Right: 109 | centre: 30 | other: ['Ankle_Roll', 'Humerus_Cor']
+no twin: [('L_Humerus_Cor', 'no right twin by name'), ('L_Ankle_Roll', 'no right twin by name')]

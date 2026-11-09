@@ -1,0 +1,5 @@
+PASS all 122 found
+PASS find all controls: the scene listed at most twice
+PASS asking 'is this a control?' 122 times right after: at most 1 more listing
+PASS one pair Lf_arm / Rt_arm finds Lf_ / Rt_
+ALL OK

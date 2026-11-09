@@ -1,0 +1,9 @@
+PASS snaps the left edges together (3 off -> 0)
+PASS snaps tops, x left alone
+PASS nothing near: no snap, no guides
+PASS centres line up too
+PASS a group snaps by its whole box (right edge 51 -> 53)
+PASS space across: gap 4 from the left-most, y kept
+PASS space down
+PASS same size
+ALL OK

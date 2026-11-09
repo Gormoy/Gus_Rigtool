@@ -1,0 +1,31 @@
+PASS not in the face for the box: the ears, the eye aim targets
+lattice: 16.2 x 130.6 x 20.2 round the head (fades out over 11.8 past it - ears, neck ride along)
+meshes: Hare_Body (all)
+the rest of the body: not in it - it can't move
+ears riding the squash (keeping their shape): L_Ear_01_FK_ctrl, L_Ear_04_FK_ctrl
+Head_squash_ctrl above the head: up / down squash - stretch, left-right / front-back bend
+PASS the plan: a lattice round the head fading out past it, the meshes, the rest of the body not in it
+PASS the box: from below the mouth (72.8) up well over the brows (106.4)
+PASS the lattice: the body (no control curves - 5.6.14) + the ears' planes, placed without 'after' (5.6.17: that made Maya copy the mesh), fading out past it
+['L_Brow_ctrlShape', 'L_Eyelids_fol_01_ctrlShape', 'L_Mouth_fol_06_ctrlShape', 'Mouth_fol_33_ctrlShape', 'R_Mouth_fol_22_ctrlShape']
+PASS 5.6.18: each face control's curve has a hidden copy in the lattice feeding it (the control's own curve isn't in it - its colour, switch and connections stay)
+PASS the fade in the lattice's own units (it's 1 tall): a third of the face's height over the box's (0.09), not 11.8 scene units
+PASS Head_squash_ctrl under the head (in Head_squash_grp)
+PASS up / down -> the squash
+PASS sideways -> bend X, front-back -> bend Z
+PASS bulge -> the squash's expand
+PASS on / off on Visibility_ctrl stops the lattice and all three
+PASS its sliders
+PASS a second one: refused
+(['|Hare_Body.vtx[2:3]', '|Hare_Body.vtx[5]'], 3, 6)
+PASS the vertices in the lattice: the head's (2, 3, 5), not the body's (0, 1, 4)
+PASS lattice after the skin: fine
+PASS lattice before the skin: found
+PASS removed: the face curves let go, their copies gone (5.6.18)
+PASS removed: the control, its group, the switch, the nodes
+PASS failed half way: no Head_squash_grp, no lattice left
+PASS a leftover Head_squash_grp (no control in it) is cleaned before Make
+['L_Brow_fix_ctrlShape']
+PASS repaired: the colour on the curve you see, the switch on it, the hidden copy gone, its name back
+PASS moved at rest: undone, said so (the squash moved the meshes at rest (up )
+22/22 passed

@@ -1,0 +1,8 @@
+PASS Z flipped (the eyelids): tz, rx, ry
+PASS X flipped (orientation mirror): tx, ry, rz
+PASS behaviour (all flipped): the translations only
+PASS can't tell: None (the ticks are used)
+[1, 1, -1]
+PASS read from the parents: a ribbon mirrored with Z flipped -> [1, 1, -1]
+PASS Auto on by default; the twin driver's keys flipped when it moves the other way
+6/6 passed

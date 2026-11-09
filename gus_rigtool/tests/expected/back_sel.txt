@@ -1,0 +1,26 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+built joints: 133
+  [info] showing the guides of L:arm. Move them, then Build picked (press again to hide).
+A shown: ['L:arm'] | top: True
+  [info] guides hidden.
+A again -> top: False
+  [dialog] These modules hang from the picked ones and go back too:  L:fingers
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+joints after back: 100 | L_humerus exists: False | R_humerus: True
+list: ['L   arm              arm          guides', 'L   fingers          fingers      guides']
+guides shown: ['L:arm', 'L:fingers']
+light: ('warn', 'Now: 2 module(s) at their guides - place them, then Build picked.')
+  [info] built 2 module(s), 25 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+joints after Build: 133 == before: True | top guides vis: False
+  [dialog] These modules hang from the picked ones and go back too:  C:face
+  [info] back to the guides: C:neck, C:face. Adjust them, then Build picked (or Build).
+  [info] back to the guides: R:leg. Adjust them, then Build picked (or Build).
+  [dialog] The modules hanging from them are built / rebuilt too:  C:face
+  [info] built: C:neck, C:face.
+after rebuilding neck, guides shown: ['R:leg'] | light: Now: 1 module(s) at their guides - place them, then Build picked.
+  [info] built: R:leg.
+all back: True Rig built (10 modules). Change a module: pick it, change its settings below the list, Apply, Build picked.
+dupes: []

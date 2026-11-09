@@ -1,0 +1,41 @@
+every tool in one category: True
+stage tools known: True
+new user: simple
+old install: full
+remembered: simple
+simple skin sections: ['1.  Bind', '2.  Copy skin   (advanced)', '3.  Clean   (advanced)', '4.  Mirror weights', '5.  Save / load weights   (advanced)', '6.  Vertex weights   (advanced)', '7.  Weight list', '8.  Cloth', '9.  Jiggle and wave']
+advanced ones start folded: True
+full skin sections: ['1.  Bind', '2.  Copy skin', '3.  Clean', '4.  Mirror weights', '5.  Save / load weights', '6.  Vertex weights', '7.  Weight list', '8.  Cloth', '9.  Jiggle and wave']
+plain titles: Copy skin | Bind
+sections that don't exist: none
+where build    ['  Steps 1-2 of 5: Guides and Build - place the guides, then build the rig.', 'Home', 'Skin  >']
+where skin     ["  Step 3 of 5: Skin - Bind the model to the rig's joints, paint / mirror the weights.", '<  Build', 'Controls  >']
+where shapes   ['  Step 4 of 5: Controls - Make it nice to animate: shapes and colours, follows, space switches, attributes, connections.', '<  Skin', 'Check & publish  >']
+where checker  ['  Step 5 of 5: Check & publish - Run the Checker, fix what it finds, then Publish a clean rig for animators.', '<  Controls', 'Home']
+where select   ['  Toolbox: a helper you can use at any step.', 'Home', 'Next step  >']
+where home     []
+state, empty scene: ({'guides': 'next', 'build': 'todo', 'skin': 'todo', 'controls': 'todo', 'finish': 'todo'}, 'guides')
+advice: Start here: add a template (Biped, Quadruped, an animal) or modules, then place the guides.
+home marks: ['NEXT', '', '', '', '']
+home go buttons: ['Start  >', 'Go  >', 'Go  >', 'Go  >', 'Go  >']
+guides 1 built 0 skinned 0 published 0 -> ['done', 'next', 'todo', 'todo', 'todo'] next: build
+  [info] done. Next: Build > Build (Home shows every step).
+   status line:  Next: Build > Build (Home shows every step).
+   home marks: ['Done', 'NEXT', '', '', '']
+guides 1 built 1 skinned 0 published 0 -> ['done', 'done', 'next', 'any', 'todo'] next: skin
+  [info] done. Next: Skin > Bind (Home shows every step).
+   status line:  Next: Skin > Bind (Home shows every step).
+   home marks: ['Done', 'Done', 'NEXT', 'Any time', '']
+guides 1 built 1 skinned 1 published 0 -> ['done', 'done', 'done', 'any', 'next'] next: finish
+  [info] done. Next: Checker > Check (Home shows every step).
+   status line:  Next: Checker > Check (Home shows every step).
+   home marks: ['Done', 'Done', 'Done', 'Any time', 'NEXT']
+guides 1 built 1 skinned 1 published 1 -> ['done', 'done', 'done', 'any', 'done'] next: None
+  [info] done. The rig is published.
+   status line:  The rig is published.
+   home marks: ['Done', 'Done', 'Done', 'Any time', 'Done']
+guide page 1: ['  Start here', "Gus_Rigtool follows the way you rig: five steps, left to right. The main window's tabs are in that order."]
+guide page 4 buttons: 4 | back on: True | next on: True
+past the end -> last page: True | next on: False
+web page: every page: True | pictures: 5 | dark mode: True | where line: True
+errors: none

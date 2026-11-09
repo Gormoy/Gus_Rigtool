@@ -1,0 +1,31 @@
+home      ok
+shapes    ok
+mirror    ok
+joints    ok
+ribbon    ok
+skin      ok
+fixes     ok
+makectrl  ok
+stick     ok
+follow    ok
+build     ok
+face      ok
+select    ok
+groups    ok
+pivots    ok
+sdk       ok
+attrs     ok
+behaviour ok
+channels  ok
+spaces    ok
+connect   ok
+nodes     ok
+constrain ok
+rename    ok
+organize  ok
+checker   ok
+settings  ok
+build_rig ok
+no errors
+strict rows: a third item in a 2-slot row is refused, like Maya
+broken tool reported: 1 | message on its own page: True

@@ -1,0 +1,21 @@
+['Global_ctrl: new, above World_ctrl - the scale (globalScale)', 'World_ctrl: moves and turns only, its scale moved to Global_ctrl (3 thing(s) read it)', 'Local_ctrl: new, under World_ctrl - 2 thing(s) under World_ctrl move under it']
+PASS the plan counts the follicle (3), not the constraint
+['World_ctrl.scale'] ['Global_ctrl.globalScale']
+PASS the follicle reads the global scale; the constraint's target scale still reads World_ctrl.scale
+[('L_wrist_ik_space_grp_parentConstraint1.target[0].targetScale', 'World_ctrl.scale')]
+PASS found: the constraint's target scale reads Global_ctrl - should read World_ctrl
+PASS fixed: it reads its own target's scale again
+[('|HARE_RIG|DO_NOT_TOUCH|L_leg_nodes_grp|L_femur_limb_grp', '|HARE_RIG|Ctrls|Global_ctrl_offset|Global_ctrl|World_ctrl_offset|World_ctrl|Local_ctrl_offset|Local_ctrl|Waist_ctrl_offset|Waist_ctrl')]
+PASS found: the femur limb group, from Waist_ctrl
+PASS the IK space group under the controls (already scaled) isn't
+PASS fixed: a scale constraint from Waist_ctrl
+PASS then it has a scale input: not found again
+{'targets': 0, 'follicles': 0, 'groups': 0, 'limbs': 0, 'joints': 0, 'rest': 0, 'twice': 0, 'before': 5, 'after': 9, 'undone': '5 off before, 9 after', 'why': 'the scale check x2 got worse'}
+PASS worse after (5 -> 9): all of it undone, and it says why
+PASS better (5 -> 0): kept
+PASS a joint measured growing twice loses its scale input
+['scale_targets', 'scale_limbs']
+PASS Repair offers the target scales and the limb groups, not 'scale_twice'
+PASS after a button press the shown page is fitted again (once, however many callbacks)
+PASS ...the page of the tab shown (the Checker)
+14/14 passed

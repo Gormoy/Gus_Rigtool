@@ -1,0 +1,9 @@
+c0 z=0     start 1.00 mid 0.00 end 0.00
+c1 z=2.5   start 1.00 mid 0.00 end 0.00
+c2 z=7     start 0.65 mid 0.35 end 0.00
+c3 z=13    start 0.35 mid 0.65 end 0.00
+c4 z=20    start 0.00 mid 1.00 end 0.00
+c5 z=27    start 0.00 mid 0.65 end 0.35
+c6 z=33    start 0.00 mid 0.35 end 0.65
+c7 z=37.5  start 0.00 mid 0.00 end 1.00
+c8 z=40    start 0.00 mid 0.00 end 1.00

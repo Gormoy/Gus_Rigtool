@@ -1,0 +1,19 @@
+[info] added tail (C). Place its guides.
+count: 4 guides: ['j0', 'j1', 'j2', 'j3', 'j4'] | j3 at [0.0, 90.0, -34.0]
+form keys: ['options.type', 'options.end_joint', 'options.fk_joints', 'options.ik_joints', 'options.mid_follow', 'options.tweaks', 'options.curl', 'options.wave', 'options.jiggle', 'options.twist', 'options.stretch', 'options.volume', 'options.exact_match']
+ik field: 1, 3, 5
+fk field after Spread 4: 1, 2, 3, 4
+  [info] C:tail: type fk -> fk + ik spline; fk joints all -> 1, 2, 3, 4; ik joints auto -> 1, 3, 5. Build picked to see it on the rig.
+saved: {'type': 'fk + ik spline', 'fk_joints': '1, 2, 3, 4', 'ik_joints': '1, 3, 5'}
+bad numbers -> joint 9 doesn't exist: the chain has joints 1 to 5.
+  [info] built 1 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+built tail ctrls: ['tail_01_FK_ctrl', 'tail_01_IK_ctrl', 'tail_01_tweak_ctrl', 'tail_02_FK_ctrl', 'tail_02_tweak_ctrl', 'tail_03_FK_ctrl', 'tail_03_IK_ctrl', 'tail_03_tweak_ctrl', 'tail_04_FK_ctrl', 'tail_04_tweak_ctrl', 'tail_end_IK_ctrl', 'tail_end_tweak_ctrl', 'tail_settings_ctrl']
+  [info] 1 control shape(s) you changed will come back.
+  [info] rebuilt: C:tail.
+restored on rebuild: ['tail_02_FK_ctrl'] | shape now: [{'points': [[5, 5, 5]]}]
+  [info] 1 control shape(s) you changed will come back.
+  [info] back to the guides: adjust them, then Build again.
+  [info] built 1 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+restored after back+build: ['tail_02_FK_ctrl']
+  [info] rebuilt: C:tail.
+after forget: []

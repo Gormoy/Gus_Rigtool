@@ -1,0 +1,24 @@
+[info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+controls: 97
+  [info] rig published: default pose saved on 97 controls; 165 groups locked; 0 locked channels hidden; joints hidden; selection sets: rig_ctrls_set (9 module sets), bind_joints_set (97 joints); guides hidden.
+default pose saved on 97 controls
+165 groups locked
+0 locked channels hidden
+joints hidden
+selection sets: rig_ctrls_set (9 module sets), bind_joints_set (97 joints)
+guides hidden
+published: True
+pose attr on first control: {"inheritsTransform": 1.0, "intermediateObject": 0.0, "radiu
+offset tx locked: True keyable: False
+skeleton visible: 0
+guides visible: 0
+  [info] rig unpublished: channels, sets and visibility are back as they were.
+published after unpublish: False
+offset tx locked: False keyable: True
+skeleton visible: True
+controls back as they were: True
+  [info] rig published: default pose saved on 97 controls; 165 groups locked; 0 locked channels hidden; joints hidden; selection sets: rig_ctrls_set (9 module sets), bind_joints_set (97 joints); guides hidden.
+  [info] the rig was published: unpublished first (Publish again when you're done).
+  [info] rebuilt: L:arm, L:fingers.
+rebuild unpublishes: True

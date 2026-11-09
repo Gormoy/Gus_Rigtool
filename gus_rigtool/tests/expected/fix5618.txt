@@ -1,0 +1,24 @@
+['L_Ear_01_FK_zero']
+PASS held from outside: the FK zero (by Head_ctrl) - not what's under it, not the tweak (held by the ear's result joint), not the IK
+PASS a delta group under the zero holding what it held (the FK chain), driven by zero . head^-1 . C . point . zero^-1
+PASS C = head . point^-1 (at rest the delta is nothing)
+PASS the 4x4 inverse
+PASS Remove puts what the delta groups held back under the node (relative: as it was)
+PASS parts by name (5.6.22: the lid / mouth ribbons apart)
+Face_settings_ctrl gets Face_Ctrls (all of the face) and a switch per part:
+  Eyelid_Ribbons: 1 control(s) - e.g. L_Eyelids_fol_01_ctrl
+  Brows: 1 control(s) - e.g. L_Brow_ctrl
+  Tongue: 1 control(s) - e.g. Tongue_01_FK_ctrl
+  Mouth_Ribbon: 1 control(s) - e.g. L_Mouth_fol_06_ctrl
+Visibility_ctrl.Face_Ctrls goes (the other switches stay there)
+Face_settings_ctrl itself stays visible (it holds the switches)
+{'Eyelid_Ribbons': 1, 'Brows': 1, 'Tongue': 1, 'Mouth_Ribbon': 1}
+PASS on Face_settings_ctrl: Face_Ctrls + Brows, Eyelid_Ribbons, Mouth_Ribbon, Tongue; each control on its part
+PASS a part = Face_Ctrls x its own switch
+PASS Visibility_ctrl.Face_Ctrls gone; the holder itself always shown; the control still counts as on Face_Ctrls
+PASS a new face control later (group controls, the board...): onto its part
+PASS found: Sleeves, Bend (only show / hide) - not ikfk, not the heading
+[('L_wrist_settings_ctrl', 'Sleeves', 1), ('L_wrist_settings_ctrl', 'Bend', 1), ('L_wrist_settings_ctrl', '_Ctrl_Vis', 0)]
+PASS removed: the two, their heading (nothing left under it); ikfk stays; what they hid shown again
+PASS Edit: sliders to 0, the face zeroed, the pose on its control (ty 1.5, rz 10), split kept
+13/13 passed

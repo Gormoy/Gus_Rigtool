@@ -1,0 +1,24 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+meta=False fingers=['thumb', 'index', 'middle', 'ring', 'pinky'] joints=3
+   index_curl -> ['L_index_01_drv_grp', 'L_index_02_drv_grp', 'L_index_03_drv_grp']
+   middle_curl -> ['L_middle_01_drv_grp', 'L_middle_02_drv_grp', 'L_middle_03_drv_grp']
+   pinky_curl -> ['L_pinky_01_drv_grp', 'L_pinky_02_drv_grp', 'L_pinky_03_drv_grp']
+   ring_curl -> ['L_ring_01_drv_grp', 'L_ring_02_drv_grp', 'L_ring_03_drv_grp']
+   thumb_curl -> ['L_thumb_01_drv_grp', 'L_thumb_02_drv_grp', 'L_thumb_03_drv_grp']
+   spread weights: [('L_index_spread_mul', -0.5), ('L_middle_spread_mul', -0.167), ('L_pinky_spread_mul', 0.5), ('L_ring_spread_mul', 0.167)]
+  [info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 81 bind joints. Skin your model to skeleton_grp's joints.
+meta=False fingers=['index', 'middle', 'ring', 'pinky'] joints=2
+   index_curl -> ['L_index_01_drv_grp', 'L_index_02_drv_grp']
+   middle_curl -> ['L_middle_01_drv_grp', 'L_middle_02_drv_grp']
+   pinky_curl -> ['L_pinky_01_drv_grp', 'L_pinky_02_drv_grp']
+   ring_curl -> ['L_ring_01_drv_grp', 'L_ring_02_drv_grp']
+   spread weights: [('L_index_spread_mul', -0.5), ('L_middle_spread_mul', -0.167), ('L_pinky_spread_mul', 0.5), ('L_ring_spread_mul', 0.167)]
+  [info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 81 bind joints. Skin your model to skeleton_grp's joints.
+meta=True fingers=['thumb', 'index', 'middle'] joints=2
+   index_curl -> ['L_index_01_drv_grp', 'L_index_02_drv_grp']
+   middle_curl -> ['L_middle_01_drv_grp', 'L_middle_02_drv_grp']
+   thumb_curl -> ['L_thumb_01_drv_grp', 'L_thumb_02_drv_grp', 'L_thumb_03_drv_grp']
+   spread weights: [('L_index_spread_mul', -0.25), ('L_middle_spread_mul', 0.25)]

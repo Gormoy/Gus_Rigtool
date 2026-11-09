@@ -1,0 +1,25 @@
+[info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+biped face guides: 29
+  [info] built 10 module(s), 111 bind joints. Skin your model to skeleton_grp's joints.
+biped face joints (44): ['L_brow_inner_jnt', 'L_brow_mid_jnt', 'L_brow_outer_jnt', 'L_cheek_jnt', 'L_ear_01_jnt', 'L_ear_02_jnt', 'L_ear_03_jnt', 'L_ear_end_jnt', 'L_eye_jnt', 'L_lid_lower_jnt', 'L_lid_upper_jnt', 'L_lip_corner_jnt', 'L_lip_lower_side_jnt', 'L_lip_upper_side_jnt', 'L_nostril_jnt', 'R_brow_inner_jnt', 'R_brow_mid_jnt', 'R_brow_outer_jnt', 'R_cheek_jnt', 'R_ear_01_jnt', 'R_ear_02_jnt', 'R_ear_03_jnt', 'R_ear_end_jnt', 'R_eye_jnt', 'R_lid_lower_jnt', 'R_lid_upper_jnt', 'R_lip_corner_jnt', 'R_lip_lower_side_jnt', 'R_lip_upper_side_jnt', 'R_nostril_jnt', 'chin_jnt', 'jaw_jnt', 'lip_lower_jnt', 'lip_upper_jnt', 'nose_jnt', 'snout_jnt', 'teeth_lower_jnt', 'teeth_upper_jnt', 'tongue_01_jnt', 'tongue_02_jnt', 'tongue_03_jnt', 'tongue_04_jnt', 'tongue_end_jnt', 'upper_jaw_jnt']
+biped face controls (41): ['L_brow_inner_ctrl', 'L_brow_mid_ctrl', 'L_brow_outer_ctrl', 'L_cheek_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_eye_target_ctrl', 'L_lid_lower_ctrl', 'L_lid_upper_ctrl', 'L_lip_corner_ctrl', 'L_lip_lower_side_ctrl', 'L_lip_upper_side_ctrl', 'L_nostril_ctrl', 'R_brow_inner_ctrl', 'R_brow_mid_ctrl', 'R_brow_outer_ctrl', 'R_cheek_ctrl', 'R_ear_01_FK_ctrl', 'R_ear_02_FK_ctrl', 'R_ear_03_FK_ctrl', 'R_eye_target_ctrl', 'R_lid_lower_ctrl', 'R_lid_upper_ctrl', 'R_lip_corner_ctrl', 'R_lip_lower_side_ctrl', 'R_lip_upper_side_ctrl', 'R_nostril_ctrl', 'eyes_target_ctrl', 'jaw_ctrl', 'lip_lower_ctrl', 'lip_upper_ctrl', 'mouth_ctrl', 'nose_ctrl', 'teeth_lower_ctrl', 'teeth_upper_ctrl', 'tongue_01_FK_ctrl', 'tongue_02_FK_ctrl', 'tongue_03_FK_ctrl', 'tongue_04_FK_ctrl', 'upper_jaw_ctrl']
+ jaw attrs: ['lips_seal']
+ lip follow: {'L_lip_corner_ctrl': 0.5, 'L_lip_lower_side_ctrl': 0.85, 'L_lip_upper_side_ctrl': 0.15, 'R_lip_corner_ctrl': 0.5, 'R_lip_lower_side_ctrl': 0.85, 'R_lip_upper_side_ctrl': 0.15, 'lip_lower_ctrl': 1.0, 'lip_upper_ctrl': 0.0}
+ eye target attrs: ['_lids', 'blink', 'blink_height', 'lids_follow']
+ eyes target space: True | ear curl: True
+ aim constraints: 2
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+  [info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+quadruped face guides: 29
+  [info] built 9 module(s), 137 bind joints. Skin your model to skeleton_grp's joints.
+quadruped face joints (44): ['L_brow_inner_jnt', 'L_brow_mid_jnt', 'L_brow_outer_jnt', 'L_cheek_jnt', 'L_ear_01_jnt', 'L_ear_02_jnt', 'L_ear_03_jnt', 'L_ear_end_jnt', 'L_eye_jnt', 'L_lid_lower_jnt', 'L_lid_upper_jnt', 'L_lip_corner_jnt', 'L_lip_lower_side_jnt', 'L_lip_upper_side_jnt', 'L_nostril_jnt', 'R_brow_inner_jnt', 'R_brow_mid_jnt', 'R_brow_outer_jnt', 'R_cheek_jnt', 'R_ear_01_jnt', 'R_ear_02_jnt', 'R_ear_03_jnt', 'R_ear_end_jnt', 'R_eye_jnt', 'R_lid_lower_jnt', 'R_lid_upper_jnt', 'R_lip_corner_jnt', 'R_lip_lower_side_jnt', 'R_lip_upper_side_jnt', 'R_nostril_jnt', 'chin_jnt', 'jaw_jnt', 'lip_lower_jnt', 'lip_upper_jnt', 'nose_jnt', 'snout_jnt', 'teeth_lower_jnt', 'teeth_upper_jnt', 'tongue_01_jnt', 'tongue_02_jnt', 'tongue_03_jnt', 'tongue_04_jnt', 'tongue_end_jnt', 'upper_jaw_jnt']
+quadruped face controls (41): ['L_brow_inner_ctrl', 'L_brow_mid_ctrl', 'L_brow_outer_ctrl', 'L_cheek_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_eye_target_ctrl', 'L_lid_lower_ctrl', 'L_lid_upper_ctrl', 'L_lip_corner_ctrl', 'L_lip_lower_side_ctrl', 'L_lip_upper_side_ctrl', 'L_nostril_ctrl', 'R_brow_inner_ctrl', 'R_brow_mid_ctrl', 'R_brow_outer_ctrl', 'R_cheek_ctrl', 'R_ear_01_FK_ctrl', 'R_ear_02_FK_ctrl', 'R_ear_03_FK_ctrl', 'R_eye_target_ctrl', 'R_lid_lower_ctrl', 'R_lid_upper_ctrl', 'R_lip_corner_ctrl', 'R_lip_lower_side_ctrl', 'R_lip_upper_side_ctrl', 'R_nostril_ctrl', 'eyes_target_ctrl', 'jaw_ctrl', 'lip_lower_ctrl', 'lip_upper_ctrl', 'mouth_ctrl', 'nose_ctrl', 'teeth_lower_ctrl', 'teeth_upper_ctrl', 'tongue_01_FK_ctrl', 'tongue_02_FK_ctrl', 'tongue_03_FK_ctrl', 'tongue_04_FK_ctrl', 'upper_jaw_ctrl']
+ jaw attrs: ['lips_seal']
+ lip follow: {'L_lip_corner_ctrl': 0.5, 'L_lip_lower_side_ctrl': 0.85, 'L_lip_upper_side_ctrl': 0.15, 'R_lip_corner_ctrl': 0.5, 'R_lip_lower_side_ctrl': 0.85, 'R_lip_upper_side_ctrl': 0.15, 'lip_lower_ctrl': 1.0, 'lip_upper_ctrl': 0.0}
+ eye target attrs: ['_lids', 'blink', 'blink_height', 'lids_follow']
+ eyes target space: True | ear curl: True
+ aim constraints: 2
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+dupes: []

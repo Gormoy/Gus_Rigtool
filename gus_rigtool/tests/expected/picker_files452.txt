@@ -1,0 +1,5 @@
+PASS exported and imported back the same
+PASS a file that isn't a picker is refused
+PASS saved into a locked (published) rig, still locked after
+PASS a referenced rig can't be written into
+ALL OK

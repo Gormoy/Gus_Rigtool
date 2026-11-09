@@ -1,0 +1,14 @@
+exported: ['body_geo'] hare_skin.json | readable, a line per vertex: True
+{"format": "gus_skin_weights", "version": 2, "meshes": {
+"joints": ["spine_jnt", "L_arm_jnt", "L_hand_jnt"],
+other json: hare_skin.jsonx isn't a Gus_Rigtool skin weights file.
+guess by name (namespaces ignored): hare:body_geo
+hare:body_geo: 3 point(s), by vertex number; joints not in the scene: L_hand_jnt -> L_wrist_jnt
+weights (joints added to the skin, renamed joint's weights on the nearest): ['spine_jnt', 'L_arm_jnt', 'L_wrist_jnt'] [[1.0, 0.0, 0.0], [0.25, 0.75, 0.0], [0.0, 0.4, 0.6]]
+body_geo_v2: 5 point(s), by closest position; joints not in the scene: L_hand_jnt -> L_wrist_jnt
+bound to: ['spine_jnt', 'L_arm_jnt', 'L_wrist_jnt'] | rows: 5 | point 4 takes vertex 2's weights: [0.0, 0.4, 0.6]
+by vertex number on another mesh: body_geo_v2 has 5 points, the file 3: use 'closest position'.
+body_geo: not done - it has no skin (tick 'Bind meshes without a skin')
+skipped: ['body_geo: skipped']
+grid search = brute force: True
+window: a row per mesh in the file: 1 | picked: hare:body_geo

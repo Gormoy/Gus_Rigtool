@@ -1,0 +1,69 @@
+== spaces
+labels: ['World', 'chest', 'COG']
+piece (offset group): |L_hand_IK_offset
+refused: a space switch needs 2 targets or more.
+refused: two targets have the same label.
+refused: the control can't be its own space.
+refused: target 'nope' (x) not found, or several nodes have that name.
+group: |L_hand_IK_space_grp | ctrl now: |L_hand_IK_space_grp|L_hand_IK_offset|L_hand_IK_ctrl
+enum: world:chest value 1
+constraint targets: ['World_ctrl', 'C_chest_ctrl'] | weights driven by: ['L_hand_IK_space0_cond', 'L_hand_IK_space1_cond']
+second switch refused: L_hand_IK_ctrl already has a space switch - Remove
+add cog: 2 world:chest:cog | conds 3
+switched to 2
+removed: offset parent None | space attr False | group False | conds left []
+no offset group -> the control itself: |prop_ctrl
+orient switch: ['prop_space_grp'] ['transform', 'parentConstraint']
+== channels
+own channels: ['curl']
+locked+hidden 5 : ['_Info', 'curl', 'sx', 'sy', 'sz', 'v'] ['curl', 'sx', 'sy', 'sz', 'v']
+sx back: False False
+copied to R: ['curl', 'sy', 'sz', 'v'] ['curl', 'sy', 'sz', 'v']
+R_arm_FK_ctrl
+    locked: sy sz v curl
+    hidden: sy sz v curl
+    box only: -
+== rename
+['spine_01_jnt', 'spine_02_jnt', 'spine_03_jnt']
+['tail_000', 'tail_002', 'tail_004']
+['x_L_leg_jnt_b']
+['R_arm_jnt', 'ns:L_leg_ctrl']
+fix: ['L_ear_ctrl', 'R_thing_grp', 'joint1_jnt']
+clash: [] []
+renamed: [('joint1', 'spine_01_jnt'), ('joint2', 'spine_02_jnt'), ('joint3', 'spine_03_jnt')]
+== connect
+[('rx', 'rx')] [('rx', 'ry'), ('rx', 'rz')] [('a', 'c'), ('b', 'd')]
+refused: 2 driver attribute(s) but 1 driven: give as many, or one driver.
+direct: (2, [])
+multiply: (1, []) ['d0_ty_mult']
+locked: (0, ['d1.tz is locked'])
+break: 3 None
+driver
+    -> tx                     to   d0_ty_mult.input1
+parse: ['tx', 'ry', 'rz', 'curl']
+== constraints
+[(['tA', 'tB'], 'dd')] [(['tA'], 'tB'), (['tA'], 'dd')]
+pairs refused: pairs need an even selection (target, driven, target, driven...).
+made: dd_parentConstraint1 ['tA', 'tB']
+targets_of: ['tA', 'tB']
+swap: ['dd_parentConstraint1'] ['tC']
+pv refused: a pole vector constraint drives an IK handle - dd isn't one.
+dd
+    driven by parentConstraint     targets: tC
+tC
+    drives    dd                   (dd_parentConstraint1)
+removed: 1 []
+== pages
+spaces list: [['hipsA', 'hipsA'], ['chestA', 'chestA']] | ctrl: L_foot_IK_ctrl | light: L_foot_IK_ctrl: ready - 2 targets.
+  [info] space switch on L_foot_IK_ctrl: space (group L_foot_IK_space_grp). Switch with no jump in Gus Animtool.
+light after: L_foot_IK_ctrl has a switch: space = hipsA, chestA.
+  [info] space = chestA, no jump.
+space now: 1
+  [info] renamed 2 node(s).
+renamed: True True
+  [info] 1 connection(s) made (direct).
+connected: ['driver.ry']
+  [info] 1 parent constraint(s) made (offset kept).
+constrained: ['|d1|d1_parentConstraint1']
+  [info] locked: 2 channel(s) on 1 control(s).
+tx ty locked: ['tx', 'ty']

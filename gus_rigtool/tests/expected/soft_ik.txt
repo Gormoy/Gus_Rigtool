@@ -1,0 +1,5 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+soft_ik slider: True | handle point-constrained: True
+soft 0.0: 0.80L -> 0.800L (ok) | 0.95L -> 0.950L (ok) | 1.00L -> 1.000L (ok) | 1.10L -> 1.100L (ok) | 1.50L -> 1.500L (ok)
+soft 0.4: 0.80L -> 0.800L (ok) | 0.95L -> 0.939L (ok) | 1.00L -> 0.963L (ok) | 1.10L -> 0.986L (ok) | 1.50L -> 1.000L (ok)

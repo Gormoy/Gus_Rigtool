@@ -1,0 +1,9 @@
+category: ('skin', 'Skin')
+light: ('idle', "Select meshes (and joints to bind to, or none for skeleton_grp's).")
+ui: [('bind_method', 0), ('folder', ''), ('import_method', 0), ('influence', 0), ('limit', 4), ('max_influences', 4), ('mirror_direction', 1), ('prune', 0.01), ('skin_method', 0), ('smooth', 0.5), ('surface', 0)]
+bind -> select the meshes to skin (and joints, or none for skeleton_grp's joints).
+copy -> select the skinned source, then the meshes to copy to.
+prune -> select skinned meshes.
+limit -> select skinned meshes.
+remove_unused -> select skinned meshes.
+fixed: 1 [('m.vtx[0]', [('j1', 0.625), ('j2', 0.375), ('j3', 0.0)])]

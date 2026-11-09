@@ -1,0 +1,8 @@
+split: [('L', 'eye'), ('R', 'Nostril'), ('C', 'Head'), ('L', 'eye'), ('L', 'ear_jnt')]
+twins: ['R_eye', 'L_Nostril', None, 'eye_r', 'hare:R_ear_jnt']
+labelled: 6 | L_eye: 1 18 eye | R_eye: 2 eye | Head: 0 Head
+not mirror images: [('L_Nostril', 'R_Nostril', 0.4), ('L_ear', None, None)]
+checker: ['L_Nostril', 'L_ear']
+  [info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+after Build: [('L_humerus_jnt', 1, 'humerus'), ('R_humerus_jnt', 2, 'humerus'), ('spine_jnt', 0, 'spine_jnt')]

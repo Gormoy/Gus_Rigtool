@@ -1,0 +1,27 @@
+arm_ctrls                    -> controls_grp            1 control(s) inside
+L_lid_ribbon_grp             -> controls_grp            a ribbon build (_ribbon_grp)
+root_jnt                     -> skeleton_grp            2 joint(s)
+body_geo                     -> geo_grp                 1 mesh(es), 1 skinned
+body_proxy                   -> geo_grp                 your rule '*_proxy'
+rock_geo                     -> geo_grp                 1 mesh(es) - NOT rigged yet (nothing deforms or moves it)
+L_leg_ik_grp                 -> rig_nodes_grp           rig machinery (1 IK / follicle / locator / helper node(s))
+cam_rig_grp                  -> leave where it is       in your 'never move' list
+null1                        -> leave where it is       empty group (you can pick delete)
+  [info] organized 6 item(s).
+arm_ctrls -> controls_grp
+L_lid_ribbon_grp -> controls_grp
+root_jnt -> skeleton_grp
+body_geo -> geo_grp (inherits transform off: it's skinned)
+body_proxy -> geo_grp
+L_leg_ik_grp -> rig_nodes_grp
+body_geo           |rig_grp|geo_grp|body_geo
+L_arm_ctrl         |rig_grp|controls_grp|arm_ctrls|L_arm_ctrl
+root_jnt           |rig_grp|skeleton_grp|root_jnt
+L_leg_ik_grp       |rig_grp|rig_nodes_grp|L_leg_ik_grp
+L_lid_ribbon_grp   |rig_grp|controls_grp|L_lid_ribbon_grp
+rock_geo           |rock_geo
+cam_rig_grp        |cam_rig_grp
+rig_nodes hidden: 0 | skinned body inherits: 0
+  [info] restored 6 item(s) to where they were.
+restored: ['L_leg_ik_grp', 'L_lid_ribbon_grp', 'arm_ctrls', 'body_geo', 'body_proxy', 'root_jnt']
+after restore: |body_geo |root_jnt | inherits: True | left marked: []

@@ -1,0 +1,7 @@
+builds before: ['|L_lid_ribbon']
+made: ['|L_lid_ribbon_grp']
+children: ['L_lid_ctrls_grp', 'L_lid_follicles_grp', 'L_lid_ribbon']
+inherits transform: 0
+builds after (ribbon found in the group): ['|L_lid_ribbon_grp|L_lid_ribbon']
+again: nothing to do: []
+same group reused, now under: |controls_grp|L_lid_ribbon_grp

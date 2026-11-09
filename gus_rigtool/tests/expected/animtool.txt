@@ -1,0 +1,20 @@
+between at 0 (half way): 5.0 | at 1: 10.0
+from rest +50%: 6.0 | -100% (rest): 0.0
+live drag shows: 7.5 | keys while dragging: [0.0, 20.0]
+release applies once: 7.5 | keyed at 10: 7.5 | attrs: 1
+step to next: 1 8.325
+mirror 100%: -3.0
+nudge +2: [0.0, 12.0, 20.0] | frame: 12.0
+insert 3 after 5: [0.0, 15.0, 23.0]
+offset chain: [2.0, 12.0]
+copy: 1
+paste: 1 4.0
+rig name: hare rig
+no profile -> options suffix: _ctrl
+profile: {'left': 'Lf_', 'right': 'Rt_', 'suffix': '_CTRL'} | suffix now: _CTRL | pairs: ('Lf_', 'Rt_')
+controls from the set: ['L_arm_ctrl']
+hotkeys on: Gus_Animtool | keys bound: 9
+zip version: 9.9.9
+installed: 9.9.9 | defaults kept: True | shim: True | backup: gus_animtool_backup
+jumps found (fake: none): []
+fix keyed: 1 | keys at 9 / 10: True True | back at frame 3.0

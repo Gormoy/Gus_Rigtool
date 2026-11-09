@@ -1,0 +1,21 @@
+PASS made on a locked offset: the offset under the space group
+PASS its channels locked again
+PASS nothing moved
+PASS removed: back under the clavicle, still locked
+making the switch moved L_tibia_PV_ctrl (by 9.33) - taken off again, nothing changed. Send this to Gus.
+PASS moved by the switch: taken off again, said so
+target 'L_ankle_IK_ctrl' is inside World_ctrl's own hierarchy: it would follow itself. Is World_ctrl really the control? (select it alone and press '< sel')
+PASS a target inside the control's own hierarchy: refused, says why
+[('L_radius_PV_ctrl', ['Chest', 'World', 'Hand'], 'parent'), ('L_humerus_FK_ctrl', ['Chest', 'COG', 'World'], 'orient'), ('L_ankle_IK_ctrl', ['World', 'COG', 'Waist'], 'parent'), ('L_tibia_PV_ctrl', ['Foot', 'World', 'COG'], 'parent')]
+PASS the plan: IK foot World/COG/Waist, knee PV Foot/World/COG, arm PV Chest/World/Hand, FK arm orient Chest/COG/World; the IK hand (has a space already) and the clavicle left out
+['L_radius_PV_ctrl', 'L_humerus_FK_ctrl', 'L_ankle_IK_ctrl', 'L_tibia_PV_ctrl'] []
+PASS all four made
+PASS made again: nothing left to make
+PASS the space menus found (the four made + the IK hand's own)
+PASS each space at rest: no jumps
+{'control': '|World_offset|World_ctrl|COG_offset|COG_ctrl|Chest_offset|Chest_ctrl|Head_offset|Head_ctrl', 'axis': 'Y', 'twice': [('|World_offset|World_ctrl|COG_offset|COG_ctrl|Chest_offset|Chest_ctrl|Head_offset|Head_ctrl|L_Eyeball_jnt', 59.999999999999986)]}
+PASS the head turned 30: the eyeball turning 60 found
+PASS Auto Key on: noted
+PASS Checker: the bandage on Maya's default material
+PASS Clothes_geo let go (5.6.5 had taken it over)
+15/15 passed

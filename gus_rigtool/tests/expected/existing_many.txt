@@ -1,0 +1,14 @@
+twins: ['R_old_clavicle', 'R_old_humerus', 'R_old_radius', 'R_old_wrist']
+refused: no twin for old_skeleton (no side in its name).
+bad row refused: row 2 (R arm): Arm: select clavicle, humerus, radius, wrist, hand (hand optional) - you selected 2 joint(s). | nothing made: []
+rows: [('L', 'arm', ['L_old_clavicle', 'L_old_humerus']), ('R', 'arm', ['R_old_clavicle', 'R_old_humerus'])]
+  [info] arm placed on 4 joint(s): clavicle=L_old_clavicle, humerus=L_old_humerus, radius=L_old_radius, wrist=L_old_wrist. Check the settings, then Build picked.
+  [info] arm placed on 4 joint(s): clavicle=R_old_clavicle, humerus=R_old_humerus, radius=R_old_radius, wrist=R_old_wrist. Check the settings, then Build picked.
+  [info] 2 module(s) placed on their joints. Check their settings, then Build picked.
+placed: [('L', 'arm'), ('R', 'arm')] | list emptied: []
+  [warn] arm (L): attach 'spine:shoulder' - no module 'spine' built before it; it goes under the root.
+  [warn] arm (R): attach 'spine:shoulder' - no module 'spine' built before it; it goes under the root.
+  [info] built 2 module(s), 10 bind joints. Skin your model to skeleton_grp's joints.
+one plan for both: 8 old joints -> ['L_', 'R_']
+  [info] replaced: 0 joint(s) swapped in the skin, old part in legacy_grp.
+legacy holds: ['L_old_clavicle', 'R_old_clavicle']

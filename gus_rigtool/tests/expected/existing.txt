@@ -1,0 +1,47 @@
+scan controls: ['L_old_arm_ik', 'L_old_arm_pv', 'L_old_clavicle_ctrl', 'L_old_humerus_fk', 'L_old_radius_fk', 'L_old_wrist_fk']
+scan joints: ['L_old_clavicle', 'L_old_humerus', 'L_old_radius', 'L_old_wrist']
+switches: [('L_old_clavicle_ctrl', 'ikFkBlend')]
+hook-ups: ['  sword_grp parented under L_old_wrist', '  L_old_radius_fk is a target of watch_grp_parentConstraint1 (moves watch_grp)']
+  [info] adopted 'old_arm' (L): 6 controls, 1 IK/FK limb(s).
+adopted: L:old_arm | taught: ['L_old_arm']
+  [info] matched 1 limb(s) to IK.
+IK/FK match on the adopted arm -> switch: 1.0
+publish sees adopted controls: 6
+  [info] 'old_arm' is no longer adopted (nothing in the rig changed).
+forgot: [] []
+  [info] arm placed on 4 joint(s): clavicle=L_old_clavicle, humerus=L_old_humerus, radius=L_old_radius, wrist=L_old_wrist. Check the settings, then Build picked.
+placed_on: {'clavicle': 'L_old_clavicle', 'humerus': 'L_old_humerus', 'radius': 'L_old_radius', 'wrist': 'L_old_wrist'}
+guides on the joints: True
+hand guide made up past the wrist: [77.5, 140.0, 1.5]
+  [warn] arm (L): attach 'spine:shoulder' - no module 'spine' built before it; it goes under the root.
+  [info] built: L:arm.
+Old joint -> new joint:
+  L_old_clavicle -> L_clavicle_jnt
+  L_old_humerus -> L_humerus_jnt
+  L_old_radius -> L_radius_jnt
+  L_old_wrist -> L_wrist_jnt
+
+Old control -> follows (for what hangs from it):
+  L_old_clavicle_ctrl -> L_clavicle_jnt
+  L_old_humerus_fk -> L_humerus_jnt
+  L_old_radius_fk -> L_radius_jnt
+  L_old_wrist_fk -> L_wrist_jnt
+
+Skins that move to the new joints: none
+
+Hook-ups (outside the part):
+  sword_grp parented under L_old_wrist
+  L_old_radius_fk is a target of watch_grp_parentConstraint1 (moves watch_grp)
+
+Old part going into legacy_grp (hidden): L_old_arm_ctrls
+  [info] replaced: 0 joint(s) swapped in the skin, old part in legacy_grp.
+re-parented sword_grp under L_wrist_jnt
+constraint watch_grp_parentConstraint1 now follows L_radius_jnt
+into legacy_grp (hidden): L_old_arm_ctrls, L_old_clavicle
+sword now under: L_wrist_jnt | old arm controls in: |legacy_grp|L_old_arm_ctrls
+old joints in backup: ['L_old_arm_ctrls', 'L_old_clavicle']
+  [info] legacy_grp deleted.
+backup removed: True
+swapped: [('skinCluster1', 'old_spine', 'new_spine')] []
+   ('connect', 'new_spine.worldMatrix[0]', 'skinCluster1.matrix[2]')
+   ('set', 'skinCluster1.bindPreMatrix[2]', [0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -100.0, -0.0, -0.0, 1.0])

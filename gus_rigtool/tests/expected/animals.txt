@@ -1,0 +1,10 @@
+[info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+dog     neck 3 tail 8 toes 4 | femur y 52.0 | hips y 55.0 | modules 9
+  [info] Quadruped (horse) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+horse   neck 5 tail 6 toes 0 | femur y 61.4 | hips y 64.0 | modules 9
+  [info] Quadruped (cat) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+cat     neck 2 tail 12 toes 4 | femur y 46.8 | hips y 50.0 | modules 9
+  [info] Quadruped (rabbit) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+rabbit  neck 2 tail 3 toes 4 | femur y 37.4 | hips y 40.0 | modules 9
+  [info] built 9 module(s), 127 bind joints. Skin your model to skeleton_grp's joints.
+rabbit builds: True

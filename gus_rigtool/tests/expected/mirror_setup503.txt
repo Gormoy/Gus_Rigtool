@@ -1,0 +1,27 @@
+Make on the other side (they don't exist yet):
+   R_Facial_ribbon_fol_11_ctrl_sdk  (transform)
+   R_Facial_ribbon_fol_10_ctrl_offset  (transform)
+   R_Facial_ribbon_fol_10_ctrl_sdk  (transform)
+   R_Facial_ribbon_fol_10_ctrl  (transform)
+Constraints (4):
+   parentConstraint on R_Brow_01_jnt  (replaces its parentConstraint)
+   parentConstraint on R_Facial_ribbon_fol_11_ctrl_sdk
+   parentConstraint on R_Facial_ribbon_fol_10_ctrl_sdk
+   parentConstraint on R_Facial_ribbon_fol_10_jnt
+Utility nodes copied: 8 multiplyDivide, 8 unitConversion
+PASS preview: the missing right nodes, the constraints, the utility nodes
+  [info] made 4 node(s) on the other side: R_Facial_ribbon_fol_11_ctrl_sdk, R_Facial_ribbon_fol_10_ctrl_offset, R_Facial_ribbon_fol_10_ctrl_sdk, R_Facial_ribbon_fol_10_ctrl; 4 constraint(s), 16 utility node(s), 24 connection(s) mirrored (true mirror).
+    ['made 4 node(s) on the other side: R_Facial_ribbon_fol_11_ctrl_sdk, R_Facial_ribbon_fol_10_ctrl_offset, R_Facial_ribbon_fol_10_ctrl_sdk, R_Facial_ribbon_fol_10_ctrl', '4 constraint(s), 16 utility node(s), 24 connection(s) mirrored (true mirror)']
+PASS the right _sdk group is made, and the right control moved under it
+PASS the extra control fol_10 is made on the right (offset > sdk > control, with its curve)
+PASS ... its pivot in the mirrored place
+PASS the right sdk follows the right brow controls
+PASS the new right control drives its follicle joint (its own setup came too)
+PASS the right brow joint's plain constraint is replaced (one, not two)
+PASS R_Brow_02 -> sdk: its move goes through a copied multiplyDivide x0.8, fed by R_Brow_02_ctrl
+PASS ... with a readable name
+PASS its turn: unitConversion -> multiplyDivide -> unitConversion, values kept
+  [info] 4 constraint(s), 16 utility node(s), 24 connection(s) mirrored (true mirror).
+PASS running it again replaces its copies (not doubled)
+PASS a control not at rest: it says so, changes nothing
+ALL OK

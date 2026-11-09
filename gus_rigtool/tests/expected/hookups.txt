@@ -1,0 +1,20 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+before
+   sword under: ['L_wrist_jnt']
+   watch constraint target from: ['L_radius_FK_ctrl']
+   sdk input from: ['L_wrist_settings_ctrl.ikfk']
+  [info] L:arm: 3 of your hook-up(s) put back (children, constraints, driven keys...).
+  [info] rebuilt: L:arm, L:fingers.
+after Build picked
+   sword under: ['L_wrist_jnt']
+   watch constraint target from: ['L_radius_FK_ctrl']
+   sdk input from: ['L_wrist_settings_ctrl.ikfk']
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+   sword waiting in the world: None
+  [info] L:arm: 3 of your hook-up(s) put back (children, constraints, driven keys...).
+  [info] built: L:arm, L:fingers.
+after Back to guides + Build picked
+   sword under: ['L_wrist_jnt']
+   watch constraint target from: ['L_radius_FK_ctrl']
+   sdk input from: ['L_wrist_settings_ctrl.ikfk']

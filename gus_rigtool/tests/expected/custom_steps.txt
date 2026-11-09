@@ -1,0 +1,13 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+steps: ['[post] after_build.py', '[pre] broken.py']
+  [warn] broken.py failed (the build goes on): ValueError: oops in my script
+post step: post ['C:face', 'C:neck', 'C:root'] ['controls', 'geo', 'nodes']
+  [info] ran after_build.py (post).
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+built anyway: True | post ran: ['step_ran_10']
+post step: post ['L:arm', 'L:fingers'] ['controls', 'geo', 'nodes']
+  [info] ran after_build.py (post).
+  [info] rebuilt: L:arm, L:fingers.
+after Build picked: ['step_ran_10', 'step_ran_2']
+labels: ['[post] after_build.py', '[pre] broken.py   (off)']
+after remove: ['[pre] broken.py   (off)']

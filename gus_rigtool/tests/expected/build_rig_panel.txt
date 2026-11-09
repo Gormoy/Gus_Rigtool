@@ -1,0 +1,8 @@
+[info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+main tabs: ['1 Rig builder', '2 Animation', '3 Existing rig', '4 Advanced']
+main page has Build, Build picked, Publish, Pop out, Refresh: True
+pop-out list rows: 10 | first: C   root             root         guides
+Build picked from the pop-out list builds: ['C:root']
+stale after a hand delete: True
+  [info] list refreshed: 9 module(s), 1 gone.
+after Refresh: False | R:fingers still listed: False

@@ -1,0 +1,30 @@
+attached: box_ctrl follows L_hand_IK_ctrl from frame 10. | blend on the box: ['box_ctrl_attach_blend']
+target 0 follows: ['L_hand_IK_ctrl'] | through the box's parent inverse: True
+weight keys: [('target[0].weight', 9.0, 0.0), ('target[0].weight', 10.0, 1.0)]
+then the table at 30: [('target[1].weight', 29.0, 0.0), ('target[0].weight', 30.0, 0.0), ('target[1].weight', 30.0, 1.0)] | events: [(10.0, 'L_hand_IK_ctrl'), (30.0, 'table_ctrl')]
+released at 45: [0.0, 1.0] | events: [(10.0, 'L_hand_IK_ctrl'), (30.0, 'table_ctrl'), (45.0, 'released')]
+the hand follows the box: box_ctrl | attached: ['L_hand_IK_ctrl', 'box_ctrl']
+itself: it can't hold on to itself.
+removed (no bake): attr gone: True | blend gone: True
+mirror cycle 1-24 (no loop frame given -> 25): 3 cycle: frames 1-13 mirrored onto 13-25 for 3 control(s), looping.
+  second half keys at: [13.0, 19.0, 25.0] | looping: {'preInfinite': 'cycle', 'postInfinite': 'cycle'}
+too short: set the frame range to the whole cycle (e.g. 1 to 25 for 24 frames).
+parts from names: {'Head & face': ['head_ctrl', 'jaw_ctrl'], 'Torso': ['spine1_ctrl'], 'L arm': ['L_arm_fk1_ctrl'], 'R arm': ['R_arm_fk1_ctrl'], 'L hand': ['L_index1_ctrl'], 'R leg': ['R_foot_ik_ctrl'], 'Tail & ears': ['tail1_ctrl', 'L_ear1_ctrl']}
+hide L arm: False | L arm shape: False | head: True
+only the head: True | R arm: False | jaw: True
+again -> all back: False True
+add a mesh to L arm: 1 | saved in the profile: ['L_arm_geo']
+mesh hidden: False
+reset: back to names: True
+clip saved: ('hop', 1, 12) | in the list: ['hop']
+clip: 12 {'L_leg_ctrl': {'translateY': [[0.0, 0.0, 'auto', 'auto'], [6.0, 2.0, 'auto', 'auto'], [12.0, 0.0, 'auto', 'auto']]}}
+applied at 40: 1 | keys at: [40.0, 46.0, 52.0] | span cleared: (40.0, 52.0)
+insert pushes later keys by 13.0 from 40.0
+mirrored: sides swapped inside (40.0, 52.0)
+only the hips: none of the clip's controls are in this character.
+deleted: []
+ghosts: 2 | frames: [(16.0, 18.0, 2, 'animCurve'), (22.0, 24.0, 2, 'animCurve')] | grouped: True
+cleared: True
+backups kept (2): 2 | newest first: True
+timer: True True | stop: True False
+ensure when off: False
