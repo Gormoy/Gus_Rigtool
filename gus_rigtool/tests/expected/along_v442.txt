@@ -1,0 +1,6 @@
+PASS runs along V: swapped (reverseSurface direction 3)
+PASS runs along U: left alone
+PASS deformed: not swapped, reported
+PASS Repair offers 'Rebuild along the length'
+PASS nothing to repair when it runs along U
+ALL OK

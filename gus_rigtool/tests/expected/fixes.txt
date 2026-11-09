@@ -1,0 +1,8 @@
+inverse ok: True
+unskin gives the rest points back: True
+the fix, skinned again, is the sculpt: True
+aim axis: [1.0, 0.0, 0.0]
+reader: ['vectorProduct', 'angleBetween', 'remapValue'] | out: L_elbow_90_weight.outValue | cone: 90.0 | 1 at the pose -> 0 at rest: 1.0 0.0
+mirror map: {0: 1, 1: 0, 2: 2, 3: 4, 4: 3}
+mirrored aim (parent turned 180 in Y): [0.6, 0.8, -0.0]
+page builds: True []

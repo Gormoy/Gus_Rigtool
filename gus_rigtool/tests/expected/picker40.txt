@@ -1,0 +1,7 @@
+view: side34 | biped: front
+pages: [('Body', 23), ('Face', 3)] | view saved: side34
+head forward (right of the tail end): True | front legs right of back legs: True | left legs apart from right: True | paws below the spine: True
+overlaps: 0 | biggest button vs usual: 2.5
+tongue on the Face page: True
+silhouette: True | rows: 50 | inside the page: True
+biped: view front | body outline (no meshes): False

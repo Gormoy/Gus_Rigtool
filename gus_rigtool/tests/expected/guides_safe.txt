@@ -1,0 +1,18 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+biped | checker counts guides as controls: False | 'not at zero' finds guides: False
+  [warn] those are guides - Reset leaves guides where you placed them.
+  zeroed: [0.0, 0.0, 0.0]
+  guides from the rig: moved 93 | back where they were: True | not found: ['C:root:root', 'C:spine:hips']
+  [warn] 94 guide(s) had been moved to the centre since the Build - put back where they were built.
+  [info] back to the guides: adjust them, then Build again.
+  back to guides puts zeroed ones back: True
+  [info] Quadruped (dog) guides made for a 180 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+  [info] built 9 module(s), 133 bind joints. Skin your model to skeleton_grp's joints.
+quadruped | checker counts guides as controls: False | 'not at zero' finds guides: False
+  [warn] those are guides - Reset leaves guides where you placed them.
+  zeroed: [0.0, 0.0, 0.0]
+  guides from the rig: moved 128 | back where they were: True | not found: ['C:root:root', 'C:spine:hips', 'C:tail:j0']
+  [warn] 132 guide(s) had been moved to the centre since the Build - put back where they were built.
+  [info] back to the guides: adjust them, then Build again.
+  back to guides puts zeroed ones back: True

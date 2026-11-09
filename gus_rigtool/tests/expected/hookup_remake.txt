@@ -1,0 +1,9 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+before: L_clavicle_FK_offset_parentConstraint1 ['my_chest_ctrlW0', 'my_world_ctrlW1']
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+  [info] L:arm: 3 of your hook-up(s) put back (children, constraints, driven keys...).
+  [info] L:arm: L_clavicle_FK_offset: constraint re-made at the new spot (fresh offset)
+  [info] built: L:arm, L:fingers.
+constraints on the new offset: ['L_clavicle_FK_offset_parentConstraint1'] | targets: ['my_chest_ctrl', 'my_world_ctrl']
+weight still driven by: ['my_switch.follow']

@@ -1,0 +1,16 @@
+PASS found: two under their controls, one outside under transform1
+PASS Switch to constraints: all three
+PASS fol_01: in R_Sleeve_bind_grp, point + orient constraints
+PASS fol_03: in R_Sleeve_bind_grp, point + orient constraints
+PASS fol_05: in R_Sleeve_bind_grp, point + orient constraints
+PASS Maya's transform1 is gone
+PASS the new bind group is part of the build
+PASS nodes -> key: the driver is the control's translateY
+PASS keys at the corner: (0, 0) and the end; flat before, straight on after
+L_Brow_02_sdk.rotateX: 2 key(s) from L_Brow_02_ctrl.translateY (was 2 node(s))
+PASS to_sdk: keyed with the control as driver, the chain deleted
+PASS key -> nodes: clamp from 0 (no top), x -4, no offset
+L_Brow_02_sdk.rotateX: clamp 0..+, x -4
+PASS built: clamp + multiply into rotateX, the curve gone
+PASS a bent key curve is left, with the reason
+13/13 passed

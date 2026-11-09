@@ -1,0 +1,11 @@
+Gus Animtool: taught 'L_arm': select one of its controls and use Switch / To FK / To IK / Bake.
+taught: ['L_arm'] | from the IK control: L_arm
+limbs of FK_arm_b: ['L_arm']
+Gus Animtool: switched 1 limb(s) to FK.
+To FK: controls sit on the joints as taught: True | switch: 0.0
+Gus Animtool: switched 1 limb(s) to IK.
+To IK: IK control on the end joint as taught: True | switch: 10.0
+Gus Animtool: switched 1 limb(s).
+toggle -> 0.0
+Gus Animtool: forgot 'L_arm'.
+after forget: []

@@ -1,0 +1,50 @@
+PASS the brow's network: its driven-key curve and multiplyDivide (not another network)
+PASS ...driven by the control, moving the _sdk group
+PASS from a node in the middle: its own piece (networks meet at the control, not through it)
+PASS Node Editor: cleared, then drivers, network, driven added, laid out and framed
+PASS a node with no network around it: says so
+PASS saved: 2 nodes, connected to the control and the _sdk group
+PASS listed in the library
+PASS preview: the Fox's control and group found
+{'made': ['Fox_Brow_md', 'Fox_Brow_ty_to_rx'], 'connected': 4, 'missing': [], 'failed': []}
+PASS made on the Fox: renamed nodes, 4 connections, nothing missing
+PASS its connections: the Fox's ty drives the curve, the curve the Fox's rotateX
+PASS values kept (input2X 2, the curve's post infinity)
+PASS keys and tangents kept
+PASS the Hare is untouched
+PASS on a character without those names: made, the missing ones listed
+PASS deleted from the library
+PASS found: the pair that cancels out, not the single one
+PASS Repair offers it
+PASS folded: the source connected straight, the two gone, the single one kept
+L_Cheek           5   multiplyDivide 5
+Hare              2   animCurveUA 1, multiplyDivide 1
+Fox               2   multiplyDivide 1, animCurveUA 1
+Other             1   multiplyDivide 1
+Wolf              1   multiplyDivide 1
+(default names)    1   unitConversion 1
+PASS heaviest: L_Cheek first with its 5 multiplyDivides
+PASS part names: side + first word
+PASS Publish: 'protect networks' is off unless ticked
+PASS protected: every utility node and driven-key curve locked
+PASS a second time: nothing new
+PASS unprotected: unlocked again, the record gone
+Controls (4)
+  Fox (2)
+    Fox_BrowTweak_ctrl  *
+      driven by Fox_Brow_ctrl
+    Fox_Brow_ctrl
+  Hare (2)
+    Hare_BrowTweak_ctrl  *
+      driven by Hare_Brow_ctrl
+    Hare_Brow_ctrl
+Drivers (2)
+  Fox_Brow_ctrl -> 1 node(s)
+    Fox_Brow_sdk
+  Hare_Brow_ctrl -> 1 node(s)
+    Hare_Brow_sdk
+Jiggles and waves (0)
+PASS rig map: controls by part, drivers, jiggles
+PASS a control under a driven group lists that driver
+PASS the driver lists what it moves
+27/27 passed

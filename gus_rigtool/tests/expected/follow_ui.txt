@@ -1,0 +1,11 @@
+weight on default: 2
+source: jaw_jnt
+1 control(s) will follow Jaw_ctrl (rotation from jaw_jnt).
+Rotate x follow (1.00, one 'follow' on the driver, shared), no curve.
+Pivot: the driver. Axes: driver's.
+  [info] 1 control(s) follow Jaw_ctrl (rotate): lowLip_ctrl
+['lowLip_ctrl  <-  Jaw_ctrl (rotation of jaw_jnt)   x 1.00   (rotate, no curve)']
+pivot: piv_loc mode: 2
+  [info] 1 follow(s) moved: pivot picked, axes control's own. Nothing moved in the scene.
+moved space: [0.0, 149.0, 1.0] | meta axes: own
+cleared mode: 1

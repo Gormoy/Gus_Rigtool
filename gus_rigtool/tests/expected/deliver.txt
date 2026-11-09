@@ -1,0 +1,12 @@
+no rig: no rig with controls in the scene (Build first, or select your rig's top group).
+  [info] Biped guides made for a 100 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+default name: hero
+  [info] rig published: default pose saved on 97 controls; 165 groups locked; 0 locked channels hidden; joints hidden; selection sets: rig_ctrls_set (9 module sets), bind_joints_set (97 joints); guides hidden.
+saved: [('hero_rig.ma', True)] | scene published after: False
+files: ['README.txt', 'animator_tools', 'hero_rig.ma', 'rig_check.txt']
+animator tools: ['README_animators.txt', 'drag_to_maya_animtool.mel', 'gus_anim.py', 'gus_animtool']
+zip: hero_delivery.zip True
+readme: True True True True
+  [info] rig published: default pose saved on 97 controls; 165 groups locked; 0 locked channels hidden; joints hidden; selection sets: rig_ctrls_set (9 module sets), bind_joints_set (97 joints); guides hidden.
+already published -> saved published: [('hero_rig.ma', True)] | still published: True

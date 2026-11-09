@@ -1,0 +1,55 @@
+PASS euler from rows round-trips [10, 20, 30]
+PASS euler from rows round-trips [-45, 80, 5]
+PASS euler from rows round-trips [0, 0, 0]
+PASS euler from rows round-trips [170, -30, 60]
+PASS frame is orthonormal, X along the aim
+PASS Newell normal of a square facing +Z
+PASS box point: bottom centre
+PASS box labels
+PASS mirrored handles of world axes: X -> -X, Y stays up
+PASS mirrored handles: X and Y are the reflections
+PASS mirror point uses the engine
+PASS 3 vertices: X from the 1st to the 2nd, Y the plane's normal
+PASS 2 vertices: X along them, Y up
+PASS 1 vertex refuses
+  [info] pivots of 2 object(s) on the bottom of each object's box.
+PASS bottom centre of each object's box
+  [info] pivots of 2 object(s) on the top of the selection's box.
+PASS top centre of the whole selection
+  [info] 1 pivot(s) at 25% from knee_jnt to ankle_jnt.
+PASS along a chain: 25% from knee to ankle
+PASS mirror pivots to the twin
+PASS remember / remembered
+PASS ready-made stacks listed
+PASS save your own stack
+PASS delete it
+PASS ready-made stack can't be deleted
+PASS above its parent: arm_grp > L_arm_ctrl_sdk > offset > ctrl
+PASS nothing moved
+PASS the new group matches the parent
+PASS remove group: back to arm_grp > offset > ctrl, nothing moved
+PASS a node with a shape is skipped
+PASS at last selected: the group on the target, the object stays
+PASS preview names the stack and where it goes
+under L_arm_ctrl_offset: L_arm_ctrl_offset* > L_arm_ctrl_sdk > L_arm_ctrl
+(groups match each object, its values become 0)
+* name taken: Maya adds a number
+PASS controls inside
+PASS depth 1: direct children only
+PASS invert: everything that isn't a control
+PASS with an attribute
+PASS twins: R_a_ctrl found, L_b_ctrl has none
+PASS quick set saved (name cleaned) and selected again
+PASS recent: select again
+  [info] selected 3 controls.
+PASS the type buttons still select
+PASS attribute values copied
+PASS follow mirrored: twin driver, same weight, pivot mirrored, same axes
+PASS again: skipped (twin already follows) unless Replace
+PASS Replace: made again
+PASS a centre driver (the jaw) is used as it is
+PASS constraint mirrored onto the twin, from the twin target
+PASS mode bar: Links opens its part, the others fold
+PASS mode bar: Joints sets the mode and opens Mirror
+PASS list pairs: L_lid_ctrl -> R_lid_ctrl (exists)
+ALL OK

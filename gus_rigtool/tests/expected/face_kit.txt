@@ -1,0 +1,13 @@
+lids: upper ['fol_01', 'fol_02', 'fol_03'] | lower 3 | corners 2
+blink: lid controls 6 | driven keys 36
+top control keys: [('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateX', 'L_Eye_ctrl.Blink', 0.0, 0.0), ('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateX', 'L_Eye_ctrl.Blink', 1.0, 0.0), ('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateY', 'L_Eye_ctrl.Blink', 0.0, 0.0), ('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateY', 'L_Eye_ctrl.Blink', 1.0, -1.2), ('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateZ', 'L_Eye_ctrl.Blink', 0.0, 0.0), ('L_Eyelid_Ribbon_fol_02_ctrl_driven.translateZ', 'L_Eye_ctrl.Blink', 1.0, 0.0)]
+groups above it: ['L_Eyelid_Ribbon_fol_02_ctrl_offset', 'L_Eyelid_Ribbon_fol_02_ctrl_driven_height', 'L_Eyelid_Ribbon_fol_02_ctrl_driven']
+height: moves [-0.0, 2.4, -0.0] x blink x (height - 0.5)
+  [info] mouth: 8 controls follow jaw_ctrl (lower lip 1, corners 0.5, upper 0); lip roll and sticky lips on Mouth_ctrl.
+jaw follow: [('fol_00', 0.5), ('fol_01', 0.323), ('fol_02', 0.0), ('fol_03', 0.323), ('fol_04', 0.5), ('fol_05', 0.677), ('fol_06', 1.0), ('fol_07', 0.677)]
+realistic extras: Mouth_ctrl attrs ['upper_roll', 'lower_roll', 'sticky']
+groups above a lip control: ['Mouth_ribbon_fol_02_ctrl_offset', 'Mouth_ribbon_fol_02_ctrl_roll', 'Mouth_ribbon_fol_02_ctrl_sticky']
+  [info] brows: Brows_ctrl > L / R_Brow_main_ctrl > the brow controls (plain hierarchy).
+brow control path: ['Brows_ctrl', 'L_Brow_main_offset', 'L_Brow_main_ctrl', 'L_Brow_Ribbon_fol_00_ctrl_offset', 'L_Brow_Ribbon_fol_00_ctrl']
+no constraint on the brow offsets: True
+page builds: True []

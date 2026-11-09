@@ -1,0 +1,14 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+PASS a report
+PASS times: find the controls (first time)
+PASS times: picker: automatic layout
+PASS times: key every control
+PASS times: read a pose
+PASS times: apply a pose
+PASS times: Check this scene
+PASS times: Repair: look through the scene
+PASS times: switch between
+PASS slowest first
+PASS what changed the scene was undone (key, apply, isolate...)
+ALL OK

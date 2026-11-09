@@ -1,0 +1,32 @@
+[('Tongue_grp', 'L_Arm_ikHandle', 'Tongue_grp_L_Arm_ikHandle'), ('Strips', 'edgeCurve', 'edgeCurve_2')]
+PASS the copy under another group gets that group's name in front
+PASS when that name is taken, a number
+PASS one copy of each keeps its name
+PASS renamed: no duplicates left
+PASS Fix all leaves renaming duplicates to you (it asks)
+PASS jiggle and wave expressions found (not other expressions)
+PASS Repair offers to stop them always evaluating
+PASS ...done: they evaluate only when time / their inputs change
+PASS Pause: both off (blocking)
+PASS Back on
+PASS new chains: jiggle and wave made without always evaluate
+PASS ngSkinTools data with no skin is found, the live one isn't
+PASS Repair deletes it
+   Cape_01_FK_ctrl ('X', -1, 4.0, '')
+   Cape_02_FK_ctrl ('X', -1, 7.0, '')
+   Cape_03_FK_ctrl ('X', -1, 14.0, '')
+PASS the top control: rotateX, the negative way goes towards the body
+PASS it stops just before the tip reaches the body (asin(1/12) = 4.8 degrees -> 4)
+PASS lower controls get more room (shorter chain below)
+PASS measuring put every control back
+Cape_01_FK_ctrl: rotateX -4 degrees towards the body
+Cape_02_FK_ctrl: rotateX -7 degrees towards the body
+Cape_03_FK_ctrl: rotateX -14 degrees towards the body
+PASS a limit on the body side, switchable and adjustable from the first control
+PASS Remove: limits off, its nodes gone
+PASS found: Cape_01_jnt in slots 134 and 145
+{0: {134: 0.5, 1: 0.5}, 1: {134: 1.0}, 2: {1: 1.0}} ['hood_skin.matrix[145]', 'hood_skin.bindPreMatrix[145]', 'hood_skin.lockWeights[145]', 'hood_skin.influenceColor[145]']
+PASS merged: the extra slot's weights on the first one (vertex 0: 0.5, vertex 1: 1.0), nothing lost
+PASS the extra slot unplugged
+PASS both bound in the same pose: no warning
+23/23 passed

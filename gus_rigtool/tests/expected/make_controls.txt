@@ -1,0 +1,26 @@
+PASS average centre
+PASS box centre
+PASS pieces: two islands, in selection order
+PASS each piece: two eyes
+PASS names from the object, side from the position
+PASS your name, numbered, side added
+PASS two joints at the eyes' centres
+PASS one locator for everything, centre (no side)
+PASS plan: names and FK parents
+PASS auto size: half the bone
+PASS both sides: 6 controls
+PASS FK chain: arm > elbow > wrist controls
+PASS controls sit on their joints
+PASS constrain: parent + scale on the joint, skeleton untouched
+PASS joints didn't move
+PASS visibility locked, scale free
+PASS already has a control: skipped next time
+PASS parent: crate_geo under crate_ctrl (geo suffix swapped), values 0, same place
+PASS direct: rest values kept through an add node
+tail_01_jnt  ->  tail_01_ctrl_offset > tail_01_ctrl
+tail_02_jnt  ->  tail_02_ctrl_offset > tail_02_ctrl   (under tail_01_ctrl)
+2 control(s); the joints / objects get constrained (parent + scale).
+  [info] 2 control(s): tail_01_ctrl, tail_02_ctrl.
+PASS the page makes them
+PASS Joints tab: the centre section is there
+ALL OK

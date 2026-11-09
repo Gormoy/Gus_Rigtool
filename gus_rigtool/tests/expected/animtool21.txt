@@ -1,0 +1,21 @@
+pull 0.5 around the key on the left: [0.0, 5.0, 2.0, 2.0] [30.0, 40.0, 30.0]
+push 0.5 around the key on the right: [0.0, 18.0, 6.0, 2.0] [30.0, 70.0, 30.0]
+negate around the left key: [0.0, -10.0, -4.0, 2.0] [30.0, 10.0, 30.0]
+negate around the last selected key (50): [0.0, 90.0, 96.0, 2.0] [30.0, 50.0, 30.0]
+pull with the Settings (0.9, left): [0.0, 9.0, 3.6, 2.0]
+delete redundant: 2 | keys left at: [0, 15, 20, 25]
+nothing selected: select keys in the Graph Editor first.
+hotkeys: [(',', False), (',', True), ('-', False), ('-', True), ('.', False), ('.', True), ('=', False), ('[', False), (']', False)]
+saved set: 2 | sets: ['mouth'] | in the profile file: {'mouth': ['L_lip_ctrl', 'R_lip_ctrl']}
+selected by the set: ['L_lip_ctrl', 'R_lip_ctrl']
+after remove: []
+no name: type a name for the set.
+world locators: ['L_lip_ctrl_world_loc', 'R_lip_ctrl_world_loc'] | baked: ['L_lip_ctrl_world_loc', 'R_lip_ctrl_world_loc'] | lip follows its locator: ['L_lip_ctrl_world_loc']
+temp nodes: [('L_lip_ctrl_world_loc', ['L_lip_ctrl']), ('R_lip_ctrl_world_loc', ['R_lip_ctrl'])]
+bake back: 2 | baked: ['L_lip_ctrl', 'R_lip_ctrl'] | constraints left on the lip: None | helpers left: False
+camera space: group under gusAnimtool_temp_grp follows ['shotCam']
+pivot: temp_pivot_loc drives [['temp_pivot_loc'], ['temp_pivot_loc']]
+all gone: False None
+nothing to bake: no temporary spaces in the scene.
+converted: 1 | order: 2 | same world pose: True | rotate now: [-6.03, 48.16, 36.16]
+already that order: 0

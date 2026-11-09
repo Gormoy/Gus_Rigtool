@@ -1,0 +1,16 @@
+PASS ty 0..32
+PASS 'min 0 max -65' becomes -65..0
+PASS one side only: no min, max 5
+PASS max from the pose (rotateZ 30)
+[('|L_Lid_offset|L_Lid_ctrl', '|R_Lid_offset|R_Lid_ctrl', ['tx', 'ty', 'tz', 'rz'], [])]
+PASS mirrored on R_Lid_ctrl: every limited channel
+PASS behaviour mirror (-1 scale X): every channel keeps its values (the twin moves / turns the mirrored way)
+[('|L_Brow_offset|L_Brow_ctrl', '|R_Brow_offset|R_Brow_ctrl', ['ty', 'tz', 'rz'], ['tz'])]
+PASS turned twin: tz 0..65 -> -65..0 (what you set by hand on the Hare), ty the same
+PASS turned twin: rotateZ the same (it turns the mirrored way already)
+PASS 'Same values' copies them as they are
+PASS clear one channel
+PASS clear all
+L_Lid_ctrl: rz -..30, tx -..5, ty 0..32, tz -65..0
+PASS describe
+12/12 passed

@@ -1,0 +1,20 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built: C:root, C:spine, L:arm, L:fingers.
+dialog: L:fingers hang(s) from modules that aren't built:  L:arm C:spine C:root  Build those too? (Only the
+built: ['C:root', 'C:spine', 'L:arm', 'L:fingers']
+light: Now: 6 module(s) at their guides - place them, then Build picked.
+  [info] built 6 module(s), 67 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+Build rest -> joints 133 | waiting: []
+  [info] C:neck: head end False -> True. Build picked to see it on the rig.
+apply: dialogs asked: 0 | head_end joint: False | neck still built: True
+  [info] rebuilt: C:neck, C:face.
+build picked -> head_end: True
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+  [info] L:arm: stretch False -> True. Build picked to see it on the rig.
+arm at guides after apply: True
+  [info] built 2 module(s), 25 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+Build -> arm back: True | stretch attr: True
+Build again: every module is built. Pick modules and press Build picked to rebuild them, or Back to guides.
+dupes: []

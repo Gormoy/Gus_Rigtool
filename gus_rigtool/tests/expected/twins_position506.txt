@@ -1,0 +1,13 @@
+PASS mouth twins by position: 02-26, 04-24, 10-18, 38-28
+PASS the centre one and named pairs aren't paired by position
+PASS twin_of: the name first, then the position
+PASS the unnamed one is the other side of its named twin (R), wherever it sits
+PASS mirror pose L > R: 02's move lands on 26 (and 02 keeps it)
+PASS Checker lists the L_ mouth controls with no twin
+PASS Fix links all 4 to their mirrored twin
+PASS ... and then none are missing
+PASS rotate values: the loose joint only (not the constrained one, not the IK one)
+PASS a reference's namespace isn't 'leftover'
+PASS no suffix: not the reference's nodes, not constraints
+PASS Orig shapes: yours can be deleted, the reference's are listed apart
+12/12 passed

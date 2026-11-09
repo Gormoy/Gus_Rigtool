@@ -1,0 +1,12 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 101 bind joints. Skin your model to skeleton_grp's joints.
+head space constraint: ['transform', 'parentConstraint']
+leg settings: ['knee_mode', 'knee_twist']
+pole targets: ['L_tibia_PV_ctrl', 'L_tibia_autoPole_grp']
+chest attrs: ['volume']
+volume on middle joint: ['spine_volume1'] | ends left alone: None
+side lip falloff: ['falloff', 'jaw_follow'] ['L_lip_upper_side_falloff_grp_amount']
+  [info] built 3 module(s), 11 bind joints. Skin your model to skeleton_grp's joints.
+ik spline chest: ['stretch', 'volume'] | joint translate driven: ['abdomen_jnt_stretch_mul']
+back leg settings: ['knee_mode', 'knee_twist', 'upper_length', 'lower_length', 'pin']
+knee twist group starts at 0 (no pop): [-0.0, 0.0, 0.0] | under its offset: L_tibia_kneeTwistOffset_grp

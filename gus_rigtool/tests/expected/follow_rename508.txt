@@ -1,0 +1,16 @@
+PASS before: 4 follows by their names
+PASS renamed controls found under their follow group
+PASS the untouched one is as it was
+PASS a gone control is still listed, saying so
+PASS weight on the renamed control: its plug follows the new name
+PASS the record is updated to the new name
+PASS Follow tab lists all 4
+info | Lf_Mouth_fol_02_ctrl (renamed from L_Mouth_fol_02_ctrl) | <- Jaw_end_ctrl x 0.50, rotate, pivot driver, axes driver, no curve
+info | Mouth_fol_14_ctrl | <- Jaw_end_ctrl x 0.50, rotate, pivot driver, axes driver, no curve
+warn | Mouth_fol_26_ctrl_follow: its control is gone (was Mouth_fol_26_ctrl) | Remove follow on that group, or delete the group
+info | Mouth_fol_26_ctrl_follow | <- Jaw_end_ctrl x 0.50, rotate, pivot driver, axes driver, ?
+info | L_Tail_00_ctrl | <- Jaw_end_ctrl x 1.00, rotate, pivot driver, axes driver, no curve
+ok | 4 follow(s) read |
+PASS Check this scene: renamed shown with its old name
+PASS Check this scene: a gone control is a warning
+9/9 passed

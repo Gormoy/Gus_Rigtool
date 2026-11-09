@@ -1,0 +1,17 @@
+arc x->y: [0.0, 0.0, 1.0] 90.0
+rotate x by it: [0.0, 1.0, 0.0]
+spring lags while moving: [0.34, 0.15, 0.16] | overshoots after stopping: True | settles: True
+cycle: the loop frame matches the first: True | without: off by 1.1
+overlap: controls 3 | keyed frames per control: 24 | turned (some frames): True | current frame back to where it was: True
+overlap on 3 control(s), frames 1-24.
+refused: set a frame range of a few frames at least.
+in place: 1 | tz: [(1.0, 0.0), (13.0, 0.0), (25.0, 0.0)] | ty untouched: True | infinity: cycle
+twice: nothing travels in this cycle (already in place?).
+forward: 1 | tz: [(1.0, 0.0), (13.0, 50.0), (25.0, 100.0)] | infinity: cycleRelative
+forward again: nothing was put in place (In place first).
+reduce 1%: 11 of 21 gone | kept: [0.0, 10.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 19.0, 20.0] | peak kept: True
+worst change: 0.288 (limit 0.300)
+bake: (['root_ctrl.translateX'], (1, 24), 2, True)
+next version: shot010_v002
+during the blast: {'ours': ['gusAnimtoolHud_artist', 'gusAnimtoolHud_focal', 'gusAnimtoolHud_frame', 'gusAnimtoolHud_shot'], 'mayas': [], 'file': 'shot010_v002', 'ornaments': True}
+after: ours gone: True | Maya's back: {'HUDFrameRate': True, 'HUDCameraNames': True, 'HUDObjectDetails': False}

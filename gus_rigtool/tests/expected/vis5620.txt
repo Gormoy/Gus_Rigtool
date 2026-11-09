@@ -1,0 +1,9 @@
+PASS on your control; only Body_Ctrls and Face_Ctrls (no Joints / Geometry / Geo_Display)
+PASS your control isn't the tool's gear (Remove all keeps it)
+PASS brow on Face_Ctrls, arm on Body_Ctrls
+[('My_gear_ctrl', 'Face_Ctrls', 1)]
+PASS one of the tool's switches removed when picked (Face_Ctrls): the brow shown again, Body_Ctrls stays
+PASS not picked: the tool's switches are never offered
+PASS Remove all: your control kept, its switches gone, the arm shown
+PASS the gear: open while you rig (lock=()), marked as the tool's; Publish locks it
+7/7 passed

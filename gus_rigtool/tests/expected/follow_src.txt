@@ -1,0 +1,10 @@
+['upLip_ctrl (made upLip_ctrl_follow_remap)', 'lowLip_ctrl (made lowLip_ctrl_follow_remap)'] []
+shared attr: 0.6 | no per-ctrl attrs: True
+upLip_ctrl_follow_remap.inputValue <- ['Jaw_ctrl.follow']
+lowLip_ctrl_follow_rotate.input1 <- ['jaw_jnt.rotate']
+lowLip_ctrl_follow_rotate.input2X <- ['lowLip_ctrl_follow_remap.outValue']
+space at jaw joint: True
+list: [('upLip_ctrl', 'Jaw_ctrl', 'Jaw_ctrl.follow', ['rotate'], 'jaw_jnt'), ('lowLip_ctrl', 'Jaw_ctrl', 'Jaw_ctrl.follow', ['rotate'], 'jaw_jnt')]
+rest check: put jaw_jnt at rest first (its rotate is not 0), so the followers don't jump.
+removed: 1 attr kept (low still uses it): True
+removed: 1 | left: [] | attr gone: True

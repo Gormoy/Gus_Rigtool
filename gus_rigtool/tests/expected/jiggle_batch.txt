@@ -1,0 +1,10 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 11 module(s), 101 bind joints. Skin your model to skeleton_grp's joints.
+jiggle groups: ['L_ear_01_jiggle_grp', 'L_ear_02_jiggle_grp', 'L_ear_03_jiggle_grp'] | control under each: True
+state node: [] | on ['L_ear_settings_ctrl'] : ['jiggle', 'jiggle_stiffness', 'jiggle_damping', 'jiggle_bounce']
+expression: memory in a MEL global, no setAttr: True | rests on a jump: True | drives each group: 6 | reads the head through a decomposeMatrix: True
+opened: ['hare_rig.ma', 'fox_rig.ma'] | published: ['hare_rig_publish.ma']
+Batch check + publish - 2 file(s)
+hare_rig.ma                              0 fail, 1 warning -> published: hare_rig_publish.ma
+fox_rig.ma                               1 fail, 0 warning -> not published (fix the FAIL / ERROR items first)
+publish name: /x/hare_rig_publish.mb /x/hare_publish.ma

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.ruff_cache/
+.DS_Store
+gus_rigtool/tests/out/
+Gus_*_install.zip
+# personal data written by the tools in Maya (saved shapes, skin backups)
+gus_rigtool/data/*
+!gus_rigtool/data/README.txt

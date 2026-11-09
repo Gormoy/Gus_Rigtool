@@ -1,0 +1,57 @@
+[info] Quadruped (dog) guides made for a 100 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+modules: ['C:face', 'C:neck', 'C:root', 'C:spine', 'C:tail', 'L:back_leg', 'L:front_leg', 'R:back_leg', 'R:front_leg']
+  [info] built 9 module(s), 129 bind joints. Skin your model to skeleton_grp's joints.
+
+== hock
+ L back bind: ['L_ball_FK_jnt', 'L_ball_IK_jnt', 'L_ball_end_FK_jnt', 'L_ball_end_IK_jnt', 'L_ball_end_jnt', 'L_ball_evenStretchLen_L_ball_IK_jnt', 'L_ball_evenStretchLen_L_metatarsus_IK_jnt', 'L_ball_evenStretchLen_L_tibia_IK_jnt', 'L_ball_jnt', 'L_femur_FK_jnt', 'L_femur_IK_jnt', 'L_femur_jnt', 'L_metatarsus_FK_jnt', 'L_metatarsus_IK_jnt', 'L_metatarsus_jnt', 'L_pelvis_jnt', 'L_tibia_FK_jnt', 'L_tibia_IK_jnt', 'L_tibia_jnt']
+ L front bind: ['L_humerus_FK_jnt', 'L_humerus_IK_jnt', 'L_humerus_jnt', 'L_metacarpus_FK_jnt', 'L_metacarpus_IK_jnt', 'L_metacarpus_jnt', 'L_radius_FK_jnt', 'L_radius_IK_jnt', 'L_radius_jnt', 'L_scapula_jnt']
+ controls L: ['L_ball_FK_ctrl', 'L_ball_IK_ctrl', 'L_ball_settings_ctrl', 'L_brow_inner_ctrl', 'L_brow_mid_ctrl', 'L_brow_outer_ctrl', 'L_cheek_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_eye_target_ctrl', 'L_femur_FK_ctrl', 'L_front_ball_FK_ctrl', 'L_front_ball_IK_ctrl', 'L_front_ball_settings_ctrl', 'L_humerus_FK_ctrl', 'L_lid_lower_ctrl', 'L_lid_upper_ctrl', 'L_lip_corner_ctrl', 'L_metacarpus_FK_ctrl', 'L_metacarpus_hock_ctrl', 'L_metatarsus_FK_ctrl', 'L_metatarsus_hock_ctrl', 'L_nostril_ctrl', 'L_pelvis_FK_ctrl', 'L_radius_FK_ctrl', 'L_radius_PV_ctrl', 'L_scapula_FK_ctrl', 'L_tibia_FK_ctrl', 'L_tibia_PV_ctrl']
+ back leg chain: ['L_pelvis_jnt', 'L_femur_jnt', 'L_tibia_jnt', 'L_metatarsus_jnt', 'L_ball_jnt', 'L_toe_jnt', 'L_ball_end_jnt']
+ front leg chain: ['L_scapula_jnt', 'L_humerus_jnt', 'L_radius_jnt', 'L_metacarpus_jnt', 'L_front_ball_jnt', 'L_front_toe_jnt', 'L_front_ball_end_jnt']
+ FK ctrls: ['L_ball_FK_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_femur_FK_ctrl', 'L_front_ball_FK_ctrl', 'L_front_toeA_01_FK_ctrl', 'L_front_toeA_02_FK_ctrl', 'L_front_toeB_01_FK_ctrl', 'L_front_toeB_02_FK_ctrl', 'L_front_toeC_01_FK_ctrl', 'L_front_toeC_02_FK_ctrl', 'L_front_toe_FK_ctrl', 'L_humerus_FK_ctrl', 'L_metacarpus_FK_ctrl', 'L_metatarsus_FK_ctrl', 'L_pelvis_FK_ctrl', 'L_radius_FK_ctrl', 'L_scapula_FK_ctrl', 'L_tibia_FK_ctrl', 'L_toeA_01_FK_ctrl', 'L_toeA_02_FK_ctrl', 'L_toeB_01_FK_ctrl', 'L_toeB_02_FK_ctrl', 'L_toeC_01_FK_ctrl', 'L_toeC_02_FK_ctrl', 'L_toeD_01_FK_ctrl', 'L_toeD_02_FK_ctrl', 'L_toe_FK_ctrl']
+ joints under the back ball: ['L_toe_jnt']
+ toe chains under the back toe joint: ['L_ball_end_jnt', 'L_toeA_01_jnt', 'L_toeB_01_jnt', 'L_toeC_01_jnt', 'L_toeD_01_jnt']
+ toes L: 15 joints
+ settings ctrls: ['L_ball_settings_ctrl', 'L_front_ball_settings_ctrl', 'R_ball_settings_ctrl', 'R_front_ball_settings_ctrl', 'tail_settings_ctrl']
+   L_ball_settings_ctrl ['_IK_FK', 'ikfk', 'stretch', '_toes', 'toes_curl', 'toes_spread']
+   L_front_ball_settings_ctrl ['_IK_FK', 'ikfk', 'auto_scapula', '_toes', 'toes_curl', 'toes_spread']
+   R_ball_settings_ctrl ['_IK_FK', 'ikfk', 'stretch', '_toes', 'toes_curl', 'toes_spread']
+   R_front_ball_settings_ctrl ['_IK_FK', 'ikfk', 'auto_scapula', '_toes', 'toes_curl', 'toes_spread']
+   tail_settings_ctrl ['_chain', 'ikfk', 'stretch', 'tweaks']
+ paw attrs: ['_paw', 'heel_roll', 'ball_roll', 'toe_roll', 'tip_roll', 'toe_tap', 'bank', 'heel_twist', 'toe_twist', 'ankle_bend', 'space']
+ ik handles: 17 ['L_ball_end_ikHandle', 'L_femur_ikHandle', 'L_front_ball_end_ikHandle', 'L_front_toe_ikHandle', 'L_humerus_ikHandle', 'L_metacarpus_ikHandle', 'L_metatarsus_ikHandle', 'L_toe_ikHandle']
+ spine joints: ['spine_01_jnt', 'spine_02_jnt', 'spine_03_jnt', 'spine_04_jnt', 'spine_05_jnt', 'spine_end_drv_jnt', 'spine_mid_drv_jnt', 'spine_start_drv_jnt'] | tail: 9
+  [info] matched 1 limb(s).
+  [info] matched 1 limb(s).
+ match toggles ok: 1
+ preview names: 229 | clashes: []
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+  [info] built 9 module(s), 125 bind joints. Skin your model to skeleton_grp's joints.
+
+== spring
+ L back bind: ['L_ball_FK_jnt', 'L_ball_IK_jnt', 'L_ball_end_FK_jnt', 'L_ball_end_IK_jnt', 'L_ball_end_jnt', 'L_ball_jnt', 'L_ball_stretchLen_L_ball_IK_jnt', 'L_ball_stretchLen_L_metatarsus_IK_jnt', 'L_ball_stretchLen_L_tibia_IK_jnt', 'L_femur_FK_jnt', 'L_femur_IK_jnt', 'L_femur_bendy_end_drv_jnt', 'L_femur_bendy_mid_drv_jnt', 'L_femur_bendy_start_drv_jnt', 'L_femur_jnt', 'L_femur_twist_01_jnt', 'L_femur_twist_02_jnt', 'L_femur_twist_03_jnt', 'L_femur_twist_04_jnt', 'L_metatarsus_FK_jnt', 'L_metatarsus_IK_jnt', 'L_metatarsus_jnt', 'L_tibia_FK_jnt', 'L_tibia_IK_jnt', 'L_tibia_bendy_end_drv_jnt', 'L_tibia_bendy_mid_drv_jnt', 'L_tibia_bendy_start_drv_jnt', 'L_tibia_jnt', 'L_tibia_twist_01_jnt', 'L_tibia_twist_02_jnt', 'L_tibia_twist_03_jnt', 'L_tibia_twist_04_jnt']
+ L front bind: ['L_humerus_FK_jnt', 'L_humerus_IK_jnt', 'L_humerus_jnt', 'L_metacarpus_FK_jnt', 'L_metacarpus_IK_jnt', 'L_metacarpus_jnt', 'L_radius_FK_jnt', 'L_radius_IK_jnt', 'L_radius_jnt', 'L_scapula_jnt']
+ controls L: ['L_ball_FK_ctrl', 'L_ball_IK_ctrl', 'L_ball_settings_ctrl', 'L_brow_inner_ctrl', 'L_brow_mid_ctrl', 'L_brow_outer_ctrl', 'L_cheek_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_eye_target_ctrl', 'L_femur_FK_ctrl', 'L_femur_bend_ctrl', 'L_front_ball_FK_ctrl', 'L_front_ball_IK_ctrl', 'L_front_ball_settings_ctrl', 'L_humerus_FK_ctrl', 'L_knee_bend_ctrl', 'L_lid_lower_ctrl', 'L_lid_upper_ctrl', 'L_lip_corner_ctrl', 'L_metacarpus_FK_ctrl', 'L_metatarsus_FK_ctrl', 'L_nostril_ctrl', 'L_radius_FK_ctrl', 'L_radius_PV_ctrl', 'L_scapula_FK_ctrl', 'L_tibia_FK_ctrl', 'L_tibia_PV_ctrl', 'L_tibia_bend_ctrl']
+ back leg chain: ['L_femur_jnt', 'L_tibia_jnt', 'L_metatarsus_jnt', 'L_ball_jnt', 'L_toe_jnt', 'L_ball_end_jnt']
+ front leg chain: ['L_scapula_jnt', 'L_humerus_jnt', 'L_radius_jnt', 'L_metacarpus_jnt', 'L_front_ball_jnt', 'L_front_toe_jnt', 'L_front_ball_end_jnt']
+ FK ctrls: ['L_ball_FK_ctrl', 'L_ear_01_FK_ctrl', 'L_ear_02_FK_ctrl', 'L_ear_03_FK_ctrl', 'L_femur_FK_ctrl', 'L_front_ball_FK_ctrl', 'L_front_toe_FK_ctrl', 'L_humerus_FK_ctrl', 'L_metacarpus_FK_ctrl', 'L_metatarsus_FK_ctrl', 'L_radius_FK_ctrl', 'L_scapula_FK_ctrl', 'L_tibia_FK_ctrl', 'L_toeA_01_FK_ctrl', 'L_toeA_02_FK_ctrl', 'L_toeB_01_FK_ctrl', 'L_toeB_02_FK_ctrl', 'L_toeC_01_FK_ctrl', 'L_toeC_02_FK_ctrl', 'L_toeD_01_FK_ctrl', 'L_toeD_02_FK_ctrl', 'L_toe_FK_ctrl']
+ joints under the back ball: ['L_toe_jnt']
+ toe chains under the back toe joint: ['L_ball_end_jnt', 'L_toeA_01_jnt', 'L_toeB_01_jnt', 'L_toeC_01_jnt', 'L_toeD_01_jnt']
+ toes L: 15 joints
+ settings ctrls: ['L_ball_settings_ctrl', 'L_front_ball_settings_ctrl', 'R_ball_settings_ctrl', 'R_front_ball_settings_ctrl', 'tail_settings_ctrl']
+   L_ball_settings_ctrl ['_IK_FK', 'ikfk', 'stretch', '_toes', 'toes_curl', 'toes_spread']
+   L_front_ball_settings_ctrl ['_IK_FK', 'ikfk', 'auto_scapula']
+   R_ball_settings_ctrl ['_IK_FK', 'ikfk', 'stretch', '_toes', 'toes_curl', 'toes_spread']
+   R_front_ball_settings_ctrl ['_IK_FK', 'ikfk', 'auto_scapula']
+   tail_settings_ctrl ['_chain', 'ikfk', 'stretch', 'tweaks']
+ paw attrs: ['_paw', 'heel_roll', 'ball_roll', 'toe_roll', 'tip_roll', 'toe_tap', 'bank', 'heel_twist', 'toe_twist', 'spring_bias', 'space']
+ ik handles: 13 ['L_ball_end_ikHandle', 'L_femur_ikHandle', 'L_front_ball_end_ikHandle', 'L_front_toe_ikHandle', 'L_humerus_ikHandle', 'L_toe_ikHandle']
+ spine joints: ['spine_01_jnt', 'spine_02_jnt', 'spine_03_jnt', 'spine_04_jnt', 'spine_05_jnt', 'spine_end_drv_jnt', 'spine_mid_drv_jnt', 'spine_start_drv_jnt'] | tail: 9
+  [info] matched 1 limb(s).
+  [info] matched 1 limb(s).
+ match toggles ok: 1
+ preview names: 207 | clashes: []
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+dupes: []

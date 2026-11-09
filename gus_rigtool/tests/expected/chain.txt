@@ -1,0 +1,49 @@
+parse: [0, 1, 2, 3, 4, 5] [0, 3, 6] [0, 1, 2, 6] 1, 3, 5, 7
+bad: joint 9 doesn't exist: the chain has joints 1 to 7.
+  [info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+tail guides: ['j0', 'j1', 'j2', 'j3', 'j4', 'j5', 'j6']
+  [info] built 13 module(s), 112 bind joints. Skin your model to skeleton_grp's joints.
+
+== fk
+ bind: ['tail_01_jnt', 'tail_01_result_jnt', 'tail_02_jnt', 'tail_02_result_jnt', 'tail_03_jnt', 'tail_03_result_jnt', 'tail_04_jnt', 'tail_04_result_jnt', 'tail_05_jnt', 'tail_05_result_jnt', 'tail_06_jnt', 'tail_06_result_jnt', 'tail_end_jnt', 'tail_end_result_jnt']
+ FK ctrls: ['tail_01_FK_ctrl', 'tail_03_FK_ctrl', 'tail_05_FK_ctrl'] | IK: []
+ tweaks: 7 | R ear tweaks: 0
+ settings attrs: ['_chain', 'curl', 'curl_side', 'tweaks']
+ ear bind: ['L_ear_01_jnt', 'L_ear_01_result_jnt', 'L_ear_02_jnt', 'L_ear_02_result_jnt', 'L_ear_03_jnt', 'L_ear_03_result_jnt', 'L_ear_end_jnt', 'L_ear_end_result_jnt', 'R_ear_01_jnt', 'R_ear_02_jnt', 'R_ear_03_jnt', 'R_ear_end_jnt']
+ preview names count: 201
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+  [info] built 13 module(s), 112 bind joints. Skin your model to skeleton_grp's joints.
+
+== fk + ik spline
+ bind: ['tail_01_FK_jnt', 'tail_01_IK_jnt', 'tail_01_jnt', 'tail_01_result_jnt', 'tail_02_FK_jnt', 'tail_02_IK_jnt', 'tail_02_jnt', 'tail_02_result_jnt', 'tail_03_FK_jnt', 'tail_03_IK_jnt', 'tail_03_jnt', 'tail_03_result_jnt', 'tail_04_FK_jnt', 'tail_04_IK_jnt', 'tail_04_jnt', 'tail_04_result_jnt', 'tail_05_FK_jnt', 'tail_05_IK_jnt', 'tail_05_jnt', 'tail_05_result_jnt', 'tail_06_FK_jnt', 'tail_06_IK_jnt', 'tail_06_jnt', 'tail_06_result_jnt', 'tail_end_FK_jnt', 'tail_end_IK_jnt', 'tail_end_jnt', 'tail_end_result_jnt', 'tail_ik1_drv_jnt', 'tail_ik2_drv_jnt', 'tail_ik3_drv_jnt']
+ FK ctrls: ['tail_01_FK_ctrl', 'tail_03_FK_ctrl', 'tail_05_FK_ctrl'] | IK: ['tail_01_IK_ctrl', 'tail_04_IK_ctrl', 'tail_end_IK_ctrl']
+ tweaks: 7 | R ear tweaks: 0
+ settings attrs: ['_chain', 'ikfk', 'curl', 'curl_side', 'stretch', 'volume', 'tweaks']
+ ear bind: ['L_ear_01_FK_jnt', 'L_ear_01_IK_jnt', 'L_ear_01_jnt', 'L_ear_01_result_jnt', 'L_ear_02_FK_jnt', 'L_ear_02_IK_jnt', 'L_ear_02_jnt', 'L_ear_02_result_jnt', 'L_ear_03_FK_jnt', 'L_ear_03_IK_jnt', 'L_ear_03_jnt', 'L_ear_03_result_jnt', 'L_ear_end_FK_jnt', 'L_ear_end_IK_jnt', 'L_ear_end_jnt', 'L_ear_end_result_jnt', 'L_ear_ik1_drv_jnt', 'L_ear_ik2_drv_jnt', 'L_ear_ik3_drv_jnt', 'R_ear_01_FK_jnt', 'R_ear_01_IK_jnt', 'R_ear_01_jnt', 'R_ear_02_FK_jnt', 'R_ear_02_IK_jnt', 'R_ear_02_jnt', 'R_ear_03_FK_jnt', 'R_ear_03_IK_jnt', 'R_ear_03_jnt', 'R_ear_end_FK_jnt', 'R_ear_end_IK_jnt', 'R_ear_end_jnt', 'R_ear_ik1_drv_jnt', 'R_ear_ik2_drv_jnt', 'R_ear_ik3_drv_jnt']
+  [info] matched 1 limb(s) to FK.
+ match fk -> ikfk 0
+  [info] matched 1 limb(s) to IK.
+ match ik -> ikfk 1
+  [info] matched 1 limb(s).
+ toggle ear -> 1
+ preview names count: 210
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0
+  [info] built 13 module(s), 112 bind joints. Skin your model to skeleton_grp's joints.
+
+== fk + ribbon
+ bind: ['tail_01_FK_jnt', 'tail_01_IK_jnt', 'tail_01_jnt', 'tail_01_result_jnt', 'tail_02_FK_jnt', 'tail_02_IK_jnt', 'tail_02_jnt', 'tail_02_result_jnt', 'tail_03_FK_jnt', 'tail_03_IK_jnt', 'tail_03_jnt', 'tail_03_result_jnt', 'tail_04_FK_jnt', 'tail_04_IK_jnt', 'tail_04_jnt', 'tail_04_result_jnt', 'tail_05_FK_jnt', 'tail_05_IK_jnt', 'tail_05_jnt', 'tail_05_result_jnt', 'tail_06_FK_jnt', 'tail_06_IK_jnt', 'tail_06_jnt', 'tail_06_result_jnt', 'tail_end_FK_jnt', 'tail_end_IK_jnt', 'tail_end_jnt', 'tail_end_result_jnt', 'tail_ik1_drv_jnt', 'tail_ik2_drv_jnt', 'tail_ik3_drv_jnt']
+ FK ctrls: ['tail_01_FK_ctrl', 'tail_03_FK_ctrl', 'tail_05_FK_ctrl'] | IK: ['tail_01_IK_ctrl', 'tail_04_IK_ctrl', 'tail_end_IK_ctrl']
+ tweaks: 7 | R ear tweaks: 0
+ settings attrs: ['_chain', 'ikfk', 'curl', 'curl_side', 'tweaks']
+ ear bind: ['L_ear_01_FK_jnt', 'L_ear_01_IK_jnt', 'L_ear_01_jnt', 'L_ear_01_result_jnt', 'L_ear_02_FK_jnt', 'L_ear_02_IK_jnt', 'L_ear_02_jnt', 'L_ear_02_result_jnt', 'L_ear_03_FK_jnt', 'L_ear_03_IK_jnt', 'L_ear_03_jnt', 'L_ear_03_result_jnt', 'L_ear_end_FK_jnt', 'L_ear_end_IK_jnt', 'L_ear_end_jnt', 'L_ear_end_result_jnt', 'L_ear_ik1_drv_jnt', 'L_ear_ik2_drv_jnt', 'L_ear_ik3_drv_jnt', 'R_ear_01_FK_jnt', 'R_ear_01_IK_jnt', 'R_ear_01_jnt', 'R_ear_02_FK_jnt', 'R_ear_02_IK_jnt', 'R_ear_02_jnt', 'R_ear_03_FK_jnt', 'R_ear_03_IK_jnt', 'R_ear_03_jnt', 'R_ear_end_FK_jnt', 'R_ear_end_IK_jnt', 'R_ear_end_jnt', 'R_ear_ik1_drv_jnt', 'R_ear_ik2_drv_jnt', 'R_ear_ik3_drv_jnt']
+  [info] matched 1 limb(s) to FK.
+ match fk -> ikfk 0
+  [info] matched 1 limb(s) to IK.
+ match ik -> ikfk 1
+  [info] matched 1 limb(s).
+ toggle ear -> 1
+ preview names count: 210
+  [info] back to the guides: adjust them, then Build again.
+ back: joints left 0

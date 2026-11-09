@@ -1,0 +1,8 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+  [info] matched 1 limb(s) to FK.
+L_humerus_FK_ctrl matches L_humerus_IK_jnt : True
+L_radius_FK_ctrl matches L_radius_IK_jnt : True
+  [info] matched 1 limb(s) to IK.
+IK ctrl placed on FK wrist: True True
+PV moved near the FK elbow plane: [ 40.7 136.6  36.3]

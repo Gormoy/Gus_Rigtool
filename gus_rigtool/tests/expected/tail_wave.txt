@@ -1,0 +1,4 @@
+[info] built 1 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+attrs: ['_chain', 'curl', 'curl_side', '_wave', 'wave', 'wave_up', 'wave_speed', 'wave_length', 'tweaks']
+fk control path: tail_02_curl_grp > tail_02_wave_grp > tail_02_FK_ctrl
+expression: tail_wave_expr | ['tail_01_wave_grp.rotateY = tail_settings_ctrl.wave * sin(time * tail_settings_ctrl.wave_speed * 6.2832 - 0 * tail_settings_ctrl.wave_length * 6.2832);', 'tail_01_wave_grp.rotateZ = tail_settings_ctrl.wave_up * sin(time * tail_settings_ctrl.wave_speed * 6.2832 - 0 * tail_settings_ctrl.wave_length * 6.2832);']

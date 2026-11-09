@@ -1,0 +1,9 @@
+PASS zeroed: translate / rotate 0, scale 1
+PASS nothing moved
+PASS its group took the pose
+PASS a group with other things under it: (5.6.6) a new Eyes_ctrl_rest takes the pose
+PASS a driven group: (5.6.6) a rest group too
+PASS already at rest: left alone
+PASS Maya's default names grouped apart in the heaviest list
+PASS 5.6.1: a page built while hidden is built again the first time it's shown (once)
+8/8 passed

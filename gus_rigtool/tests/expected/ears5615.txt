@@ -1,0 +1,21 @@
+PASS ear roots: L_Ear_01 and R_Ear_01 (not the chain below, not the ear ribbon's controls)
+[{'ctrl': 'L_Ear_01_FK_ctrl', 'kind': 'root', 'plane': 'L_Ear_01_FK_squash_srf', 'follicle': 'L_Ear_01_FK_squash_fol', 'group': 'L_Ear_01_FK_squash_follow', 'piece': 'L_Ear_01_FK_offset'}, {'ctrl': 'R_Ear_01_FK_ctrl', 'kind': 'root', 'plane': 'R_Ear_01_FK_squash_srf', 'follicle': 'R_Ear_01_FK_squash_fol', 'group': 'R_Ear_01_FK_squash_follow', 'piece': 'R_Ear_01_FK_offset'}]
+PASS one rider per ear root, its plane in the lattice
+PASS the ear's top group under a new follow group (where it was, nothing moved)
+PASS follows the follicle (and the head's scale)
+PASS the follicle reads the squashed plane, not Maya's copy of it as it was (5.6.15: the points never moved)
+PASS ear weight per vertex: the ear joints only (0, 0.75, 1)
+PASS removed: each ear back under its own parent, the follow groups gone, nothing moved
+[('|Head_01_CTRL_offset|Head_01_CTRL|L_Ear_ctrls_grp', 'group'), ('|Head_01_CTRL_offset|Head_01_CTRL|R_Ear_ctrls_grp', 'group')]
+PASS one unit per side: the ear group (the whole ear rig rides as one - 5.6.15 found 26 tops)
+PASS a follow group INSIDE the ear group, holding all it held (works when the ear group is constrained)
+{'Frown': ['Frown_amount_ctrl'], 'Smile': ['Smile_amount_ctrl', 'Smile_shift_ctrl']}
+PASS a column per pose: Smile (amount + shift), Frown (amount)
+PASS the board follows the head
+PASS Smile_L and Smile_R come from the amount knob and the shift knob
+PASS Frown from its amount knob only
+PASS the knobs are limited (up 0..size; shift sideways)
+PASS the knobs move only the way they should
+PASS the knobs aren't part of a pose
+PASS removed: the sliders free (no input) and at 0
+17/17 passed

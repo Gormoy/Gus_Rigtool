@@ -1,0 +1,5 @@
+{'L_Mouth_fol_06_ctrl': [0.0, 1.0, 0.0]}
+PASS the control you moved keeps its move (up 1)
+PASS the ribbon's neighbour stays out (the ribbon moves it again when the pose plays - 5.6.20 doubled it)
+PASS the neighbour is measured against its follicle-held offset
+3/3 passed

@@ -1,0 +1,8 @@
+categories: [('Home', ['home']), ('Build', ['build', 'face', 'ribbon', 'joints']), ('Skin', ['skin', 'fixes']), ('Controls', ['makectrl', 'shapes', 'behaviour', 'attrs', 'channels', 'spaces', 'follow', 'stick']), ('Connect', ['constrain', 'connect', 'nodes', 'sdk']), ('Check', ['checker', 'organize']), ('Toolbox', ['select', 'groups', 'mirror', 'rename', 'pivots', 'settings'])]
+every tool in a category: True
+search 'toes': [('Number of toes', 'Build > Build', 'win|cats|build|tools|build_scroll|col|tabs|settings|Form|frame3|col|row|menu')]
+search 'mirror pose': [('Mirror pose', 'Mirror & Pose > Mirror', 'win|cats|mirror|tools|mirror_scroll|col|frame1|col|btn')]
+go_to selected tabs: [('win|cats', 1), ('win|cats|build|tools', 1), ('win|cats|build|tools|build_scroll|col|tabs', 2)] | opened frames: ['frame3']
+main window opens with only the shown page built: True (26 waiting)
+the rest build on demand: True | none left: True
+main window built; tool errors (mock values aside): []

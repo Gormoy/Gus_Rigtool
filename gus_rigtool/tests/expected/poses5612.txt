@@ -1,0 +1,20 @@
+PASS the pose controls: the face ones (not the slider control)
+{'pose': 'Smile', 'attrs': ['Smile_L', 'Smile_R'], 'controls': 4}
+PASS Smile_L / Smile_R on the slider control, 4 controls
+PASS the face back at rest
+PASS left corner: all left; right corner: all right; the middle: half each
+PASS the corner's move: 1 up in its layer's space
+PASS the turned lip's move measured in its own group's axes (-Z there: [-0.0, 0.0, -1.0])
+PASS its turn kept as a turn (10 on X: [10.0, -0.0, 0.0])
+PASS the middle one: both sliders feed its layer (2)
+PASS ...each with half the move
+PASS a face at rest: refused
+PASS Frown (not split): one slider; Smile set to 0 while it was measured
+PASS saved again: replaced (-2 now)
+PASS removed: sliders gone, no layers left
+PASS a 30 degree turn on Y reads back as 30 on Y
+{'mouth_all': 4, 'mouth_corners': 2, 'mouth_upper': 1, 'mouth_lower': 1, 'face_all': 4}
+PASS sets: all, corners (the two widest), upper / lower
+PASS all of them inside gus_anim_sets
+PASS Gus Animtool lists the rig's sets (['face_all', 'mouth_all', 'mouth_corners', 'mouth_lower', 'mouth_upper'])
+17/17 passed

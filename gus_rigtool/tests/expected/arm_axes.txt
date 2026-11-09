@@ -1,0 +1,8 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+L wrist axes == forearm axes: True | hand too: True
+L clavicle pin points (world): [0. 0. 1.]
+R wrist axes == forearm axes: True | hand too: True
+R clavicle pin points (world): [-0. -0.  1.]
+twisted joints in the built rig: []
+after turning L_wrist 60 deg: ['L_wrist_jnt']

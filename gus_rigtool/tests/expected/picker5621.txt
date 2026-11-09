@@ -1,0 +1,21 @@
+PASS shapes: pill, ring, triangle, hexagon, star, plus, four arrows
+PASS a triangle: its tip's corner isn't it, its middle is
+PASS a star: between the points isn't it
+PASS an arrow right: the tip is, above the shaft isn't
+PASS Group: a frame round them with room for its title, at the back
+PASS its buttons: a and c, not far
+PASS click on its title: the frame; on its body (in use): the button there, else nothing
+PASS hidden: the frame and its buttons can't be clicked (in use), the others can
+PASS Send to back: behind the buttons - but frames stay behind everything
+PASS Up one
+PASS Bring to front
+PASS locked: it doesn't move or resize
+PASS text: a text item; Bigger grows its letters
+PASS paste style: shape, colour and size, the middle where it was
+PASS centre on the page (across)
+PASS move to a page (made): same place, gone from this one
+PASS the collar on Clothes, not Face (even near the head)
+['Body', 'Face', 'Hands', 'Clothes'] 3
+PASS pages: Body, Face, Hands, Clothes
+PASS fingers also on Body: small, under their hand
+19/19 passed

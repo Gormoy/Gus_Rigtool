@@ -1,0 +1,22 @@
+PASS world turn: World_ctrl, not the stray edgeCurve1
+PASS a lonely world control still counts when it's all there is
+PASS spacing found: inner 2, outer 6
+PASS on a joint: all its own, mask 1
+PASS half way: shared 50 / 50
+PASS near: mask 1; every row's weights add up to 1
+PASS fading between inner and outer
+PASS far away: mask 0 (the body's weights stay)
+{'spine': ['Spine_01_FK_ctrl'], 'neck & head': ['Neck_ctrl'], 'shoulders': ['L_Shoulder_FK_ctrl', 'R_Shoulder_FK_ctrl'], 'knees': ['L_Knee_FK_ctrl']}
+PASS ROM controls: shoulders both sides, spine, neck, knee
+PASS ROM leaves out IK, thumbs, the world, the stray curve
+1 241 ['spine (1) from frame 1', 'neck & head (1) from frame 61', 'shoulders (2) from frame 121', 'knees (1) from frame 181']
+PASS ROM: from the playback start, the limbs to FK (ikfk 0)
+PASS shoulder Z: 0, +70, 0, -70, 0 five frames apart
+PASS the playback range grows to the end of the ROM
+PASS remembered on a gusROM node
+PASS a second ROM is refused while one is there
+PASS Remove: every keyed channel cut, the node gone
+PASS Remove: values back as they were (ikfk 1, the knee's 12)
+['Shirt: already skinned - its weights kept, 2 body joint(s) added at 0']
+PASS an already skinned garment: weights kept, the 2 missing body joints added at 0
+18/18 passed

@@ -1,0 +1,12 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+before: True follow 1
+  [info] L:arm: 2 of your attribute(s) / space switch(es) made again.
+  [info] rebuilt: L:arm, L:fingers.
+after Build picked: wiggle 0.4 | switch: [['a', 'propA'], ['b', 'propB']] value 1 | under its space group: L_humerus_FK_space_grp
+  [info] back to the guides: L:arm, L:fingers. Adjust them, then Build picked (or Build).
+  [info] L:arm: 2 of your attribute(s) / space switch(es) made again.
+  [info] built: L:arm, L:fingers.
+after Back to guides + Build picked: wiggle True | switch: True
+exported: 1 control(s), 1 driven key curve(s)
+imported: {'shapes': 0, 'attributes': 1, 'space switches': 0, 'driven keys': 1} [] | curl back: True | keys: [('L_radius_FK_ctrl.curl', 'L_wrist_settings_ctrl.ikfk', 0.0, 0.0), ('L_radius_FK_ctrl.curl', 'L_wrist_settings_ctrl.ikfk', 1.0, 45.0)]

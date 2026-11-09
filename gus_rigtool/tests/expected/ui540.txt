@@ -1,0 +1,24 @@
+PASS every tool in exactly one tab
+PASS tabs: Home, Build, Skin, Controls, Connect, Check, Toolbox
+PASS Joints in Build, SDK in Connect, Behaviour in Controls
+PASS My tools by default: what you use most
+PASS the map: every page, and what moved
+ IN 5.4.0
+  Limits                                       Controls > Attributes  ->  Controls > Behaviour
+  In front of the mesh                         Controls > Make controls  ->  Controls > Behaviour
+  Stop at the body                             Controls > Make controls  ->  Controls > Behaviour
+  Joints (chains on curves / edges)            Toolbox  ->  Build > Joints
+  SDK (mirror / copy driven keys)              Controls  ->  Connect > SDK
+  Checker, Check this scene, Repair, Organize  Finish tab  ->  Check tab (renamed)
+
+Under the search box: My tools (your most used - + to choose them).
+Search: type what you want to do (limit, mirror weights, jiggle...) and press Enter: every page, section, button and option that matches.
+Home > For what you have selected: the likely next things for your selection.
+Control ['shapes', 'behaviour', 'attrs', 'spaces', 'mirror']
+PASS a control: shapes, behaviour, attributes, spaces, mirror
+PASS a joint: make controls first
+PASS a surface: ribbon
+PASS edges: face strip, cloth ribbon, joints
+PASS nothing selected: select, build, check
+PASS at most 6 suggestions
+11/11 passed

@@ -1,0 +1,110 @@
+Gus_Rigtool 5.6.27 - what's new since 4.0
+
+5.4.0: the window reorganised - tabs by job, Controls > Behaviour (limits, in front, stop at the body),
+My tools under the search box, Home suggests from your selection, and a Map of where everything is.
+
+5.5.0: node networks - a control's network alone in the Node Editor, setups (with set driven keys) saved and
+made again on another character, a rig map of everything the rig does, networks protected on Publish, unit
+conversions back to back folded, the heaviest parts of the rig listed.
+
+5.6.0: scale - Global_ctrl (scale) > World_ctrl > Local_ctrl from your World_ctrl (Build page), a scale check
+in Check this scene (x2: what doesn't grow with the rig) and Repair for the usual causes; jiggles keep their
+size when the rig scales.
+5.6.1: Repair can never change your rig at rest (a fix that moves the mesh is undone); ngSkinTools meshes are
+left alone; joints get the global scale directly (no scale constraints).
+5.6.2: pages sized by the tool itself (nothing cut off); 'Make the rig scale' (Build > World controls).
+5.6.3: 'Make the rig scale' handles ribbons reading World_ctrl's scale, cut-off control groups, IK limbs and
+chains that got the scale twice.
+5.6.4: 'Make the rig scale' keeps its fixes only when the scale check gets better; constraint targets and limb
+groups fixed; pages fit again after every button.
+5.6.5: visibility switches (Build page): Body / Face / Secondary controls, Joints, Geometry, Geo display on a
+control above the head; Face kit: aim the eye joints your rig already has.
+5.6.6: Keep the pose works on controls whose group a constraint drives (a new <control>_rest group); the range of
+motion's Remove finds controls after groups went in above them.
+5.6.7: space switches work on locked groups (nothing moves - checked); Standard spaces in one click; Check this
+scene tests every space and turns the head (double rotations); default material and Auto Key warnings; the
+visibility switches leave your display layers alone.
+5.6.8: group controls (Face kit > Group controls): mouth main, upper / lower lip, corners - each moves its controls
+by weights, the cheeks too; the scale check measures skinned meshes by their vertices.
+5.6.9: group controls fixed (crashed on the second one in Maya); dead twin bind joints found and taken out of the
+skins (Repair); no more 'Step must be less than range' warnings.
+5.6.10: the right group controls are a clean mirror under any head (the Hare's right corner came out stretched
+25x and moved the lips 9x); every group control moves its controls exactly by its weight, in the world.
+5.6.11: head squash and stretch (Face kit > Head squash): Head_squash_ctrl squashes, stretches and bends the head;
+the face controls ride it; on / off on Visibility_ctrl.
+5.6.12: face expressions (pose the face, Save as Smile: Smile_L / Smile_R sliders that add up) and selection sets
+(mouth upper / lower / corners...) that Gus Animtool lists.
+5.6.13: head squash fixed (crashed in Maya: a lattice flag Maya doesn't have; the box took in the ears and the eye
+targets).
+5.6.14: head squash: only the head moves (the whole body moved), the face controls keep their colour (no curves in
+the lattice); Remove repairs controls from 5.6.11 - 5.6.13.
+5.6.15: the ears ride the head squash keeping their shape; a sliders board for the expressions (an amount knob and
+a left / right shift knob each); no more 'Step must be less than range' warnings.
+5.6.16: the ears really ride the squash now (the whole ear rig, from its ears group); the sliders board sits
+beside the face at a usable size.
+5.6.17: the ear tips follow the squash and stay put when the rig is scaled; no more hidden mesh copies (Clean mesh
+copies takes away the old ones); the board's knobs rest at 0 and fit beside the face; Refresh for the poses list.
+5.6.18: the ears' FK rides the squash; the face controls' curves ride it too; SDK mirror works out the flips; edit a
+saved expression; the face's switches on your own gear (one per part); take hand-made switches off.
+5.6.19: expressions can hold chains (the ears' FK); a save that fails changes nothing; replacing a pose asks first.
+
+The full list, release by release, is CHANGELOG.txt in the gus_rigtool folder.
+
+RIGGING
+- Pivots: the bottom / centre / any spot of a box, from a face or vertices, along a chain; remember a pivot and
+  mirror it to the other side.
+- Groups: offset / sdk groups above or around anything, where you want them; remove groups; saved stacks.
+- Select: by type, inside groups, twins, skin joints, the joints a control drives, a ribbon's controls; quick
+  sets and recent selections.
+- Mirror: controls and poses, plus the links between them (follows, spaces, attributes, constraints, pivots).
+  Mirror a setup: constraints and utility nodes you built by hand on one side, with the groups they need.
+- Joint at the centre of a selection (per object or per piece), and Make controls for your own joints
+  (FK chains, constrain / parent / direct, both sides at once).
+- Ribbons for anything, not only the face: rebuild with more or fewer controls (the skin is kept), replace the
+  surface, switch how the joints follow (constraints / copying), mirror the sides, make a loop exactly
+  symmetric; a surface lofted the wrong way is turned for you.
+- Face kit: eyes, eyelids with Blink, mouth (lips follow the jaw by height), brows and strips from the mesh's
+  edges; Redo a part later from the edges it remembers.
+- Follow: pick its pivot and axes, move the pivot, update, copy, mirror to the twin.
+- Skin: a weight list (exact values on vertices, average, lock); mirror checks for missing twins first.
+- Cloth (Skin page): garments skinned like the body + Delta Mush, ribbons on their edges, a cloth layer
+  (ngSkinTools when loaded), a range of motion to test them, a fix for the pose where they break; Repair
+  weights for a garment pulled to the world origin.
+- Controls in front of the mesh (Always Draw On Top): on for new rigs' body controls, a button for every control.
+- Chain jiggle: reacts to whatever moves the chain (any direction, the world control too), with a limit towards
+  the body; undo stays clean.
+- Stop at the body: rotation limits on a chain's controls measured against the body mesh (a cape can't go in).
+- Limits: how far controls can move / turn, from the pose too, mirrored to the other side (Attributes page).
+- Bendy arms and legs: a bend control on the knee / elbow (both pieces bend into it) with a 'roundness' slider.
+- Publish and Deliver work on a rig made entirely by hand too (no Build needed): its top group and controls are
+  found, the groups above the controls are locked, joints hidden, sets made - Unpublish puts it all back.
+
+NODES
+- Nodes page (Connect): name utility nodes from their connections (multiplyDivide13 ->
+  L_Brow_02_ty_to_fol_11_sdk_md), select a whole setup, trace a channel back to its control, compare a
+  setup with its twin, find offsets left at rest and loops; Make a driver (a channel's positive / negative
+  side x an amount drives other channels, both sides at once); Connect by name pattern (L_Brow_0*_ctrl).
+
+CHECKING
+- Check this scene: turns the world control and lists what doesn't come along (double transforms, nodes left
+  behind), then puts it back.
+- Check this scene: a read-only diagnosis of your character (ribbons, follows, labels, skin, stuck controls,
+  fixes, face kit, guides, connections, picker), problems first.
+- Repair: what the checks found that can be fixed safely, ticked and fixed (each its own undo step).
+- Accept warnings: mark a warning as intended; it passes until something new shows up on that line.
+- Maya check and Self-test (Settings): every tool and the rig builder tested in your Maya, with a report.
+- Speed report (Settings): how long the tools take on your character, slowest first.
+
+ANIMATORS (Gus Animtool, in every delivery)
+- Works on any rig, hand-made ones too: it finds the controls and the left / right names by itself.
+- Picker: snapping with guide lines, resize several buttons, space evenly, same size; new controls are offered
+  on their own page.
+- Your picker travels inside the rig (Save in the rig's own file); animators can keep their own, export /
+  import it, or go back to the rig's.
+- Pose library: folders, search, rename, update pose / picture, preview (mirrored too) with Keep / Back.
+- Referenced rigs added after the window opened just work (no more 'Value is out of range').
+- Mirror finds a control's twin by position when the names don't pair (a mouth loop numbered around).
+
+FASTER
+- The main window opens in about a second (pages are built when you first open them).
+- Hiding / isolating body parts and finding the controls are several times faster.

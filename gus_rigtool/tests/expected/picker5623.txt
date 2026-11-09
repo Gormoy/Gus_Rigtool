@@ -1,0 +1,60 @@
+PASS a control's curves: its own, not the squash's hidden copy
+PASS repaired: the copy's switch disconnected, hidden again (1 fixed); its own curve untouched
+PASS run again: nothing to fix
+PASS Make / face switches / clothes / own switch / Remove all repair them too
+PASS label rules: words out, 01 -> 1, Capitals
+PASS no rules: as before
+PASS saved rules used by new buttons' text
+PASS fit: page = a.X + b, -a.Y + c found back (10, 200, 350)
+PASS fit: needs two buttons
+PASS Add selected (front view): neck between the head and the hips, the arm on the left (right of the page middle); the head (already there) skipped
+PASS nothing overlaps after
+PASS at the mouse: there
+PASS an empty page: laid out on its own (left eye on the right)
+PASS take out: their buttons go, they're on the excluded list
+PASS missing: not the taken-out ones
+PASS put back: missing again
+PASS adding a taken-out control puts it back on the list
+PASS a button for several: keeps the others
+PASS Auto layout leaves the taken-out ones out (and keeps the list)
+PASS missing -> their own page: Face made, fingers on Body (no Hands page)
+PASS front view: 4 moved (the locked one stays), head above the hips, left hand right of the right hand
+PASS front view with nothing to go by: says why
+PASS silhouette from the front on the page's scale
+PASS duplicate page: 'Face (copy)' after it, new ids, twins inside the copy, the original untouched
+PASS a second copy gets its own name
+PASS colour by side
+PASS selection set: one pill above that selects both
+PASS toggle: a pill, one click on (1), again off (0)
+PASS pinned found
+PASS unpin all: pins and their window places gone
+PASS report: pages, missing, pinned, duplicates, gone
+PASS prefs: yours, on this computer (text 1.8; others default)
+PASS themes: dark, light, contrast
+Gus Animtool: picker: 105 button(s), automatic; 106 controls found automatically: 106 by name (_ctrl).
+PASS mode band: ANIMATE
+PASS status: page, buttons, zoom
+PASS text size slider: 200% kept for you
+PASS mode band: EDIT
+PASS Item panel: a field left after picking another doesn't move the new one
+PASS ... after it shows the new one, it does
+PASS button list: every item on the page
+PASS search: finds the head's button(s), drawn highlighted
+Gus Animtool: pinned 1 button(s) - they stay where they are in the window.
+PASS a pinned button: the bar says it doesn't zoom
+Gus Animtool: 1 button(s) unpinned - they zoom with the page again (where they are now). Save keeps it.
+PASS Unpin all: gone, the bar too
+Gus Animtool: page 'Body (copy)' made - try things there, the original stays as it is.
+PASS Page > Duplicate: a copy right after, shown
+Gus Animtool: 1 control(s) taken out (2 button(s) went): not missing any more, Auto layout leaves them out - Missing > Taken out puts them back. Save keeps it.
+PASS Take out: the button goes, the control on the list
+PASS Missing dialog: the taken-out control listed to put back
+Gus Animtool: 1 button(s) added where they sit (front view) - Save keeps them.
+PASS Add selected (front view, the default): added, picked
+Gus Animtool: 4 button(s) placed as Maya's front view sees their controls - Undo takes it back, Save keeps it.
+PASS front view from the window: the picked placed
+PASS Alt+click: the twin selected
+Gus Animtool: seen from the front.
+Gus Animtool: picker look saved (yours, on this computer).
+PASS look applied (compact toolbar, light theme, hover outline) and drawn
+50/50 passed

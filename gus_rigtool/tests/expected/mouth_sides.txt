@@ -1,0 +1,16 @@
+joints: 42 | no twin: []
+  Mouth_ribbon_fol_02_jnt    (1, 'Mouth_ribbon_fol_02_jnt')
+  Mouth_ribbon_fol_20_jnt    (2, 'Mouth_ribbon_fol_02_jnt')
+  Mouth_ribbon_fol_11_jnt    (0, 'Mouth_ribbon_fol_11_jnt')
+  Mouth_ribbon_fol_25_jnt    (0, 'Mouth_ribbon_fol_25_jnt')
+  Mouth_ribbon_fol_01_bind   (1, 'Mouth_ribbon_fol_01_bind')
+  Mouth_ribbon_fol_21_bind   (2, 'Mouth_ribbon_fol_01_bind')
+  Mouth_ribbon_fol_01_jnt    (1, 'Mouth_ribbon_fol_01_jnt')
+  Mouth_ribbon_fol_21_jnt    (2, 'Mouth_ribbon_fol_01_jnt')
+a _jnt paired with a _bind: []
+  [info] 1 control(s) on the other side mirror their twins (+X out on both sides, Y up, Z forward); nothing moved.
+done: 1
+right control: X mirrors the left's (outward on both): [-0.94, 0.0, -0.342] vs left [0.94, 0.0, -0.342] | Y the same: [0.0, 1.0, 0.0] | Z the same: [-0.342, 0.0, 0.94] vs [0.342, 0.0, 0.94]
+its joint's group turned the same way: True | joints stay put: True
+centre ones untouched: [1.0, 0.0, 0.0]
+bind group follows the controls' group: True True

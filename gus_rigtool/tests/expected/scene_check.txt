@@ -1,0 +1,39 @@
+RESULT: 1 FAIL, 1 note to look at, 2 ok, 1 expected note, 1 info
+
+PROBLEMS (look at these first)
+  [Windows]
+    FAIL  page that breaks   ZeroDivisionError: division by zero
+                got = fn(*args, **kw)
+                rep.step("page that breaks", lambda: 1 / 0)
+                                                     ~~^~~
+            ZeroDivisionError: division by zero
+  [Animtool]
+    note  action odd   said: something new went wrong
+
+SUMMARY
+  FAIL  Windows                                                    1 FAIL, 1 ok
+  warn  Animtool                                                   1 note to look at, 1 ok, 1 expected note
+  ok    Facts                                                      1 info
+
+WHAT'S IN THE SCENE
+  [Facts]
+    Mouth_ribbon   26 follicles
+
+DETAILS (every step)
+  == Windows ==
+    ok    main window
+    FAIL  page that breaks   ZeroDivisionError: division by zero
+  == Animtool ==
+    fine  action pull   said: select keys in the Graph Editor first.
+    note  action odd   said: something new went wrong
+    ok    action key
+  == Facts ==
+problems first: True
+expected note is fine, not a problem: True
+empty section not listed: True
+clean: RESULT: no problems. (1 ok)
+checker parts the fake Maya cannot run: 2
+found joints copy their controls     True
+found m3_ctrl   <- jaw_ctrl x 0.80   True
+found Mouth_ribbon:                  True
+scene not changed: m0_bind still copies: True

@@ -1,0 +1,42 @@
+PASS safe mode: a vertex off by 0.5 is found (state, mesh, how many, most)
+PASS safe mode: the same look twice: nothing moved
+PASS safe mode: a state seen only once isn't compared
+PASS safe mode: under a hair (0.0005) counts as still
+PASS safe mode: what moved, said in words
+PASS safe mode: a fix that moved something is undone and says what moved
+PASS safe mode: a fix that moved nothing is kept
+PASS Repair: fixes meant to move the mesh skip safe mode
+PASS Repair: scale fixes compare rest + animation, not the x2 look
+PASS Repair: every other fix: rest, x2 and real animation
+PASS tag expression names
+PASS the Hare's Head_squash: input 10 asks for 'Head_squash' that isn't there, input 3 is fine
+PASS fix: that input takes the whole mesh (empty expression), the good one is left
+PASS when Maya can't say which tags a mesh has: nothing is reported
+PASS found: skinCluster10 -> a hidden mesh -> the squash
+PASS fixed: the skin feeds the squash straight, the hidden mesh is gone
+PASS a hidden mesh that also feeds something else is left alone
+PASS a visible mesh feeding a deformer isn't a break
+PASS Delta Mush with displacement not tied to the scale
+PASS the belt: displacement = the global scale; Pants (0.5): through a multiply that keeps its 0.5
+PASS after the fix nothing is reported
+PASS keys left on a constrained channel: the pairBlend, its control and the key
+PASS fix: the key is gone and the constraint has the whole say
+PASS nothing left to report
+PASS a ribbon starts symmetric
+PASS marked not symmetric (an attribute on its controls group, nothing moves)
+PASS Make the right side mirror the left refuses a ribbon marked not symmetric
+PASS the mark comes off
+PASS an unknown ribbon isn't marked
+PASS the cape's _sdk group held by a constraint between offset and control is found
+PASS nothing between offset and control: nothing held
+PASS a control on a ribbon marked not symmetric: no twin (mirror leaves it alone)
+PASS not learned yet: no stored rest
+PASS learned: the control's rest place is kept (at its parent's spot, tx 5), its pose is back (tx 2, ry 30)
+PASS the arm posed later: mirror still uses the learned rest (not where the arm is now)
+PASS a control not learned is worked out as before
+PASS the picker saved in the rig is found (the old check said 'no saved picker')
+PASS only on this computer: said so (animators wouldn't get it)
+PASS none anywhere
+PASS Speed and Ready for animators are parts of Check this scene
+PASS Repair knows the new fixes
+41/41 passed

@@ -1,0 +1,26 @@
+clamp1             -> L_Brow_02_ty_to_fol_11_ctrl_sdk_clamp
+  multiplyDivide1    -> L_Brow_01_t_to_Brow_01_md
+  multiplyDivide2    -> L_Brow_01_r_to_Brow_01_md
+  multiplyDivide3    -> L_Brow_01_t_to_fol_11_ctrl_sdk_md
+  multiplyDivide4    -> L_Brow_01_r_to_fol_11_ctrl_sdk_md
+  multiplyDivide5    -> L_Brow_02_t_to_fol_11_ctrl_sdk_md
+  multiplyDivide6    -> L_Brow_02_r_to_fol_11_ctrl_sdk_md
+  multiplyDivide7    -> L_Brow_02_ty_to_fol_11_ctrl_sdk_md
+  unitConversion1    -> L_Brow_01_r_to_Brow_01_uc
+  unitConversion2    -> L_Brow_01_r_to_Brow_01_uc2
+  unitConversion3    -> L_Brow_01_r_to_fol_11_ctrl_sdk_uc
+  unitConversion4    -> L_Brow_01_r_to_fol_11_ctrl_sdk_uc2
+  unitConversion5    -> L_Brow_02_r_to_fol_11_ctrl_sdk_uc
+  unitConversion6    -> L_Brow_02_r_to_fol_11_ctrl_sdk_uc2
+  unitConversion7    -> L_Brow_02_ty_to_fol_11_ctrl_sdk_uc
+PASS the brow's 0.8: L_Brow_02_t_to_fol_11_ctrl_sdk_md
+PASS the turn chain: L_Brow_01_r_to_..._uc / _md
+PASS the clamp chain: L_Brow_02_ty_to_fol_11_ctrl_sdk_clamp / _md / _uc
+PASS names are unique
+PASS left alone: yours, one with nothing out, one in a reference
+PASS Checker finds them and Fix renames them all
+PASS afterwards none are left
+PASS the renamed network still works (same connections)
+setup: ['L_Brow_02_ctrl_MD', 'L_Brow_02_r_to_fol_11_ctrl_sdk_md', 'L_Brow_02_r_to_fol_11_ctrl_sdk_uc', 'L_Brow_02_r_to_fol_11_ctrl_sdk_uc2', 'L_Brow_02_t_to_fol_11_ctrl_sdk_md', 'L_Brow_02_ty_to_fol_11_ctrl_sdk_clamp', 'L_Brow_02_ty_to_fol_11_ctrl_sdk_md', 'L_Brow_02_ty_to_fol_11_ctrl_sdk_uc'] ['L_Facial_ribbon_fol_11_ctrl_sdk_parentConstraint1'] ['L_Brow_02_jnt', 'L_Facial_ribbon_fol_11_ctrl_sdk']
+PASS select the setup: its utility nodes (yours too), constraint and what it moves
+9/9 passed

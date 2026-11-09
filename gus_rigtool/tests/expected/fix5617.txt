@@ -1,0 +1,15 @@
+['Hare_BodyShapeDeformedDeformed', 'Hare_BodyShapeDeformedDeformedDeformed']
+PASS the copies: the two fed by another mesh (not the skin's output, not the original, not the visible shape)
+PASS cleaned: 2 gone, the chain joined (skin -> its shape -> the lattice -> the shape you see)
+PASS again: nothing to clean
+PASS the lattice is placed without 'after' (that's what made Maya copy the mesh)
+[0.0, 104.0, 0.0] [20.0, 58.0, 20.0]
+PASS the box reaches past the ear's base (130 + a tenth: 133), not up to the tip (160)
+PASS the follow point grows with the head: decomposeMatrix of the head -> the follicle's scale
+PASS the squash keeps full mesh paths (two meshes of the same short name)
+PASS Refresh: Frown dropped (its slider is gone), its node with it; Smile and Wide stay
+PASS a Refresh button in Expressions
+PASS the knob in its own offset group at the slider's bottom; the knob itself at 0
+PASS frames are not controls for the checker; the knob is
+PASS beside the face at its middle, the shift slider just under the amount one, no 0.06 offset
+12/12 passed

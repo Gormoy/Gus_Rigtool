@@ -1,0 +1,16 @@
+[info] Quadruped (dog) guides made for a 180 tall character (head height, nose towards +Z). Place the left side, then Mirror guides.
+L:front_leg toes from the template: 4 | toe guides: 12
+R:front_leg toes from the template: 4 | toe guides: 12
+L:back_leg toes from the template: 4 | toe guides: 12
+R:back_leg toes from the template: 4 | toe guides: 12
+  [info] built 9 module(s), 133 bind joints. Skin your model to skeleton_grp's joints.
+  [info] rig built. Next: Skin > Bind (Home shows every step).
+back toes built: 3
+field kind: optionMenu | items: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+pending: [('R:back_leg', 'toe count', 4, 2)]
+light: ('warn', 'Now: settings changed, not applied (R:back_leg: toe count 4 -> 2) - press Apply.')
+  [dialog] These settings aren't applied yet: |  | R:back_leg: toe count  4 -> 2 |  | Apply them first?
+  [info] R:back_leg: toe count 4 -> 2. Build picked to see it on the rig.
+  [info] rebuilt: R:back_leg.
+saved: 2 | R toes built: ['R_toeA_01_jnt', 'R_toeB_01_jnt']
+light after: Rig built (9 modules). Change a module: pick it, change its settings below the list, Apply, Build picked.

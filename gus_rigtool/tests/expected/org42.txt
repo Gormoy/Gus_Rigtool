@@ -1,0 +1,13 @@
+PASS Ribbon sits next to Face (Build)
+PASS Stick to skin has its own tab after Follow
+PASS builds list, with who made them
+PASS the Face tab part that made it
+PASS Face kit settings shared
+PASS Load its settings: the tab's options become the build's
+PASS Ribbon tab lists the builds
+PASS Face tab lists only its ribbons
+PASS Stick to skin page builds, Follow no longer has it
+PASS shared helpers
+PASS modules use the shared ones
+PASS split modules still answer every old name
+ALL OK

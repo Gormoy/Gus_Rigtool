@@ -1,0 +1,11 @@
+pairs before mirror: 0
+on with no twin: 0 True
+  [info] mirrored 1 left module(s) to the right.
+linked by itself after mirror: True | pairs: 5
+right R_clavicle_gde <- ['R_clavicle_gde_sym_dm'] <- ['R_clavicle_gde_sym_mm'] <- ['L_clavicle_gde'] | mirror matrix [-1.0, 0.0, 0.0]
+every right guide driven: True 5
+after the left module is re-made: networks 10 | all driven: True
+off: 0 False | right free: True
+button: Symmetry: Off (click: On)
+  [info] symmetry on: 5 right guide(s) follow the left ones live (move the LEFT guides).
+button: Symmetry: On (click: Off)

@@ -1,0 +1,7 @@
+PASS the report still comes out
+PASS windows crash: one FAIL line naming it
+PASS biped and quadruped rig crash: their own lines
+PASS every later part still ran
+PASS deleted button: skipped, no crash
+PASS button check crash: its own FAIL line
+ALL OK

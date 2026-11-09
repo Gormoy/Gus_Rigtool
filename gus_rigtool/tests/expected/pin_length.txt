@@ -1,0 +1,5 @@
+[warn] leg (L): attach 'spine:hips' - no module 'spine' built before it; it goes under the root.
+  [info] built 2 module(s), 5 bind joints. Skin your model to skeleton_grp's joints.
+settings attrs: ['_IK_FK', 'ikfk', 'upper_length', 'lower_length', 'pin']
+tibia length <- ['L_ankle_stretchPin0'] <- ['L_ankle_settings_ctrl', 'L_ankle_stretchBone_L_tibia_IK_jnt', 'L_ankle_stretchPinSign0']
+pin measures from: ['L_femur_stretchStart_grp'] ['L_tibia_PV_ctrl'] | no auto stretch nodes: True

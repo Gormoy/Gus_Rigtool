@@ -1,0 +1,10 @@
+PASS Angry saved
+151.0
+PASS as you see it: L up 1 (Angry) measured before anything goes off
+couldn't save Angry (stopped on purpose) - nothing changed: the face is as you posed it, the poses as they were.
+PASS stopped: nothing changed - the face as posed, no new slider, the old Angry whole
+PASS replaced: Angry is now the middle up 0.5, its slider called Angry, no Angry_new left
+PASS moved, no face name: found (Snout_wiggle)
+PASS a layer without its sum: healed (then gone - nothing fed it any more), no broken layer left
+PASS saving onto a broken layer: it's healed, not refused
+7/7 passed

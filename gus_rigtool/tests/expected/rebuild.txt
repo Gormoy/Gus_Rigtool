@@ -1,0 +1,22 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+skinned to: ['L_humerus_jnt', 'L_radius_jnt', 'spine_jnt']
+dependents of L:arm: ['L:arm', 'L:fingers']
+    deformerWeights export body_geo.xml
+  [info] skin saved for body_geo.
+    deformerWeights import body_geo.xml
+  [info] skin put back on 1 mesh(es): body_geo
+  [info] rebuilt: L:arm, L:fingers.
+nodes before/after: 1224 1224 | L arm joint exists: True | R arm untouched: True
+skin after rebuild: {'body_skin': ['L_humerus_jnt', 'L_radius_jnt', 'spine_jnt']}
+duplicate names: []
+    deformerWeights export body_geo.xml
+  [info] skin saved for body_geo: it comes back with the next Build.
+  [info] back to the guides: adjust them, then Build again.
+after back: skins [] | pending: ['body_geo']
+    deformerWeights import body_geo.xml
+  [info] skin put back on 1 mesh(es): body_geo
+  [info] built 10 module(s), 97 bind joints. Skin your model to skeleton_grp's joints.
+after build: skins {'body_skin': ['L_humerus_jnt', 'L_radius_jnt', 'spine_jnt']} | pending: []
+free: radius guide parent = L_arm_guides_grp
+linked: radius guide parent = L_humerus_gde

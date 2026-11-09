@@ -1,0 +1,87 @@
+PASS an old jiggle is found
+PASS Check this scene warns about it
+PASS Repair offers to rewrite it
+// Gus_Rigtool jiggle: Cape (jiggle 5.6.0; memory in the MEL global $gusJiggle_Cape_<id>: no attribute written, undo stays clean)
+// groups: Cape_01_jiggle_grp Cape_02_jiggle_grp Cape_03_jiggle_grp | side Y | up Z | settings Cape_settings_ctrl | body side 0 up 0
+global float $gusJiggle_Cape_<id>[];
+float $f = frame;
+int $i;
+if (size($gusJiggle_Cape_<id>) < 29) { for ($i = 0; $i < 29; $i++) $gusJiggle_Cape_<id>[$i] = 0; $gusJiggle_Cape_<id>[0] = -1000000000; }
+if ($f != $gusJiggle_Cape_<id>[0]) {
+    float $p[] = {Cape_jiggle_root_dm.outputTranslateX, Cape_jiggle_root_dm.outputTranslateY, Cape_jiggle_root_dm.outputTranslateZ};
+    float $sc = Cape_jiggle_root_dm.outputScaleX; if ($sc < 0.000001) $sc = 1;
+    for ($i = 0; $i < 3; $i++) $p[$i] = $p[$i] / $sc;
+    float $r[] = {Cape_jiggle_root_dm.outputRotateX, Cape_jiggle_root_dm.outputRotateY, Cape_jiggle_root_dm.outputRotateZ};
+    float $cx = cos(deg_to_rad($r[0])); float $sx = sin(deg_to_rad($r[0]));
+    float $cy = cos(deg_to_rad($r[1])); float $sy = sin(deg_to_rad($r[1]));
+    float $cz = cos(deg_to_rad($r[2])); float $sz = sin(deg_to_rad($r[2]));
+    float $m[] = {$cy * $cz, $cy * $sz, -$sy,
+                  $sx * $sy * $cz - $cx * $sz, $sx * $sy * $sz + $cx * $cz, $sx * $cy,
+                  $cx * $sy * $cz + $sx * $sz, $cx * $sy * $sz - $sx * $cz, $cx * $cy};
+    int $rest = (Cape_settings_ctrl.jiggle == 0 || abs($f - $gusJiggle_Cape_<id>[0] - 1) > 0.01);
+    float $v[] = {$p[0] - $gusJiggle_Cape_<id>[1], $p[1] - $gusJiggle_Cape_<id>[2], $p[2] - $gusJiggle_Cape_<id>[3]};
+    float $a[] = {0, 0, 0};
+    float $w[] = {0, 0, 0};
+    if ($rest) { for ($i = 0; $i < 3; $i++) $v[$i] = 0; }
+    else {
+        if ($gusJiggle_Cape_<id>[16] > 0.5) { for ($i = 0; $i < 3; $i++) $a[$i] = $v[$i] - $gusJiggle_Cape_<id>[4 + $i]; }
+        float $q[]; for ($i = 0; $i < 9; $i++) $q[$i] = $gusJiggle_Cape_<id>[7 + $i];
+        $w[0] = 0.5 * ($m[3]*$q[6] + $m[4]*$q[7] + $m[5]*$q[8] - $m[6]*$q[3] - $m[7]*$q[4] - $m[8]*$q[5]);
+        $w[1] = 0.5 * ($m[6]*$q[0] + $m[7]*$q[1] + $m[8]*$q[2] - $m[0]*$q[6] - $m[1]*$q[7] - $m[2]*$q[8]);
+        $w[2] = 0.5 * ($m[0]*$q[3] + $m[1]*$q[4] + $m[2]*$q[5] - $m[3]*$q[0] - $m[4]*$q[1] - $m[5]*$q[2]);
+    }
+    $gusJiggle_Cape_<id>[0] = $f; for ($i = 0; $i < 3; $i++) { $gusJiggle_Cape_<id>[1 + $i] = $p[$i]; $gusJiggle_Cape_<id>[4 + $i] = $v[$i]; }
+    for ($i = 0; $i < 9; $i++) $gusJiggle_Cape_<id>[7 + $i] = $m[$i];
+    $gusJiggle_Cape_<id>[16] = !$rest;
+    float $al[] = {$a[0]*$m[0] + $a[1]*$m[1] + $a[2]*$m[2], $a[0]*$m[3] + $a[1]*$m[4] + $a[2]*$m[5],
+                   $a[0]*$m[6] + $a[1]*$m[7] + $a[2]*$m[8]};
+    float $T[] = {1, 0, 0};
+    float $d[] = {-(Cape_settings_ctrl.jiggle_bounce * $al[0] + $w[1]*$T[2] - $w[2]*$T[1]), -(Cape_settings_ctrl.jiggle_bounce * $al[1] + $w[2]*$T[0] - $w[0]*$T[2]),
+                  -(Cape_settings_ctrl.jiggle_bounce * $al[2] + $w[0]*$T[1] - $w[1]*$T[0])};
+    float $side = Cape_settings_ctrl.jiggle * 57.2958 * ($d[0] * 0 + $d[1] * 0 + $d[2] * -1);
+    float $up = Cape_settings_ctrl.jiggle * 57.2958 * ($d[0] * 0 + $d[1] * 1 + $d[2] * 0);
+    float $os; float $vs; float $ou; float $vu; float $nn;
+    $os = $gusJiggle_Cape_<id>[17]; $vs = $gusJiggle_Cape_<id>[18]; $ou = $gusJiggle_Cape_<id>[19]; $vu = $gusJiggle_Cape_<id>[20];
+    if ($rest) { $os = 0; $vs = 0; $ou = 0; $vu = 0; }
+    else {
+        $vs = $vs * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $os + $side * 0.166667;
+        $vu = $vu * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $ou + $up * 0.166667;
+        $nn = $os + $vs; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } $os = $nn;
+        $nn = $ou + $vu; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } $ou = $nn;
+    }
+    $gusJiggle_Cape_<id>[17] = $os; $gusJiggle_Cape_<id>[18] = $vs; $gusJiggle_Cape_<id>[19] = $ou; $gusJiggle_Cape_<id>[20] = $vu;
+    $os = $gusJiggle_Cape_<id>[21]; $vs = $gusJiggle_Cape_<id>[22]; $ou = $gusJiggle_Cape_<id>[23]; $vu = $gusJiggle_Cape_<id>[24];
+    if ($rest) { $os = 0; $vs = 0; $ou = 0; $vu = 0; }
+    else {
+        $vs = $vs * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $os + $side * 0.333333;
+        $vu = $vu * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $ou + $up * 0.333333;
+        $nn = $os + $vs; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } $os = $nn;
+        $nn = $ou + $vu; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } $ou = $nn;
+    }
+    $gusJiggle_Cape_<id>[21] = $os; $gusJiggle_Cape_<id>[22] = $vs; $gusJiggle_Cape_<id>[23] = $ou; $gusJiggle_Cape_<id>[24] = $vu;
+    $os = $gusJiggle_Cape_<id>[25]; $vs = $gusJiggle_Cape_<id>[26]; $ou = $gusJiggle_Cape_<id>[27]; $vu = $gusJiggle_Cape_<id>[28];
+    if ($rest) { $os = 0; $vs = 0; $ou = 0; $vu = 0; }
+    else {
+        $vs = $vs * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $os + $side * 0.5;
+        $vu = $vu * (1 - Cape_settings_ctrl.jiggle_damping) - Cape_settings_ctrl.jiggle_stiffness * $ou + $up * 0.5;
+        $nn = $os + $vs; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vs = 0; } $os = $nn;
+        $nn = $ou + $vu; if ($nn > Cape_settings_ctrl.jiggle_limit_out) { $nn = Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } if ($nn < -Cape_settings_ctrl.jiggle_limit_out) { $nn = -Cape_settings_ctrl.jiggle_limit_out; $vu = 0; } $ou = $nn;
+    }
+    $gusJiggle_Cape_<id>[25] = $os; $gusJiggle_Cape_<id>[26] = $vs; $gusJiggle_Cape_<id>[27] = $ou; $gusJiggle_Cape_<id>[28] = $vu;
+}
+Cape_01_jiggle_grp.rotateY = $gusJiggle_Cape_<id>[17];
+Cape_01_jiggle_grp.rotateZ = $gusJiggle_Cape_<id>[19];
+Cape_02_jiggle_grp.rotateY = $gusJiggle_Cape_<id>[21];
+Cape_02_jiggle_grp.rotateZ = $gusJiggle_Cape_<id>[23];
+Cape_03_jiggle_grp.rotateY = $gusJiggle_Cape_<id>[25];
+Cape_03_jiggle_grp.rotateZ = $gusJiggle_Cape_<id>[27];
+PASS rewritten under the same name
+PASS no setAttr, no getAttr, no xform by name (namespace-proof)
+PASS its memory is one MEL global array
+PASS same groups and axes: side Y, up Z, all three
+PASS same settings attributes
+PASS the root comes in through a decomposeMatrix
+PASS between frames it only puts the offsets back (springs step once per new frame)
+PASS the old state node is gone
+PASS nothing old left
+12/12 passed

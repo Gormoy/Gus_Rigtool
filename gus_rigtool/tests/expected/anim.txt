@@ -1,0 +1,38 @@
+[info] Biped guides made for a 180 tall character. Place the left side, then Mirror guides.
+  [info] built 11 module(s), 104 bind joints. Skin your model to skeleton_grp's joints.
+settings of FK ctrl: L_wrist_settings_ctrl
+settings of tweak: tail_settings_ctrl
+Gus Animtool: switched 2 limb(s) to IK.
+after To IK: 1 1
+Gus Animtool: switched 2 limb(s).
+after toggle: 0 0
+FK humerus == IK humerus joint (rotation): True
+Gus Animtool: mirrored 1 control(s) L -> R.
+mirror pose matches the Mirror tab: True [10.0, 25.0, -40.0]
+Gus Animtool: selected 1 twin(s).
+twin: ['R_humerus_FK_ctrl']
+space attrs: ['space']
+Gus Animtool: space = space on 1 control(s), no jump.
+space now: 2 | same place: True
+Gus Animtool: reset 1 control(s).
+reset: [0.0, 0.0, 0.0]
+Gus Animtool: selected 20 control(s).
+fk 20
+Gus Animtool: selected 11 control(s).
+ik 11
+Gus Animtool: selected 7 control(s).
+tweaks 7
+Gus Animtool: selected 114 control(s).
+all 114
+Gus Animtool: selected 17 control(s).
+tail limb: 17
+characters: ['']
+written: ['gus_animtool', 'gus_anim.py', 'drag_to_maya_animtool.mel', 'README_animators.txt']
+defaults.json: {'pairs': [['L_', 'R_']], 'axis': 0, 'center': [0.0, 0.0, 0.0], 'suffix': '_ctrl'}
+package files: ['__init__.py', 'actions.py', 'anim.py', 'animlib.py', 'attach.py', 'backup.py', 'cycle.py', 'hider.py', 'hotkeys.py', 'keys.py', 'motion.py', 'pickerqt.py', 'pickmodel.py', 'pickmore.py', 'pickshapes.py', 'selsets.py', 'tempspace.py', 'timeslider.py', 'toolbar.py', 'tools.py', 'tween.py', 'ui.py', 'updater.py'] compile: True
+Gus Animtool: switched 1 limb(s) to FK.
+namespaced switch: 0 | characters: ['hero:']
+Gus Animtool: selected 17 control(s).
+namespaced tail limb: 17
+Gus Animtool: selected 1 twin(s).
+namespaced twin: ['hero:R_humerus_FK_ctrl']

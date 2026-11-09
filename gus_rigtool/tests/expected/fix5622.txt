@@ -1,0 +1,18 @@
+{'L_Eyelids_fol_01_ctrl': 'Eyelid_Ribbons', 'L_Upper_Eyelids_ctrl': 'Eyelids', 'L_Pupil_ctrl': 'Pupils', 'Eyes_ctrl': 'Eyes', 'L_Mouth_fol_06_ctrl': 'Mouth_Ribbon', 'Mouth_main_ctrl': 'Mouth', 'Jaw_end_ctrl': 'Mouth', 'L_Facial_ribbon_fol_05_ctrl': 'Facial_Ribbons', 'L_Ear_01_FK_ctrl': 'Ears'}
+PASS face parts: lid ribbons / lid masters / pupils / eyes / mouth ribbon / mouth (jaw too) / facial / ears
+Visibility_ctrl gets Secondary_Ctrls (all of them) and a switch per part:
+  Collar: 1 control(s) - e.g. Collar_fol_09_ctrl
+  Cape: 1 control(s) - e.g. Cape_Ribbon_fol_04_ctrl
+  Sleeves: 1 control(s) - e.g. L_Sleeve_fol_05_ctrl
+  Tweaks: 1 control(s) - e.g. L_humerus_bend_ctrl
+PASS clothes: Collar, Cape, Sleeves, Tweaks each a switch, under Secondary_Ctrls
+PASS ... and they still count as on Secondary_Ctrls
+PASS a switch of your own: Fingers on the wrist gear, under its Body_Ctrls
+PASS a name the control has already: refused
+PASS its switches aren't offered as hand-made ones
+PASS Remove all: every part gone, the controls shown
+  [warn] 1 mesh(es) are in a referenced file - delete their history in the model file (Geo_Hare_08.mb), then reload the reference: Geo:Eyebrows
+PASS mesh history in a referenced file: left (no crash), nothing baked
+PASS Deliver: 2 poses (one in a folder) and a clip next to the rig
+PASS the animator's library: the rig's poses in, theirs not overwritten, once (marked)
+10/10 passed

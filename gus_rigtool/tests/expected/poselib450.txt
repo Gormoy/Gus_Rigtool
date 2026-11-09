@@ -1,0 +1,17 @@
+PASS save at the top
+PASS save in a folder
+PASS folders listed (not the clips folder)
+PASS all poses
+PASS one folder
+PASS no folder
+PASS search (any case)
+PASS rename keeps the folder (picture too)
+PASS no overwriting a pose with the same name
+PASS move out of the folder
+PASS update pose: the current values
+PASS update picture
+PASS a folder can't be called 'clips'
+PASS preview then Back: one undo
+PASS a second preview takes the first off first
+PASS Back after Keep does nothing
+ALL OK

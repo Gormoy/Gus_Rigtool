@@ -1,0 +1,17 @@
+['Global_ctrl: new, above World_ctrl - the scale (globalScale)', 'World_ctrl: moves and turns only, its scale moved to Global_ctrl (3 thing(s) read it)', 'Local_ctrl: new, under World_ctrl - 0 thing(s) under World_ctrl move under it']
+PASS the plan counts World_ctrl's scale-channel readers (the follicle: 3)
+PASS made: the follicle now reads Global_ctrl.globalScale, not World_ctrl.scaleX
+PASS a follicle reading World_ctrl.scaleX (stays 1): counted as NOT scaling
+PASS fixed: it reads the global scale
+PASS the ribbon control group cut off by the no-inherit ribbon group: found (the top one)
+PASS given the scale with its own kept (-1 stays -1): own x global
+PASS ...and now it counts as scaling
+PASS no inverseScale connection: Segment Scale Compensate does nothing - joints 02 and 03 get it twice
+PASS fixed: only the first one gets the scale, the others inherit it (scale 1)
+PASS with inverseScale connected the parent's scale IS cancelled - not 'twice'
+[('rest', 'L_ankle_stretchRest'), ('pin', 'L_ankle_stretchPinLocal0'), ('soft', 'L_ankle_softDist')]
+PASS found: the stretch rest length, the pin length, the soft IK distance
+PASS fixed: rest and pin x the scale; the soft IK distance divided by it before everything that read it
+{'targets': 0, 'follicles': 1, 'groups': 0, 'limbs': 0, 'joints': 0, 'rest': 0, 'twice': 0, 'before': 5, 'after': 5, 'undone': None, 'why': None}
+PASS Make the rig scale: the follicle re-wired; nothing left
+13/13 passed

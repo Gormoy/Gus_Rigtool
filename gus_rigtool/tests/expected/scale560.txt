@@ -1,0 +1,31 @@
+Global_ctrl: new, above World_ctrl - the scale (globalScale)
+World_ctrl: moves and turns only, its scale moved to Global_ctrl (1 thing(s) read it)
+Local_ctrl: new, under World_ctrl - 1 thing(s) under World_ctrl move under it
+PASS the plan says what moves: 1 reader of the scale, 1 thing under World
+|HARE_RIG|controls_grp|Global_ctrl_offset|Global_ctrl
+|HARE_RIG|controls_grp|Global_ctrl_offset|Global_ctrl|World_ctrl_offset|World_ctrl
+|HARE_RIG|controls_grp|Global_ctrl_offset|Global_ctrl|World_ctrl_offset|World_ctrl|Local_ctrl_offset|Local_ctrl
+PASS Global > World's group > World > Local > Root
+PASS the scale is Global's now and scales it
+PASS what read World's scale reads Global's (the arm's rest length)
+PASS a chain that remembered World_ctrl.globalScale remembers Global's
+PASS nothing moved
+PASS World / Local don't scale (channels hidden)
+PASS a second time: refused
+PASS the scale control: Global
+PASS scaled by the rig: under Global; not: outside it
+PASS follicles with controls under them, in a group that doesn't pass the scale on: found (the empty one not)
+PASS fixed: the follicle takes the global scale -> its control grows
+PASS a skin joint held by a parent constraint from a control that scales: found
+PASS fixed (5.6.3): the joint's own scale x the global scale - no scale constraint
+PASS a skinned mesh under the scaled controls: scales twice (one outside: fine)
+PASS fixed: it doesn't inherit
+PASS a stretch rest length left at 1: found (the connected one not)
+PASS fixed: multiplied by the scale
+PASS nothing left to fix
+[('|Outside_ctrl_offset|Outside_ctrl', 'stays', "doesn't scale (stays where it was)")]
+PASS x2: a control under it is fine; one outside 'doesn't scale'
+PASS put back
+PASS world turn: the old joints in legacy_grp aren't checked
+PASS jiggle: its movement measured in the rig's own size (divided by the scale) - a bigger rig jiggles the same
+23/23 passed

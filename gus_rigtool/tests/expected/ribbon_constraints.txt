@@ -1,0 +1,36 @@
+PASS orient constraint on a mirrored control: the joint turns like the control
+PASS orient constraint on a mirrored control: the joint turns like the control
+PASS new build: joint on the follicle
+PASS new build: point + orient constraints, no direct link
+PASS setup: the low lip's joint has its follow copy group
+PASS refuses posed controls
+  [info] 4 joint(s) now follow their controls by constraints (point + orient), on the ribbon; nothing moved, skin kept.
+PASS 4 joints switched
+PASS m0: no direct link, point + orient constraints
+PASS m0: in the bind group, didn't move
+PASS m0: clean axes (scale 1, no -1)
+PASS m1: no direct link, point + orient constraints
+PASS m1: in the bind group, didn't move
+PASS m1: clean axes (scale 1, no -1)
+PASS m2: no direct link, point + orient constraints
+PASS m2: in the bind group, didn't move
+PASS m2: clean axes (scale 1, no -1)
+PASS m3: no direct link, point + orient constraints
+PASS m3: in the bind group, didn't move
+PASS m3: clean axes (scale 1, no -1)
+PASS copy groups gone
+PASS the joint's follow copy and its multiply gone
+PASS the control still follows the jaw, record updated
+PASS remove follow still works
+PASS second time: nothing to do
+  [info] 1 control(s) on the other side mirror their twins (+X out on both sides, Y up, Z forward); nothing moved.
+PASS remake point / orient / parent constraints: right flags for each
+PASS mirror sides fails part way: undone, then the error
+PASS mirror sides after: joints stay, still constrained
+  [info] 1 joint(s) now follow their controls by constraints (point + orient), on the ribbon; nothing moved, skin kept.
+PASS scale build converts
+PASS scale build: no links left (scale too), constraints made
+PASS scale build: its setting is off now
+ALL OK
+scale reset once: True
+then kept: True

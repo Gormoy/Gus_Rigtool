@@ -1,0 +1,4 @@
+every page fits 440 px
+5.4.1: a button added by a callback keeps its own width (no 1-pixel buttons), long label shortened: True
+a dialog window's button is left alone: True
+cmds.button is back to Maya's own after: True

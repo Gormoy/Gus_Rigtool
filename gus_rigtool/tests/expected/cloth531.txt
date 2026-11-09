@@ -1,0 +1,17 @@
+4 4 0 {'COG_ctrl': True, 'Spine_01_FK_ctrl': True, 'L_clavicle_ctrl': True, 'L_Brow_02_ctrl': 0, 'Mouth_fol_14_ctrl': 0, 'L_Ear_01_ctrl': 0, 'Jaw_ctrl': 0, 'L_Shear_ctrl': True}
+PASS every body control in front
+PASS face controls left as they were (brow, mouth, ear, jaw)
+PASS count: 4 of 8 on top
+PASS Skip face unticked: all of them
+PASS Normal: all off again
+PASS only the selected ones
+['copy', ('normalize', 'Bandages_Arms_skinCluster', {'normalize': True})]
+PASS the new skin is Post like the body
+PASS after the copy, every vertex brought to 1
+[('|wrist', 20.615528128088304, 0.0)]
+PASS a posed joint is found, the one at rest isn't
+the rig isn't at rest (L_elbow_jnt moved from where Shirt was bound): go to a frame where it rests, or Remove the range of motion, then try again.
+PASS Cloth layer on a posed rig: refused, with the joint and what to do
+PASS ...and the frame put back
+PASS Repair weights: 4 joints a vertex, every vertex to 1
+12/12 passed

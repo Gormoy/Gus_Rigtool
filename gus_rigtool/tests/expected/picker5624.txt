@@ -1,0 +1,85 @@
+PASS needs normalizing: buttons ~190 units / the page far bigger than them
+PASS normalized: the usual button 24 units, everything from the margin, the page fitted (k 0.126)
+PASS ... text, outline and picture came along
+PASS a sane page doesn't need it
+PASS fit to text: the narrow one grows, the wide one stays
+PASS Text + on a text (its size), a frame title, a button
+PASS a bigger title: a taller bar
+PASS title above the frame: clicked there, not inside
+PASS hidden title: no title to click
+PASS hit: a title below the frame selects the frame
+PASS meshes: a model referenced as Geo_Hare_07: skinned to the rig's joints counts
+PASS outline: made, cells sized to the page (~1/160 of it, never under 2)
+PASS ... drawn as one small picture (41 x 57)
+PASS front picture: where the camera's frame lands on the page
+PASS the picture is kept in the picker (the animators get it)
+PASS switches found: ikfk, Fingers_Vis (toggles), follow (a space menu) - not stretch
+PASS Switches page: a frame for the gear, 2 toggles and a space menu
+PASS made again: the same (not doubled), your own button stays
+PASS Face sliders page: Smile_L and Angry as sliders in their ranges
+PASS space menu: its choices
+PASS pick 'Head': set, the control put back where it was (no jump)
+PASS keyed state: keyed here and animated
+PASS ... not animated
+PASS hierarchy lines: hips -> spine -> chest (through their groups)
+PASS my sets: kept per rig, names without paths
+PASS ... deleted
+PASS ready-made templates
+PASS style rules: FK -> FK dot, fol -> Tweak dot, cog untouched
+PASS chain numbers: Ear FK 1, 2, 3
+PASS on a line: the middle one half way
+PASS on an arc: the middle one bows up
+PASS mirror the layout: the right one mirrors the left across the middle buttons
+PASS import a page: added as 'Face 2' (the name was taken), new ids, twins kept
+PASS ... its twins point to each other
+PASS keys: 'ctrl + shift + g' -> Ctrl+Shift+G -> ungroup
+PASS your keys: group on Ctrl+K
+PASS unsure curves: the ear lines and guides not listed
+PASS pairs: L_Cape01's named twin isn't at the mirrored place - R_Cape02 is (suggested)
+PASS ... L_Lone has no twin; the middle ones aren't listed
+PASS linked: the link wins over the name (it's the one at the mirrored place)
+PASS ... and it isn't listed any more
+Gus Animtool: picker: 105 button(s), automatic; 105 controls found automatically: 105 by name (_ctrl).
+PASS the list folded by default
+PASS a toggle flips on click (5.6.23 selected its control instead)
+Gus Animtool: seen from behind (left and right swapped).
+PASS seen from behind: the left arm's button on the other side of the window; clicks still find it
+PASS ... clicked: the left arm selected
+PASS ... drawn
+Gus Animtool: seen from the front.
+PASS find: the arm IK buttons lit, Enter selects them
+PASS ? : the keys drawn over the page
+PASS each page keeps its zoom
+PASS animator lock: a referenced rig's picker - no Edit
+PASS ... Look > let me edit: Edit
+PASS Edit: a page far too big - the Normalize bar
+Gus Animtool: page 'Body' normalized (x0.10): the same layout in sane units, the page fitted to its buttons. Save keeps it.
+PASS ... normalized: the bar goes
+PASS Ctrl+G (your keys): a group
+PASS script button: made with its text and script
+Gus Animtool: Switches page: 3 switch(es) of the rig - visibility, IK / FK, spaces. Made again any time (your own buttons there stay). Save keeps it.
+PASS Make the Switches page from the window: shown
+PASS the page as a picture
+PASS background: the picture's opacity and place
+PASS Item panel on a frame: title above, centred, size 20
+PASS ... on a text: its own size
+PASS right-click a frame's title (animating): select all in it, key, reset at the top
+PASS Pairs window: the problem listed with its suggestion
+== Gus Animtool 5.6.27 | picker from: auto | window open: True | unsaved: True
+== your look: {"theme": "dark", "text_scale": 1.0, "compact": false, "sel_rgb": [1.0, 1.0, 1.0], "sel_width": 2.0, "sel_fill": true, "hover": "lighter", "hover_rgb": [0.55, 0.85, 1.0], "add_at": "front", "snap": true, "grid_size": 8.0, "silhouette": true, "silhouette_alpha": 0.6, "list_shown": false, "list_float": false, "lines": true, "keyed": true, "behind": false, "allow_edit": false, "badges": true, "ikfk_fade": true, "minimap": true, "shape_favs": [], "shape_recent": [], "panel_open": ["Place & size", "Text", "Connector"], "panel_float": false, "side_rgb": {"L": [0.2, 0.4, 1.0], "C": [1.0, 0.85, 0.2], "R": [1.0, 0.25, 0.25]}}
+-- Body            51 items {'frame': 1, 'select': 47, 'toggle': 1, 'command': 1, 'text': 1} | page 3248 x 433, usual button 24 | normalize: False | page text x1.0 | picture: True | outline: False | connectors 0 | layers -
+-- Face            14 items {'select': 14} | page 400 x 301, usual button 30 | normalize: False | page text x1.0 | picture: False | outline: False | connectors 0 | layers -
+-- Hands           32 items {'select': 32} | page 400 x 166, usual button 30 | normalize: False | page text x1.0 | picture: False | outline: False | connectors 0 | layers -
+-- Tweaks          12 items {'select': 12} | page 400 x 372, usual button 30 | normalize: False | page text x1.0 | picture: False | outline: False | connectors 0 | layers -
+-- Switches         4 items {'frame': 1, 'toggle': 2, 'enum': 1} | page 400 x 200, usual button 24 | normalize: False | page text x1.0 | picture: False | outline: False | connectors 0 | layers -
+== view: zoom 0.960 | behind False | list False
+== meshes for the outline / picture: 0
+   missing      0
+   unsure       0
+   excluded     0
+   pinned       0
+   duplicates   0
+   gone         0
+== mirror pairs to look at: 0 ()
+PASS diagnose: pages, controls, pairs
+63/63 passed

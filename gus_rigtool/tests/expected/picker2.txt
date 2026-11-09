@@ -1,0 +1,72 @@
+labels: ['arm fk1', 'leg ik', 'cog', 'spine']
+hull of a square + middle: [(0, 0), (1, 0), (1, 1), (0, 1)]
+diamond hit centre / corner: True False
+pages: [('Body', 47), ('Face', 14), ('Hands', 32), ('Tweaks', 12)]
+  Body: overlaps 0, twins not mirrored [], inside the page True
+  Face: overlaps 0, twins not mirrored [], inside the page True
+  Hands: overlaps 0, twins not mirrored [], inside the page True
+  Tweaks: overlaps 0, twins not mirrored [], inside the page True
+left on the right (front view): True | head above hips: True | spine centred: True | eye outline kept: ['poly']
+hands grid: index1 above index3: True | same column: True | thumb inside (left hand: towards the middle): True | thumb a row lower: True
+hit head centre: head | in a box: ['head']
+moved on the grid: True
+resized x2: 2.0
+aligned left: True
+distributed: True
+shape: ellipse []
+mirror keeps the twin mirrored: True | its controls: ['R_arm_ik_ctrl']
+new twin: ['R_toe_ctrl'] | linked: True
+duplicate: True ['L_toe_ctrl'] None
+delete unlinks the twin: None | gone: []
+group button: ['L_arm_fk1_ctrl', 'L_arm_fk2_ctrl'] L arm FK
+slider: slider ikfk 0 1 | set 0.25: 0.25 0.25
+check toggles: 1.0 0.0
+command: command Hide arms
+page added: Props 5
+undo: True | redo: True
+saved / loaded: True | same buttons: True | no namespace: True
+ids keep going after load: True
+in the rig's own file Save keeps it IN the rig: True | True
+referenced: Save is yours: True | yours wins: True
+back to the rig's picker: True
+nothing saved -> automatic: None
+Gus Animtool: picker: 105 button(s), automatic; 105 controls found automatically: 105 by name (_ctrl).
+window: pages ['Body', 'Face', 'Hands', 'Tweaks'] | buttons on the page: 47
+painted: True | labels drawn: True
+click: ['head_ctrl']
+shift-click adds: ['neck_ctrl']
+drag a box selects: ['L_leg_fk2_ctrl', 'L_leg_fk3_ctrl', 'L_leg_pv_ctrl'] (started on blank: True )
+wheel zooms in: True
+middle drag pans: True
+edit mode: True | edit bar shown: True | use bar hidden: True
+drag moves the button: 29.6 | unsaved: True | Save button: Save *
+Shift+Right nudges 10: 39.6
+Ctrl+Z: 29.6
+Delete: 1
+undo the delete: True
+colour: [0.1, 0.9, 0.2]
+label: new
+edit menu: ['Shape', 'Colour...', 'Label...', 'Size', 'Align / distribute', 'Order', 'Group (frame with a title)...  (Ctrl+G)', 'Lock / unlock  (Ctrl+L)', 'Pin / unpin (stays in the window)', 'Saved styles', 'Style', 'Move to page', 'Mirror to the other side', 'Use the selected controls', 'Selection set from these...', 'Colour by side', 'Arrange as the front view', 'Duplicate  (Ctrl+D)', 'Delete  (Del)', 'Take out (delete, and keep the control off the picker)', 'Add here', "Connectors from the rig's hierarchy", 'Layers', 'Missing controls...', 'Arrange pages as the front view...', 'Duplicate this page (try things on the copy)', 'Rename this page...', 'Background picture...', 'Delete this page', 'Auto layout...', 'Picker file', 'Frame  (F)', 'Keys and clicks  (?)']
+shape from the menu: ellipse
+Gus Animtool: 0 button(s) added at the mouse; 1 already on this page (picked) - Save keeps them.
+add here: 0
+background: C:/pics/hare_front.png
+new page: new | on it: True
+slider added: slider ikfk
+slider drag sets the attribute: 0.75
+Gus Animtool: picker saved IN the rig - save the rig file: every scene that references it gets this picker.
+saved: True | in the rig: 5
+use menu: ['Key  (S)', 'Reset', 'Select the twin', 'Add the twin', 'Select the limb', 'IK / FK switch', 'Mirror pose left -> right', 'Mirror pose right -> left', 'Flip pose', 'Find...  (Ctrl+F)', 'My sets', 'Seen from behind', 'Frame the selected  (Shift+F)', 'Edit the picker', 'Frame  (F)', 'Keys and clicks  (?)']
+auto layout again: ['Body', 'Face', 'Hands', 'Tweaks'] | unsaved: True
+undo it: ['Body', 'Face', 'Hands', 'Tweaks', 'new']
+use buttons: ['Page', 'All', 'Left', 'Right', 'Page', 'Twin', 'IK / FK', 'Reset', 'Key']
+5.6.21 drawn: the frame's title and the text: True True
+5.6.21 click the frame's title: its controls True ['L_toe_ctrl', 'R_toe_ctrl', 'main_ctrl', 'world_ctrl']
+5.6.21 quick buttons: ['Undo', 'Redo', 'History', 'Preview', 'x', 'Undock', 'Undock', 'v  Place & size', 'v  Text', '>  Look', '>  For animators', '>  Toggle', '>  Lock / pin', 'v  Connector', 'Add selected', 'Set', 'Toggle', 'Space', 'Script', 'Text', 'Note', 'More']
+5.6.22 Item panel shown in Edit: True | shows the picked one's text: True
+5.6.22 panel sets text size / place / turn: 14.0 below 30.0
+Gus Animtool: pinned 1 button(s) - they stay where they are in the window.
+5.6.22 pinned: it keeps a window place: True True
+5.6.22 ... the view pans, it stays put in the window: True
+Gus Animtool: unpinned 1 button(s).
+5.6.22 side by side: the other page's name drawn: True

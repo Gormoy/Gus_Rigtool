@@ -1,0 +1,7 @@
+PASS weight list: average per joint, biggest first, locks shown
+PASS set: the joint gets the value, Maya normalises the rest
+PASS a joint not in the skin is refused
+PASS average: each vertex gets the selection's average
+PASS lock / unlock
+PASS lids split by their own middle (eye centre above them all)
+ALL OK
