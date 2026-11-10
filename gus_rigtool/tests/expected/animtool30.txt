@@ -19,4 +19,4 @@ arcs: 2 True | cleared: True False
 hide controls: False {'edit': True, 'nurbsCurves': False}
 isolate: True enableIsolateSelect modelPanel4 1
 playblast: movies/untitled_blast 50 1
-version: 5.6.27
+version: 5.6.28

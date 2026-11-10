@@ -763,14 +763,10 @@ def _speed_chain():
 
 
 def _speed_tags():
-    """5.6.27: a deformer asking for a component tag the mesh doesn't have (a warning on every update)."""
-    from gus_rigtool.core import rigspeed as speed
-    items = speed.tag_problems()
-    if not items:
-        return None
-    return Item("speed_tags", "Deformers asking for a component tag the mesh doesn't have (a warning on every "
-                "update) -> the whole mesh", _names(sorted(set("%s[%d]" % (d, i) for d, i, _e, _m in items))),
-                len(items), lambda: speed.fix_tags())
+    """5.6.27: a deformer asking for a component tag the mesh doesn't have (a warning on every update).
+    5.6.28: not a repair any more (never in FINDERS) - Repair can't tell which vertices the deformer was meant to
+    move; Check this scene says how to make it again. Kept for older scripts: it never lists anything."""
+    return None
 
 
 def _delta_mush_scale():
@@ -837,7 +833,7 @@ def _stray_keys():
 FINDERS = [_along_v, _ribbons_copying, _loops_not_mirrored, _labels, _twins, _empty_constraints, _guides_zeroed,
            _skin_sums, _ribbons_not_symmetric, _ribbon_child_binds, _old_jiggles, _outdated_jiggles, _always_evaluating, _ng_orphans, _twice, _idle_constraints, _plugins, _playback,
            _unused_joints, _curveless_views, _util_names, _skin_limits, _double_conversions, _scale_causes, _dead_twins, _dead_nodes,
-           _speed_chain, _speed_tags, _delta_mush_scale, _stray_keys]
+           _speed_chain, _delta_mush_scale, _stray_keys]                # 5.6.28: _speed_tags only reports
 
 
 def find():
@@ -864,28 +860,25 @@ def apply(ids, items=None):
         if it.id not in ids:
             continue
         ok = False
+        label = "gusrigRepair_" + it.id
         states = safe_states(it.id)                        # 5.6.27: rest, x2 and real animation
-        frames = safe.anim_frames() if "anim" in states else []
-        before = safe.snapshot(states, frames) if states else {}
-        cmds.undoInfo(openChunk=True, chunkName="gusrigRepair_" + it.id)
+        frames, before, shaky = safe.before(states) if states else ([], {}, set())
+        cmds.undoInfo(openChunk=True, chunkName=label)
         try:
             got = it.fix()
             ok = True
-            bad = safe.compare(before, safe.snapshot(states, frames)) if before else []
+        except Exception as e:
+            got = "failed (nothing of it left changed): %s" % (str(e).strip().splitlines() or [repr(e)])[0]
+        finally:
+            cmds.undoInfo(closeChunk=True)
+        if ok and before:                                  # 5.6.28: looked at after the step is closed
+            bad = safe.compare(before, safe.snapshot(states, frames), skip=shaky)
             if bad:                                        # a fix may never change what the animators see
                 ok = False
                 got = "undone - safe mode: it moved %s" % safe.describe(bad)
-        except Exception as e:
-            got = "failed (nothing of it left changed): %s" % str(e).strip().splitlines()[0]
-        finally:
-            cmds.undoInfo(closeChunk=True)
         if not ok:                                         # 5.3.4: a failed fix leaves nothing half-done
-            try:
-                # only our own step (a fix that failed before changing anything left no step of its own)
-                if cmds.undoInfo(query=True, state=True) and \
-                        "gusrigRepair_" + it.id in (cmds.undoInfo(query=True, undoName=True) or ""):
-                    cmds.undo()
-            except RuntimeError:
-                pass
+            # only our own step (a fix that failed before changing anything left no step of its own)
+            if not safe.undo_own(label) and got.startswith("undone"):
+                got = got.replace("undone - ", "NOT undone (undo is off?) - ", 1)
         out.append((it.label, got))
     return out

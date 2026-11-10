@@ -375,7 +375,7 @@ def plan(head, meshes, fade=None, curves=False):
     counts = _members(meshes, centre, size, fade)
     return ["lattice: %.1f x %.1f x %.1f round the head (fades out over %.1f past it - ears, neck ride along)" % (
                 size[0], size[1], size[2], fade),
-            "meshes: %s" % ", ".join("%s (%s)" % (_short(m), ("%d of %d vertices" % counts[m][1:]) if counts[m][1]
+            "meshes: %s" % ", ".join("%s (%s)" % (_short(m), ("%d of %d vertices" % counts[m][1:3]) if counts[m][1]
                                                     else "all") for m in meshes),
             "the rest of the body: not in it - it can't move",
             "ears riding the squash (keeping their shape): %s" % (", ".join(_short(e) for e in ear_roots()) or
@@ -399,19 +399,24 @@ def _ranges(ids):
 
 
 def _members(meshes, centre, size, fade):
-    """{mesh: (what goes in the lattice, vertices in, vertices in all)}: 5.6.14 only the vertices inside the box
-    and its fade - the rest of the body isn't in the lattice, so nothing can move it. (All of it when the
-    vertices can't be read.)"""
+    """{mesh: (the vertices inside, vertices in, vertices in all, the vertices outside)}: 5.6.14 only the vertices
+    inside the box and its fade move - the rest of the body can't. (All of it when the vertices can't be read.)
+    5.6.28: the lattice takes the whole mesh and the outside vertices get weight 0 - a set of vertices made Maya
+    keep them as a component tag on the mesh, which a referenced model can lose (the Hare's Head_squash lost
+    its tag: Maya warned on every update, and 5.6.27's Repair emptied the expression)."""
     out = {}
     pts = _points(meshes)
     for m in meshes:
         p = pts.get(m)
         if not p:
-            out[m] = ([m], 0, 0)
+            out[m] = ([m], 0, 0, [])
             continue
         ids = [i for i, v in enumerate(p) if all(abs(v[k] - centre[k]) <= size[k] / 2.0 + fade for k in range(3))]
+        inside = set(ids)
         comps = ["%s.vtx[%d:%d]" % (m, a, b) if a != b else "%s.vtx[%d]" % (m, a) for a, b in _ranges(ids)]
-        out[m] = (comps, len(ids), len(p))
+        rest = [i for i in range(len(p)) if i not in inside]           # 5.6.28: held at weight 0 (no tags)
+        outside = ["%s.vtx[%d:%d]" % (m, a, b) if a != b else "%s.vtx[%d]" % (m, a) for a, b in _ranges(rest)]
+        out[m] = (comps, len(ids), len(p), outside)
     return out
 
 
@@ -461,13 +466,14 @@ def make(head, meshes, fade=None, curves=False):
     face = [f for f in face if "|" + BOARD_GRP + "|" not in f]
     counts = _members(meshes, centre, size, fade)
     members = [c for m in meshes for c in counts[m][0]]
+    outside = {m: counts[m][3] for m in meshes if counts[m][1]}         # 5.6.28: weight 0, no component tag
     if not members:
         raise RuntimeError("none of the meshes' vertices are inside the head's box - pick the head's meshes.")
     before = _points(meshes)
     cv0 = _curve_points(face)
     made = []
     try:
-        c = _build(head, meshes, members, face, centre, size, h, fade, curves, made)
+        c = _build(head, meshes, members, face, centre, size, h, fade, curves, made, outside)
     except Exception:
         _delete([n for n in made if n] + [GRP])           # nothing left half made (5.6.12 left Head_squash_grp)
         raise
@@ -609,7 +615,24 @@ def _clean_leftover():
         _delete(cmds.ls(GRP, long=True))
 
 
-def _build(head, meshes, members, face, centre, size, h, fade, curves, made):
+def lattice_targets(meshes, members, outside=None):
+    """5.6.28: what goes in the lattice - whole meshes when their outside vertices are known (held at weight 0
+    by hold_outside, no component tag needed), else the member vertices as before."""
+    outside = outside or {}
+    return [m for m in meshes if m in outside] + [c for c in members if c.split(".")[0] not in outside]
+
+
+def hold_outside(ffd, outside):
+    """5.6.28: the vertices outside the box and its fade get weight 0 (kept on the deformer, in the rig file)."""
+    n = 0
+    for m, comps in (outside or {}).items():
+        if comps:
+            cmds.percent(ffd, comps, value=0.0)
+            n += 1
+    return n
+
+
+def _build(head, meshes, members, face, centre, size, h, fade, curves, made, outside=None):
     from gus_rigtool.builder import controls as BC
     with utils.undo_chunk("gusrigHeadSquash"):
         grp = cmds.createNode("transform", name=GRP, skipSelect=True)
@@ -618,11 +641,13 @@ def _build(head, meshes, members, face, centre, size, h, fade, curves, made):
         ears, planes = _ear_riders(grp, head, made)          # 5.6.15: the ears ride the squash, keeping their shape
         riders = _curve_riders(face)                        # 5.6.18: the face controls' curves ride it too
         made.extend(cp for _x, cp in riders)
-        ffd, lat, base = cmds.lattice(members + planes + [cp for _x, cp in riders], divisions=(4, 6, 4),
+        targets = lattice_targets(meshes, members, outside)
+        ffd, lat, base = cmds.lattice(targets + planes + [cp for _x, cp in riders], divisions=(4, 6, 4),
                                       objectCentered=False,
                                       ldivisions=(2, 2, 2), name="Head_squash")        # 5.6.17: no 'after'
         made.extend([ffd, lat, base])
         clean_copies(meshes)                            # if Maya copied a mesh anyway: the copy goes
+        hold_outside(ffd, outside)                      # 5.6.28: outside the box and its fade: weight 0
         cmds.setAttr(ffd + ".outsideLattice", 2)          # 5.6.13: attributes of the node, not flags of the command
         cmds.setAttr(ffd + ".outsideFalloffDist", fade / h)   # 5.6.14: in the lattice's own units (it's 1 tall):
         # 5.6.13 gave scene units - 11.8 lattices out, the whole body moved

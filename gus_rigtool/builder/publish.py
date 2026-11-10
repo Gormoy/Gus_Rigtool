@@ -390,10 +390,29 @@ def unpublish(quiet=False):
                 cmds.delete(s)
         from gus_rigtool.core import network_tools
         network_tools.unprotect()
+        cleared = clear_mirror_table()                  # 5.6.28: an edited rig mustn't mirror from an old table
         controls.add_string(rig, STATE_ATTR, "")
     if not quiet:
-        utils.info(TOOL, "rig unpublished: channels, sets and visibility are back as they were.")
+        utils.info(TOOL, "rig unpublished: channels, sets and visibility are back as they were%s." % (
+            "; the mirror table is cleared (Publish learns it again)" if cleared else ""))
     return True
+
+
+REST_ATTR = "gusRestWorld"                  # Gus Animtool's mirror table (anim.REST_ATTR)
+
+
+def clear_mirror_table(ctrls=None):
+    """5.6.28: take the learned rest (gusRestWorld) off the controls - Animtool then works it out live until the
+    next Publish. Returns how many."""
+    done = 0
+    for c in (ctrls if ctrls is not None else rig_controls()) or []:
+        try:
+            if cmds.attributeQuery(REST_ATTR, node=c, exists=True):
+                cmds.deleteAttr(c + "." + REST_ATTR)
+                done += 1
+        except RuntimeError:
+            pass
+    return done
 
 
 def check(options=None):

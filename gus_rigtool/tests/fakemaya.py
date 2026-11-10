@@ -376,6 +376,10 @@ def addAttr(node, **k):
     if not hasattr(n, "types"):
         n.types, n.enums = {}, {}
     n.types[name] = k.get("attributeType") or k.get("dataType") or "double"
+    if "defaultValue" in k:                         # 5.6.28: listDefault answers it
+        if not hasattr(n, "defaults"):
+            n.defaults = {}
+        n.defaults[name] = k["defaultValue"]
     if k.get("enumName"):
         n.enums[name] = k["enumName"]
     if not hasattr(n, "limits"):                           # 5.6.24: the picker reads ranges
@@ -389,7 +393,7 @@ def attributeQuery(attr, node=None, exists=False, **k):
         return attr in n.user or attr in n.attrs or attr in ("translate", "rotate", "jointOrient", "side",
                                                              "displayLocalAxis")
     if k.get("listDefault"):
-        return [0.0]
+        return [float(getattr(n, "defaults", {}).get(attr, 0.0))]
     if k.get("listEnum"):
         return [getattr(n, "enums", {}).get(attr, "")]
     lim = getattr(n, "limits", {}).get(attr, (None, None))

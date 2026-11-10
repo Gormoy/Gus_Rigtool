@@ -135,10 +135,13 @@ def _boom(*a, **k):
     raise TypeError("Invalid flag 'test'")
 _rms = ribbon._remake_constraints
 ribbon._remake_constraints = _boom
+_ui = cmds.undoInfo                                 # 5.6.28: only its own step is undone - say which it is
+cmds.undoInfo = lambda *a, **k: "gusrigRibbonMirrorSides" if k.get("undoName") else None
 try:
     ribbon.mirror_sides("Mouth_ribbon"); raised = False
 except TypeError:
     raised = True
+cmds.undoInfo = _ui
 check("mirror sides fails part way: undone, then the error", raised and undos == [1])
 ribbon._remake_constraints = _rms
 if _undo: cmds.undo = _undo

@@ -1272,7 +1272,7 @@ def mirror_sides(surface=None, axis='X', tolerance=None):
     rights = [i for i, p in pos.items() if p[ax] < -tol]
     held_between = [g for r in rights for g in constrained_between(offs[r], ctrls[r])]
     if held_between:                                    # 5.6.27: they'd keep their old turn under a flipped offset
-        raise RuntimeError('groups between the offset and the control are held by a constraint (%s) - flipping '
+        raise RuntimeError('groups from the offset down to the control are held by a constraint (%s) - flipping '
                            'the offset would leave their controls turned wrong. Nothing changed.'
                            % ', '.join(g.split('|')[-1] for g in held_between[:6]))
     done = 0
@@ -1310,8 +1310,9 @@ def mirror_sides(surface=None, axis='X', tolerance=None):
         link_bind_group(key)
     except Exception:
         cmds.undoInfo(closeChunk=True)
-        try:
-            cmds.undo()                                         # nothing left half mirrored
+        try:                                                    # nothing left half mirrored - only our own step
+            if 'gusrigRibbonMirrorSides' in (cmds.undoInfo(query=True, undoName=True) or ''):
+                cmds.undo()
         except RuntimeError:
             pass
         raise
@@ -1380,17 +1381,30 @@ def asymmetric_controls():
     return out
 
 
+def _held_by_constraint(node):
+    """5.6.28: a constraint drives the node - straight, or through a pairBlend (a keyed channel or a space blend)."""
+    if cmds.listConnections(node, type='constraint', source=True, destination=False):
+        return True
+    for pb in set(cmds.listConnections(node, type='pairBlend', source=True, destination=False) or []):
+        if cmds.listConnections(pb, type='constraint', source=True, destination=False):
+            return True
+    return False
+
+
 def constrained_between(off, ctrl):
-    """Groups between a control's offset and the control that a constraint drives (the cape's _sdk groups)."""
+    """Groups between a control's offset and the control that a constraint drives (the cape's _sdk groups).
+    5.6.28: the offset itself too (it's the group that gets flipped), and constraints through a pairBlend."""
     out = []
     if not ctrl:
         return out
     p = (cmds.listRelatives(ctrl, parent=True, fullPath=True) or [None])[0]
     off_long = (cmds.ls(off, long=True) or [off])[0]
     while p and p != off_long:
-        if cmds.listConnections(p, type='constraint', source=True, destination=False):
+        if _held_by_constraint(p):
             out.append(p)
         p = (cmds.listRelatives(p, parent=True, fullPath=True) or [None])[0]
+    if p == off_long and _held_by_constraint(p):
+        out.append(p)
     return out
 
 

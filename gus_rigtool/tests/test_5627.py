@@ -28,7 +28,8 @@ looks = iter([a, b])
 undo = mock.MagicMock()
 with mock.patch.object(safe, "snapshot", lambda *x, **k: next(looks)), \
         mock.patch.object(safe, "anim_frames", lambda *x: []), mock.patch.object(cmds, "undo", undo, create=True), \
-        mock.patch.object(cmds, "undoInfo", mock.MagicMock(), create=True):
+        mock.patch.object(cmds, "undoInfo", mock.MagicMock(              # 5.6.28: only its own step is undone
+            side_effect=lambda *x, **k: "gusrigSafe" if k.get("undoName") else True), create=True):
     kept, why = safe.run(lambda: "done")
 check("safe mode: a fix that moved something is undone and says what moved",
       not kept and undo.called and why.startswith("undone - it moved"))
@@ -46,7 +47,7 @@ check("Repair: every other fix: rest, x2 and real animation", repair.safe_states
 
 # --- component tags
 check("tag expression names", speed._expr_names("Head_squash") == ["Head_squash"] and
-      speed._expr_names("a + b*") == ["a", "b"])
+      speed._expr_names("a + b*") == ["a", "b*"])                  # 5.6.28: the wildcard stays
 reset()
 createNode("skinCluster", name="Head_squash")
 with mock.patch.object(speed, "_indices", lambda d: [10, 3]), \
@@ -57,8 +58,9 @@ with mock.patch.object(speed, "_indices", lambda d: [10, 3]), \
     check("the Hare's Head_squash: input 10 asks for 'Head_squash' that isn't there, input 3 is fine",
           tp == [("Head_squash", 10, "Head_squash", ["Head_squash"])])
     speed.fix_tags(tp)
-    check("fix: that input takes the whole mesh (empty expression), the good one is left",
-          getAttr("Head_squash.input[10].componentTagExpression") == "" and
+    # 5.6.28: reported only - the expression is never emptied (that let the lattice reach the neck)
+    check("fix: nothing changed (5.6.28: report only), the good one is left",
+          getAttr("Head_squash.input[10].componentTagExpression") == "Head_squash" and
           getAttr("Head_squash.input[3].componentTagExpression") == "Head_squash_3")
 with mock.patch.object(speed, "_indices", lambda d: [0]), mock.patch.object(speed, "_tags_on", lambda p: None):
     setAttr("Head_squash.input[0].componentTagExpression", "x")
@@ -216,7 +218,7 @@ with mock.patch.object(PM, "rig_picker", lambda ns=None: None), mock.patch.objec
     check("none anywhere", scene_check.picker_saved("") == (None, ""))
 check("Speed and Ready for animators are parts of Check this scene",
       [p for p, _f in scene_check.PARTS][-2:] == ["speed", "ready"])
-check("Repair knows the new fixes", all(f in repair.FINDERS for f in (repair._speed_chain, repair._speed_tags,
+check("Repair knows the new fixes (5.6.28: not the tags - reported only)", all(f in repair.FINDERS for f in (repair._speed_chain,
                                                                        repair._delta_mush_scale, repair._stray_keys)))
 
 print("%d/%d passed" % (sum(ok), len(ok)))

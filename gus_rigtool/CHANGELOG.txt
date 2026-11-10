@@ -1,3 +1,65 @@
+Gus_Rigtool 5.6.28 - the 5.6.27 review: safer Repair, a mirror table that learns the real rest, and fixes
+
+Component tags (the Head_squash "Missing componentTags" warning):
+- Repair no longer "fixes" a missing tag by giving the deformer the whole mesh: nothing says which vertices it was
+  meant to move, and safe mode can't see the difference (nothing moves until the squash is used). Check this
+  scene still lists it and says what to do: Face tab > Head squash: Remove, then Make.
+- Make head squash no longer needs component tags: the lattice takes the whole head meshes and the vertices
+  outside the box and its fade get weight 0 on the lattice itself. A tag lives on the mesh, and a referenced
+  model (the Hare's Geo_Hare_07) can lose it when the model file changes - that's how the Hare's tag went
+  missing. The weights are kept in the rig file.
+- Tag names with a wildcard (head_*) are understood (5.6.27 cut the * off and reported them as missing).
+
+Mirror table (Publish, Animtool > Mirror > Learn mirror):
+- Joint controls keep their place on their parent while the rest is read (5.6.27 set their translate to 0 too,
+  moving them onto the parent).
+- The controls' own number attributes (finger curls, Bends, spread, ikfk...) go to their default value while the
+  rest is read, then back. A hand published with curled fingers learned a curled "rest".
+- The count says how many were really written (a locked reference can't take them).
+- Unpublish clears the table (an edited rig mustn't mirror from an old one); Publish learns it again.
+
+Make the right side mirror the left: it also refuses when the offset group itself is held by a constraint, or
+when a group is held through a pairBlend (a keyed channel or a space blend) - 5.6.27 only saw a constraint wired
+straight in.
+
+Safe mode:
+- Meshes and controls are matched by their Maya ID, not their path: a node a fix moves under another group or
+  renames is still compared (5.6.27 skipped it, saying "nothing moved"). A mesh or control that disappears, or
+  whose number of points changes, counts as moved.
+- On the animation frames, anything that isn't the same twice with nothing done (jiggle, wave, dynamics) isn't
+  held against a fix - it could undo a good fix.
+- Repair looks at the result after the fix's undo step is closed, and only ever undoes its own step: a fix that
+  failed before changing anything no longer takes back what you did before it. The same for safe.run and Make the
+  right side mirror the left.
+- The time always goes back, even if a look fails half way.
+
+Speed: the drag timing always puts the COG / World back (there's no undo for it) and turns Auto Key off while it
+drags, so it can't key the COG.
+
+Check this scene > Connections: a pairBlend that only blends constraints (the humerus space groups) is called
+normal; only real keys + a constraint are listed as before.
+
+Diagnostic scripts (repository, scripts/diagnostics - not in the zip; they change nothing):
+- squash_reach.py: what the head squash moves, inside the head, in the fade, and beyond it.
+- deltamush_scale.py: at x2, how far each Delta Mush mesh is from a perfect x2 copy - now, with displacement, and
+  with Maya's Scale XYZ attribute.
+
+Decisions I made:
+- The tag Repair is gone, not just made safer: with the tag missing there is no record of the intended vertices,
+  so any automatic choice is a guess. The function fix_tags() is kept for old scripts and changes nothing.
+- The head squash keeps the 5.6.14 rule (only the box and its fade move) through weights instead of membership.
+  Meshes whose vertices can't be read still go in whole, as before.
+- Custom attributes go to their default value while the mirror table is read (your answer), not to the pose saved
+  by Publish: the mirror maths assumes the rest is at zero.
+- A pairBlend counts as holding a group only when a constraint feeds it (a pairBlend fed by keys alone doesn't).
+- "Unsteady" is measured by looking at the animation frames twice before the fix (one more look per fix, only
+  when the scene has animation).
+- Unpublish deletes the learned rest (gusRestWorld) from the rig's controls only.
+- The fake Maya now remembers an attribute's default value (listDefault), so the tests can check it.
+
+Tested against the fake Maya only (tests/test_5628.py, the full suite). Not tested in real Maya: the head squash
+made without tags, the mirror table on the Hare, Auto Key during the drag timing, and both diagnostic scripts.
+
 Gus_Rigtool 5.6.27 - safe fixes: nothing the animators see may change; speed; ready for animators
 
 Safe mode (every Repair fix): before and after a fix the scene is looked at as it is, scaled x2 and on a few

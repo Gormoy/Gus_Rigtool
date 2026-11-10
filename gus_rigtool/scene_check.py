@@ -641,8 +641,18 @@ def check_connections(rep):
     if dead:
         rep.add(INFO, "utility nodes with no output (%d)" % len(dead), _names(dead))
     pb = cmds.ls(type="pairBlend") or []
-    if pb:
-        rep.add(INFO, "keys + constraints on the same channels (pairBlend) (%d)" % len(pb), _names(pb))
+    if pb:                                             # 5.6.28: only real keys count (a space blend is normal)
+        try:
+            from gus_rigtool.core import repair
+            keyed = [p for p, _c, _k in repair.stray_keys()]
+        except Exception:
+            keyed = list(pb)
+        if keyed:
+            rep.add(INFO, "keys + constraints on the same channels (pairBlend) (%d)" % len(keyed), _names(keyed))
+        blends = [p for p in pb if p not in keyed]
+        if blends:
+            rep.add(INFO, "constraints blended by a pairBlend (%d) - normal (a space switch)" % len(blends),
+                    _names(blends))
     rep.add(OK, "connections read")
 
 
@@ -1003,10 +1013,11 @@ def check_speed(rep):
     except Exception as e:
         rep.add(INFO, "timing skipped", str(e))
     tags = speed.tag_problems()
-    if tags:
+    if tags:                                           # 5.6.28: not a repair - make the deformer again
         rep.add(WARN, "deformers asking for a component tag the mesh doesn't have (%d)" % len(tags),
-                "%s - Maya prints a warning on every update (slow); Repair gives them the whole mesh" %
-                ", ".join("%s[%d] wants %s" % (d, i, "/".join(m)) for d, i, _e, m in tags[:4]))
+                "%s - Maya prints a warning on every update (slow). Fix: %s" %
+                (", ".join("%s[%d] wants %s" % (d, i, "/".join(m)) for d, i, _e, m in tags[:4]),
+                 speed.tag_advice(tags[0][0])))
     br = speed.chain_breaks()
     if br:
         rep.add(WARN, "hidden meshes in the middle of deformer chains (%d)" % len(br),

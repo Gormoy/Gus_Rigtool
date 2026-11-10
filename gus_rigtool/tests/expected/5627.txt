@@ -10,7 +10,7 @@ PASS Repair: scale fixes compare rest + animation, not the x2 look
 PASS Repair: every other fix: rest, x2 and real animation
 PASS tag expression names
 PASS the Hare's Head_squash: input 10 asks for 'Head_squash' that isn't there, input 3 is fine
-PASS fix: that input takes the whole mesh (empty expression), the good one is left
+PASS fix: nothing changed (5.6.28: report only), the good one is left
 PASS when Maya can't say which tags a mesh has: nothing is reported
 PASS found: skinCluster10 -> a hidden mesh -> the squash
 PASS fixed: the skin feeds the squash straight, the hidden mesh is gone
@@ -38,5 +38,5 @@ PASS the picker saved in the rig is found (the old check said 'no saved picker')
 PASS only on this computer: said so (animators wouldn't get it)
 PASS none anywhere
 PASS Speed and Ready for animators are parts of Check this scene
-PASS Repair knows the new fixes
+PASS Repair knows the new fixes (5.6.28: not the tags - reported only)
 41/41 passed

@@ -1566,30 +1566,57 @@ def learn_rest(ns=None, nodes=None):
         return 0
     with Undo("gusAnimLearnRest"):
         back = []
-        for n in nodes:
-            for attrs, rest in ((_T, 0.0), (_R, 0.0), (_S, 1.0)):
-                for a in attrs:
-                    plug = n + "." + a
+        try:
+            for n in nodes:
+                for plug, rest in _rest_values(n):
                     if _settable(plug):
                         v = cmds.getAttr(plug)
-                        if abs(v - rest) > 1e-9:
+                        if isinstance(v, (int, float)) and abs(v - rest) > 1e-9:
                             back.append((plug, v))
                             cmds.setAttr(plug, rest)
-        try:
             mats = {n: world(n) for n in nodes}
         finally:
-            for plug, v in back:
-                cmds.setAttr(plug, v)
+            for plug, v in reversed(back):
+                try:
+                    cmds.setAttr(plug, v)
+                except RuntimeError:
+                    pass
+        learned = 0
         for n, m in mats.items():
             try:
                 if not cmds.attributeQuery(REST_ATTR, node=n, exists=True):
                     cmds.addAttr(n, longName=REST_ATTR, dataType="string", hidden=True)
                 cmds.setAttr(n + "." + REST_ATTR, " ".join("%.9g" % x for x in m), type="string")
-            except RuntimeError:
+                learned += 1
+            except RuntimeError:                            # 5.6.28: a locked reference - not counted
                 pass
     _position_cache.clear()
-    message("mirror table: %d control(s) learned at rest; nothing moved." % len(mats))
-    return len(mats)
+    message("mirror table: %d control(s) learned at rest%s; nothing moved." % (
+        learned, (" (%d couldn't be written - a locked reference?)" % (len(mats) - learned)) if learned < len(mats)
+        else ""))
+    return learned
+
+
+def _rest_values(n):
+    """5.6.28: [(plug, rest value)] for learn_rest: translate 0 (not on joints - a joint's translate is where it
+    sits on its parent, as local_rest() keeps it), rotate 0, scale 1, and the control's own number attributes at
+    their default value (finger curls, Bends, ikfk... - else a curled hand learns a curled rest)."""
+    out = []
+    joint = cmds.nodeType(n) == "joint"
+    for attrs, rest in ((_T, 0.0), (_R, 0.0), (_S, 1.0)):
+        if attrs is _T and joint:
+            continue
+        out += [(n + "." + a, rest) for a in attrs]
+    for a in cmds.listAttr(n, keyable=True, userDefined=True) or []:
+        try:
+            if cmds.getAttr(n + "." + a, type=True) not in ("double", "float", "long", "short", "bool", "enum",
+                                                            "doubleLinear", "doubleAngle", "byte"):
+                continue
+            d = cmds.attributeQuery(a, node=n, listDefault=True) or [0.0]
+            out.append((n + "." + a, float(d[0])))
+        except (RuntimeError, ValueError, TypeError):
+            pass
+    return out
 
 
 def world_rest(n):

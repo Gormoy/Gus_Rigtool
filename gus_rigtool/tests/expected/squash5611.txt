@@ -17,7 +17,7 @@ PASS bulge -> the squash's expand
 PASS on / off on Visibility_ctrl stops the lattice and all three
 PASS its sliders
 PASS a second one: refused
-(['|Hare_Body.vtx[2:3]', '|Hare_Body.vtx[5]'], 3, 6)
+(['|Hare_Body.vtx[2:3]', '|Hare_Body.vtx[5]'], 3, 6, ['|Hare_Body.vtx[0:1]', '|Hare_Body.vtx[4]'])
 PASS the vertices in the lattice: the head's (2, 3, 5), not the body's (0, 1, 4)
 PASS lattice after the skin: fine
 PASS lattice before the skin: found

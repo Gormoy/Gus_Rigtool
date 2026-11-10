@@ -1,0 +1,32 @@
+PASS a wildcard stays in the name (5.6.27 cut it off: head_* became head_)
+PASS a tag name with a wildcard is found when a tag matches it
+PASS only the input asking for a tag nobody has is listed (head_* matches head_top)
+PASS the fix changes nothing any more (no deformer gets the whole mesh)
+PASS Check this scene says how to fix it: make the squash again
+PASS not a Repair any more
+PASS the lattice takes the whole body (its outside known) and a mesh it can't read as before
+PASS with nothing outside known: the member vertices, as in 5.6.27
+PASS the outside vertices get weight 0 on the deformer (kept in the rig file, not a tag on the mesh)
+PASS a joint control keeps its place on its parent (translate isn't zeroed): rest x = 5 + 3
+PASS while it's read, the custom attributes are at their default (curl 0, ikfk 1)
+PASS then every value is back (joint tx 3, rz 20, curl 7, ikfk 0)
+PASS a table that can't be written (a locked reference) isn't counted as learned
+PASS a group held by a constraint through a pairBlend (a keyed channel / space blend) is found
+PASS the offset itself held by a constraint is found too (it's the group that gets flipped)
+PASS nothing held: nothing found
+PASS looks are kept by UUID, with the name for the report
+PASS a mesh the fix moved under another group is still compared (5.6.27 skipped it)
+PASS a mesh the fix deleted is listed as gone
+PASS a mesh whose points changed in number is listed too
+PASS a mesh that isn't the same twice with nothing done (jiggle) is unsteady
+PASS an unsteady mesh isn't held against the fix
+PASS undo only takes back our own step (the last step is someone else's: left alone)
+PASS our own step is undone
+PASS Repair: before-look, fix in its own step, the step closed, then the after-look
+PASS a fix that failed before changing anything: nothing undone (the step before it is left alone)
+PASS the drag breaks half way: the control is back where it was (1.5)
+PASS Auto Key is off while it drags, then on again
+PASS a real key + constraint is still said
+PASS the space blend (pairBlend1 on the humerus space group) is said to be normal
+PASS the learned rest is taken off (Animtool works it out live until the next Publish)
+31/31 passed

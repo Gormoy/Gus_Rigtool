@@ -4,7 +4,8 @@ Speed (5.6.27): what makes the rig slow to move, and the fixes that don't change
     from gus_rigtool.core import rigspeed
     rigspeed.time_drag()            # {control: ms per step} - the COG / World dragged a few steps
     rigspeed.chain_breaks()         # a hidden mesh in the middle of a deformer chain (keeps it off the graphics card)
-    rigspeed.tag_problems()         # deformer inputs naming a component tag the mesh doesn't have (a warning per update)
+    rigspeed.tag_problems()         # deformer inputs naming a component tag the mesh doesn't have (a warning per update;
+                                    # 5.6.28: reported only - make the deformer again)
     rigspeed.unscaled_delta_mush()  # Delta Mush that doesn't scale its detail with the rig
     rigspeed.gpu_reasons()          # {mesh: [why it can't go to the graphics card]}
 
@@ -46,15 +47,31 @@ def drag_controls():
 def _step_time(plug, steps):
     import time
     v0 = cmds.getAttr(plug)
-    cmds.refresh(force=True)
-    t = time.time()
-    for i in range(steps):
-        cmds.setAttr(plug, v0 + (i + 1) * 0.5)
+    try:
         cmds.refresh(force=True)
-    dt = (time.time() - t) / float(steps)
-    cmds.setAttr(plug, v0)
-    cmds.refresh(force=True)
+        t = time.time()
+        for i in range(steps):
+            cmds.setAttr(plug, v0 + (i + 1) * 0.5)
+            cmds.refresh(force=True)
+        dt = (time.time() - t) / float(steps)
+    finally:                                        # 5.6.28: always back where it was (there's no undo for it)
+        cmds.setAttr(plug, v0)
+        try:
+            cmds.refresh(force=True)
+        except Exception:
+            pass
     return dt * 1000.0
+
+
+def _autokey_off():
+    """5.6.28: Auto Key off for the test (dragging by script could key the COG); returns how it was."""
+    try:
+        was = bool(cmds.autoKeyframe(query=True, state=True))
+        if was:
+            cmds.autoKeyframe(state=False)
+        return was
+    except Exception:
+        return False
 
 
 def time_drag(controls=None, steps=STEPS, skins_off=False):
@@ -65,6 +82,7 @@ def time_drag(controls=None, steps=STEPS, skins_off=False):
 
     def go():
         back = []
+        key_was = _autokey_off()
         if skins_off:
             for s in cmds.ls(type="skinCluster") or []:
                 try:
@@ -85,6 +103,11 @@ def time_drag(controls=None, steps=STEPS, skins_off=False):
             for s, v in back:
                 try:
                     cmds.setAttr(s + ".nodeState", v)
+                except Exception:
+                    pass
+            if key_was:
+                try:
+                    cmds.autoKeyframe(state=True)
                 except Exception:
                     pass
         return out
@@ -172,7 +195,15 @@ def _tags_on(plug):
 
 def _expr_names(expr):
     import re
-    return [t for t in re.split(r"[\s,+\-*&|()!]+", expr or "") if t]
+    return [t for t in re.split(r"[\s,+\-&|()!]+", expr or "") if t]     # 5.6.28: * stays (a wildcard)
+
+
+def _tag_found(name, have):
+    """5.6.28: a name in a tag expression is there when a tag matches it (wildcards: head_* matches head_top)."""
+    import fnmatch
+    if name in have:
+        return True
+    return any(ch in name for ch in "*?[") and any(fnmatch.fnmatchcase(t, name) for t in have)
 
 
 def tag_problems():
@@ -191,19 +222,25 @@ def tag_problems():
             have = _tags_on("%s.input[%d].inputGeometry" % (dfm, i))
             if have is None:
                 continue
-            missing = [t for t in _expr_names(expr) if t not in have]
+            missing = [t for t in _expr_names(expr) if not _tag_found(t, have)]
             if missing:
                 out.append((dfm, i, expr, missing))
     return out
 
 
 def fix_tags(items=None):
-    """Inputs whose tag is missing take the whole mesh (an empty expression - what the deformer's weights then
-    limit). Returns how many."""
-    items = tag_problems() if items is None else items
-    for dfm, i, _e, _m in items:
-        cmds.setAttr("%s.input[%d].componentTagExpression" % (dfm, i), "", type="string")
-    return len(items)
+    """5.6.28: nothing is changed any more - reported only. 5.6.27 gave such inputs the whole mesh (an empty
+    expression), but nothing says which vertices the deformer was meant to move: the Head_squash lattice could
+    then reach the neck and shoulders, which safe mode can't see (nothing moves until it squashes). The clean fix
+    is to make the deformer again (Face tab > Head squash: Remove, then Make - 5.6.28 needs no tags). Returns 0."""
+    return 0
+
+
+def tag_advice(dfm):
+    """What to do about a deformer asking for a missing tag (said in Check this scene)."""
+    if "squash" in dfm.lower():
+        return "Face tab > Head squash: Remove, then Make (5.6.28 makes it without component tags)"
+    return "make the deformer again on the mesh (Repair can't tell which vertices it was meant to move)"
 
 
 # ---------------------------------------------------------------------------

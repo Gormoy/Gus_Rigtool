@@ -144,7 +144,7 @@ with mock.patch.object(HS, "_points", return_value={"|Hare_Body": pts}):
 print(got)
 check("the vertices in the lattice: the head's (2, 3, 5), not the body's (0, 1, 4)", got[0] == ["|Hare_Body.vtx[2:3]",
                                                                                               "|Hare_Body.vtx[5]"]
-      and got[1:] == (3, 6))
+      and got[1:3] == (3, 6) and got[3] == ["|Hare_Body.vtx[0:1]", "|Hare_Body.vtx[4]"])   # 5.6.28: + the outside
 
 # the scene check: before / after the skin
 with mock.patch.object(cmds, "listHistory", return_value=["Head_squashFfd", "skinCluster10", "Hare_BodyShapeOrig"]), \
