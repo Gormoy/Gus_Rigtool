@@ -85,7 +85,7 @@ gus_rigtool/
 3. Add `tests/test_<version>.py`, then run the full suite.
 4. Package from the folder that holds `gus_rigtool/` and `drag_to_maya.mel`:
    ```
-   rm -rf gus_rigtool/tests/out; find gus_rigtool -name __pycache__ -prune -exec rm -rf {} +
+   rm -rf gus_rigtool/tests/out; find gus_rigtool \( -name __pycache__ -o -name .ruff_cache \) -prune -exec rm -rf {} +
    rm -f Gus_*_install.zip; zip -qr Gus_Rigtool_install.zip drag_to_maya.mel gus_rigtool
    ```
 5. Write the release message (rules 5 and 6).
