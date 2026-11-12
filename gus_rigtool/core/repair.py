@@ -780,6 +780,38 @@ def _delta_mush_scale():
                 lambda: speed.fix_delta_mush(*speed.unscaled_delta_mush()))
 
 
+def _skin_unused():
+    """5.6.29: joints in a skin that carry no weight (the Hare's Hood, Pants, Bandages_Arms) - taken out of the
+    skin through safe mode (nothing moves: they move no vertex). Skins with ngSkinTools layers are left alone
+    (their weights come from the layers)."""
+    from gus_rigtool.core import skin_tools
+    ng = ng_skins()
+    found = []
+    for skin in cmds.ls(type="skinCluster") or []:
+        if skin in ng:
+            continue
+        unused = skin_tools.unused_influences(skin)
+        if unused and len(unused) < len(cmds.skinCluster(skin, query=True, influence=True) or []):
+            found.append((skin, unused))
+    if not found:
+        return None
+
+    def fix():
+        n = 0
+        for skin, unused in found:
+            for j in unused:
+                if cmds.objExists(skin) and j in (cmds.skinCluster(skin, query=True, influence=True) or []):
+                    cmds.skinCluster(skin, edit=True, removeInfluence=j)
+                    n += 1
+        return "%d joint(s) taken out of %d skin(s)" % (n, len(found))
+    meshes = []
+    for skin, _u in found:
+        geos = cmds.skinCluster(skin, query=True, geometry=True) or [skin]
+        meshes.append((cmds.listRelatives(geos[0], parent=True) or [geos[0]])[0])
+    return Item("skin_unused", "Joints in a skin that carry no weight (heavier file, slower skin) -> take them out "
+                "of the skin", _names(meshes), sum(len(u) for _s, u in found), fix)
+
+
 def stray_keys():
     """[(pairBlend, [controls], [anim curves])]: keys left in the rig on channels a constraint drives."""
     out = []
@@ -833,17 +865,25 @@ def _stray_keys():
 FINDERS = [_along_v, _ribbons_copying, _loops_not_mirrored, _labels, _twins, _empty_constraints, _guides_zeroed,
            _skin_sums, _ribbons_not_symmetric, _ribbon_child_binds, _old_jiggles, _outdated_jiggles, _always_evaluating, _ng_orphans, _twice, _idle_constraints, _plugins, _playback,
            _unused_joints, _curveless_views, _util_names, _skin_limits, _double_conversions, _scale_causes, _dead_twins, _dead_nodes,
-           _speed_chain, _delta_mush_scale, _stray_keys]                # 5.6.28: _speed_tags only reports
+           _speed_chain, _delta_mush_scale, _stray_keys,                # 5.6.28: _speed_tags only reports
+           _skin_unused]
+
+
+ERRORS = []          # 5.6.29: [(what it checks, why it couldn't)] - the last find()
 
 
 def find():
-    """Every repair this scene needs (a finder that can't run here is skipped)."""
+    """Every repair this scene needs. 5.6.29: a finder that can't run here is listed in ERRORS with the reason
+    (it used to be skipped without a word - a broken check looked like "nothing to repair")."""
     out = []
+    del ERRORS[:]
     for f in FINDERS:
         try:
             got = f()
-        except Exception:
+        except Exception as e:
             got = None
+            what = ((f.__doc__ or "").strip().splitlines() or [f.__name__])[0]
+            ERRORS.append((what, (str(e).strip().splitlines() or [type(e).__name__])[0]))
         if isinstance(got, list):                         # 5.6.0: a finder can give several items
             out.extend(got)
         elif got:

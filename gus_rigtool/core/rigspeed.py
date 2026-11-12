@@ -74,22 +74,27 @@ def _autokey_off():
         return False
 
 
-def time_drag(controls=None, steps=STEPS, skins_off=False):
+SKIPPED = {}                  # 5.6.29: {control: why it couldn't be timed} - the last time_drag()
+
+
+def time_drag(controls=None, steps=STEPS, skins_off=False, off=None):
     """{control: ms per step} dragging translateX (everything put back, no undo steps). skins_off: the same
-    with every skin switched off for the test (what the skinning costs)."""
+    with every skin switched off for the test (what the skinning costs); off: these deformers switched off.
+    5.6.29: a control that can't be timed is in SKIPPED with the reason (it was left out without a word)."""
     from gus_rigtool.core import safe
     controls = controls if controls is not None else drag_controls()
+    SKIPPED.clear()
 
     def go():
         back = []
         key_was = _autokey_off()
-        if skins_off:
-            for s in cmds.ls(type="skinCluster") or []:
-                try:
-                    back.append((s, cmds.getAttr(s + ".nodeState")))
-                    cmds.setAttr(s + ".nodeState", 1)
-                except Exception:
-                    pass
+        every = (cmds.ls(type="skinCluster") or []) if skins_off else []
+        for s in every + list(off or []):
+            try:
+                back.append((s, cmds.getAttr(s + ".nodeState")))
+                cmds.setAttr(s + ".nodeState", 1)
+            except Exception:
+                pass
         out = {}
         try:
             for c in controls:
@@ -97,8 +102,10 @@ def time_drag(controls=None, steps=STEPS, skins_off=False):
                 try:
                     if cmds.getAttr(plug, settable=True):
                         out[c] = _step_time(plug, steps)
-                except Exception:
-                    pass
+                    else:
+                        SKIPPED[c] = "translateX is locked or driven"
+                except Exception as e:
+                    SKIPPED[c] = str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__
         finally:
             for s, v in back:
                 try:
@@ -112,6 +119,88 @@ def time_drag(controls=None, steps=STEPS, skins_off=False):
                     pass
         return out
     return safe._no_undo(go)
+
+
+def _skin_size(skin):
+    """(vertices, influences) of a skin, (0, 0) when Maya can't say."""
+    n = 0
+    for g in cmds.skinCluster(skin, query=True, geometry=True) or []:
+        try:
+            v = cmds.polyEvaluate(g, vertex=True)
+            n += v if isinstance(v, int) else 0
+        except Exception:
+            pass
+    return n, len(cmds.skinCluster(skin, query=True, influence=True) or [])
+
+
+def _mesh_of(skin):
+    geos = cmds.skinCluster(skin, query=True, geometry=True) or []
+    if not geos:
+        return "?"
+    t = cmds.listRelatives(geos[0], parent=True) or [geos[0]]
+    return t[0].split(":")[-1]
+
+
+def gpu_set(on):
+    """GPU override on / off for this session (Preferences > Animation): True when it could be set."""
+    try:
+        cmds.evaluator(name="deformer", enable=bool(on))
+        return True
+    except Exception:
+        return False
+
+
+def extra_timings(control, steps=8, top=6, small=2):
+    """5.6.29: one control dragged in more ways (everything put back). Returns {
+      'base': ms, 'clothes': ms or None (Visibility_ctrl.Clothes hidden), 'gpu_off': ms or None (GPU override off,
+      when it's on), 'overhead': ms every skin costs just for being there (the smallest skins switched off),
+      'skins': [(skin, mesh, vertices, influences, ms saved, ms above the overhead)] - the heaviest first,
+      'skipped': [why something wasn't timed]}"""
+    from gus_rigtool.core import clothes_switch as CS
+    out = {"base": None, "clothes": None, "gpu_off": None, "overhead": 0.0, "skins": [], "skipped": []}
+
+    def one(**k):
+        t = time_drag([control], steps=steps, **k)
+        if control not in t:
+            out["skipped"].append(SKIPPED.get(control, "not timed"))
+        return t.get(control)
+
+    out["base"] = one()
+    if out["base"] is None:
+        return out
+    try:
+        with CS.hidden() as there:
+            if there:
+                out["clothes"] = one()
+    except Exception as e:
+        out["skipped"].append("clothes hidden: %s" % e)
+    if gpu_on():
+        try:
+            if gpu_set(False):
+                out["gpu_off"] = one()
+        finally:
+            gpu_set(True)
+    sized = []
+    for skin in cmds.ls(type="skinCluster") or []:
+        try:
+            v, n = _skin_size(skin)
+        except Exception:
+            continue
+        sized.append((v * max(n, 1), v, n, skin))
+    if not sized:
+        return out
+    sized.sort()
+    tiny = [x[3] for x in sized[:small]]
+    heavy = [x for x in reversed(sized) if x[3] not in tiny][:top]
+    saved = [out["base"] - (one(off=[s]) or out["base"]) for s in tiny]
+    out["overhead"] = max(0.0, sum(saved) / len(saved)) if saved else 0.0
+    for _w, v, n, skin in heavy:
+        ms = one(off=[skin])
+        if ms is None:
+            continue
+        gain = max(0.0, out["base"] - ms)
+        out["skins"].append((skin, _mesh_of(skin), v, n, gain, max(0.0, gain - out["overhead"])))
+    return out
 
 
 # ---------------------------------------------------------------------------

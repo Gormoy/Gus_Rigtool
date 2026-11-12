@@ -66,12 +66,12 @@ gus_rigtool/
 
 - Fake Maya and Qt: `tests/fakemaya.py` and `tests/fakeqt.py`. Tests start with `exec(open("fakemaya.py").read())`.
   Extend the fakes when a test needs a command they lack (keep it minimal).
-- Full suite (about 40 minutes, run it in the background):
-  `cd gus_rigtool/tests && timeout 2600 python3 run_tests.py`
+- Full suite (since 5.6.29 it runs 4 tests at a time: about 10 minutes, 5 in the cloud; run it in the
+  background): `cd gus_rigtool/tests && timeout 2600 python3 run_tests.py` (`-j 1` = one at a time).
 - One or a few tests: `python3 run_tests.py <name> [<name> ...]` (name = file name without `test_` and `.py`).
-  The names match as a **prefix**: `fix561` also runs `fix5617` and `fix5618`.
-- Accept new output: `python3 run_tests.py --update <names>`. After accepting, `grep -l "^FAIL" expected/*.txt`
-  must print nothing.
+  Names are **exact**; end one with `*` for a prefix (`fix56*` runs fix561, fix5617, fix5618...).
+- Accept new output: `python3 run_tests.py --update <names>` (refused without names; prints each diff). Show
+  Gus the diffs first. After accepting, `grep -l "^FAIL" expected/*.txt` must print nothing.
 - After a version bump, `animtool30`, `updater`, `anim_ui` and the picker tests show CHANGED (the version string).
   That's expected.
 - Lint only the changed files: `ruff check --select F --target-version py37 <files>`. Linting the whole repo

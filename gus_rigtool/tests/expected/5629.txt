@@ -1,0 +1,31 @@
+PASS the rig's controls, then every other control Animtool sees (the cape's ribbons) - each once
+PASS Animtool can't list them: the rig's own still learn
+PASS found by name: the skinned clothes (Hood, Pants), not the body
+PASS switched with them: their own skins and delta mush; the head squash (it moves the body too) stays on
+PASS Visibility_ctrl.Clothes (Full / Hidden): the meshes' visibility through a reverse, the deformers' node state straight
+PASS what it drives is kept on the switch
+PASS for timing: hidden for a moment, then back at Full
+PASS made again: the old one goes first (Pants back on)
+PASS removed: shown, on, the attribute gone
+PASS no Visibility_ctrl yet: it says to make the switches first
+PASS an ordinary drag switches no skin off
+PASS off: only those deformers are switched off, then back on
+PASS a control that can't be dragged is said, with why
+PASS each heavy skin off on its own, minus what every skin costs (the smallest: 4 ms)
+PASS GPU override off timed (and back on); no clothes switch: not timed
+PASS Check this scene: the COG with the clothes hidden (35 ms saved)
+PASS GPU override slower than off on this computer: a note
+PASS each heavy skin's cost above what every skin costs
+PASS found: Hood's joint with no weight (the ngSkinTools skin is left alone)
+PASS fixed: taken out of the skin
+PASS it goes through safe mode (rest, x2, animation)
+PASS a check that couldn't run is listed with why (it used to look like 'nothing to repair')
+PASS Ready for animators: couldn't look for stray keys - said, not taken as none
+PASS names are exact: 'publish' is only test_publish (5.6.28 also ran hand_publish501)
+PASS a name ending in * is a prefix; an unknown name is said
+--update needs the test names (what you checked): python run_tests.py --update name1 name2
+PASS --update without names is refused
+PASS the scripts read as Python
+PASS the options table: the Ribbon's distance in front and the Builder's shape turns are found where they are
+PASS the Delta Mush script never sets displacement above 1 (Maya refuses it)
+29/29 passed

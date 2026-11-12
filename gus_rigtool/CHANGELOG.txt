@@ -1,3 +1,56 @@
+Gus_Rigtool 5.6.29 - speed for the Hare: the clothes off while blocking, what each skin costs; Publish learns
+the whole mirror table; checks that can't run say so
+
+Clothes switch (Build > Visibility switches > Clothes: full / hidden):
+- Visibility_ctrl.Clothes - Full / Hidden. Hidden: the clothes meshes (the ones you select, or Hood, Shirt, Pants...
+  found by name) aren't drawn and their own skin and delta mush are switched off, so Maya doesn't work them out
+  while blocking. A deformer that also moves other meshes (the head squash) is left on. Shows the plan first; safe
+  mode checks nothing moves at Full. "Remove full / hidden" takes it off.
+
+Speed (Check this scene > Speed), on the COG:
+- With the clothes hidden: how fast, and how much it saves - the before / after on this computer.
+- GPU override off for a moment: when it's slower than off for this rig, a note says so (and where to turn it off).
+- What each heavy skin costs: each switched off on its own, minus what every skin costs just for being there
+  (measured on the smallest skins).
+- A control that couldn't be timed is listed with why (it was left out without a word).
+
+Publish learns the mirror table on every control Gus Animtool sees, not only the ones under controls_grp: the
+Hare's report said 182 of 366 - the ribbons (cape, collar, mouth, sleeves) were missing, and they're the ones it
+was made for.
+
+Repair: joints in a skin that carry no weight (Hood, Pants, Bandages_Arms) are taken out of the skin through safe
+mode. Skins with ngSkinTools layers are left alone.
+
+Checks that couldn't run say so:
+- Repair's list shows "couldn't check: <what> - <why>" (a finder that crashed looked like "nothing to repair").
+- Ready for animators says when it couldn't look for keys on constrained channels.
+
+Tests (tests/run_tests.py): 4 at a time (about 10 minutes for the whole suite on your computer; -j 1 for one at a
+time); exact names (fix56* for a prefix - "publish" also ran hand_publish501); --update needs the names and prints
+each diff.
+
+Scripts (repository only, not in the zip; they change nothing):
+- diagnostics/squash_reach.py, version 2: the fade measured in the lattice's own units on every axis (version 1
+  used the height for all three, so the sides were counted wrong), from the base lattice, the switch turned on
+  for the test, and each mesh's input and tag expression.
+- diagnostics/deltamush_scale.py, version 2: displacement stays at 1 at most (Maya refuses more - version 1 stopped
+  there); compares now / unplugged / Scale XYZ doubled.
+- audit/control_options.py: a table of which tool offers which control option, read from the code.
+
+Decisions I made:
+- The Clothes switch drives each mesh's own visibility (through a reverse) and each deformer's node state (Has No
+  Effect when hidden). A mesh whose visibility is driven already is left alone and named.
+- The extra timings use the COG (else the first control timed), 8 steps each, the 6 heaviest skins (vertices x
+  joints) and the 2 smallest for what every skin costs - about 10 seconds more in Check this scene.
+- GPU override is switched off only for the timing and always back on (finally).
+- "Faster than off" counts when off is at least 5% faster.
+- Repair's joints-with-no-weight keeps at least one joint in every skin, and is held to safe mode like the others.
+- The fake Maya treats only skinCluster as a deformer; the new test patches deltaMush / ffd in where it needs them.
+
+Tested against the fake Maya only (tests/test_5629.py, the full suite). Not tested in real Maya: the Clothes
+switch, the extra timings (GPU override on / off especially), the joints-with-no-weight repair on the Hare, and
+both diagnostic scripts (version 2).
+
 Gus_Rigtool 5.6.28 - the 5.6.27 review: safer Repair, a mirror table that learns the real rest, and fixes
 
 Component tags (the Head_squash "Missing componentTags" warning):

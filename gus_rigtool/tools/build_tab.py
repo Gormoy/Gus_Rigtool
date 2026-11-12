@@ -963,6 +963,14 @@ def _build_part(s, pop=True, advanced=True):
                            "Face_settings_ctrl, Visibility_ctrl. Name it; put it under one of that control's master "
                            "switches (Face_Ctrls...) or on its own. One undo.")
     cmds.setParent("..")
+    ui.row(2, 170)                                  # 5.6.29: the heavy clothes off while blocking (speed)
+    cmds.button(label="Clothes: full / hidden", command=_w(_guard(vis_clothes_hidden)),
+                annotation="Visibility_ctrl.Clothes (Full / Hidden): the selected meshes - or Hood, Shirt, Pants... "
+                           "found by name - hidden, and their own skin / delta mush switched off, so the rig moves "
+                           "faster while blocking. Shows the plan first; safe mode checks nothing moves at Full.")
+    cmds.button(label="Remove full / hidden", command=_w(_guard(vis_clothes_hidden_remove)),
+                annotation="The Clothes switch goes: the meshes shown, their deformers on. One undo.")
+    cmds.setParent("..")
     cmds.button(label="Remove all the switches", command=_w(_guard(vis_remove_all)),
                 annotation="Every switch the tool made goes (Visibility_ctrl - deleted if the tool made it - and the "
                            "face's): every control, the joints and the geometry shown. Asks first; one undo.")
@@ -1049,6 +1057,33 @@ def vis_clothes(*_):
         naming.short_name(got["holder"]), ", ".join("%s %d" % kv for kv in got["parts"].items()) or "nothing",
         "; left alone (driven already): " + ", ".join(naming.short_name(x) for x in got["skipped"][:6])
         if got["skipped"] else ""))
+
+
+def vis_clothes_hidden(*_):
+    """5.6.29: Visibility_ctrl.Clothes - Full / Hidden - for the heavy clothes meshes (safe mode: nothing moves)."""
+    from gus_rigtool.core import clothes_switch as CS, safe
+    sel = [t for t in cmds.ls(selection=True, long=True, type="transform") or []
+           if cmds.listRelatives(t, shapes=True, type="mesh")]
+    meshes = sel or CS.suggest()
+    if not meshes:
+        raise RuntimeError("select the clothes meshes (none are found by name: hood, shirt, pants...).")
+    if cmds.confirmDialog(title="Gus_Rigtool - clothes full / hidden", message="\n".join(CS.describe(meshes)) +
+                          "\n\nNothing moves at Full (safe mode checks). One undo.", button=["Make", "Cancel"],
+                          defaultButton="Make", cancelButton="Cancel", dismissString="Cancel") != "Make":
+        return
+    kept, got = safe.run(lambda: CS.make(meshes), label="gusrigClothesSwitch", states=("rest",))
+    if not kept:
+        raise RuntimeError("the clothes switch was undone - %s" % got)
+    utils.info(TOOL, "Visibility_ctrl.Clothes: %d mesh(es), %d deformer(s) switched with them%s." % (
+        len(got["meshes"]), len(got["deformers"]), "; visibility driven already, left alone: " + ", ".join(
+            naming.short_name(x) for x in got["skipped"]) if got["skipped"] else ""))
+
+
+def vis_clothes_hidden_remove(*_):
+    from gus_rigtool.core import clothes_switch as CS
+    if not CS.remove():
+        raise RuntimeError("there's no Clothes switch.")
+    utils.info(TOOL, "the Clothes switch is gone: the clothes are shown and their deformers on.")
 
 
 def vis_from_selection(*_):

@@ -1010,6 +1010,10 @@ def check_speed(rep):
             slow = max(t.values()) > 42.0                      # under ~24 fps while dragging
             rep.add(NOTE if slow else INFO, "dragging moves at %s" % "; ".join(parts),
                     "GPU override %s" % {True: "on", False: "off (Preferences > Animation)", None: "?"}[gpu])
+        for c, why in sorted(speed.SKIPPED.items()):                # 5.6.29: said, not left out
+            rep.add(INFO, "couldn't time %s" % _short(c), why)
+        if t:
+            _speed_more(rep, speed, t)
     except Exception as e:
         rep.add(INFO, "timing skipped", str(e))
     tags = speed.tag_problems()
@@ -1040,6 +1044,40 @@ def check_speed(rep):
     rep.add(OK, "speed read")
 
 
+def _speed_more(rep, speed, t):
+    """5.6.29: one control (the COG when there is one) dragged with the clothes hidden, GPU override off, and each
+    heavy skin off - what each costs on this computer."""
+    c = next((x for x in t if "cog" in _short(x).lower()), sorted(t)[0])
+    try:
+        x = speed.extra_timings(c)
+    except Exception as e:
+        rep.add(INFO, "more timing skipped", str(e))
+        return
+    for why in x["skipped"]:
+        rep.add(INFO, "couldn't time %s" % _short(c), why)
+    base = x["base"]
+    if base is None:
+        return
+    if x["clothes"] is not None:
+        rep.add(INFO, "with the clothes hidden (Visibility_ctrl.Clothes): %s %.0f ms (%.0f fps), %.0f ms saved" % (
+            _short(c), x["clothes"], 1000.0 / max(x["clothes"], 1e-3), max(base - x["clothes"], 0.0)),
+            "animators hide them while blocking, show them to check the silhouette")
+    else:
+        from gus_rigtool.core import clothes_switch as CS
+        if CS.suggest():
+            rep.add(INFO, "no Clothes switch yet", "Build > Visibility switches > Clothes: full / hidden - hides %s "
+                    "and switches their skins off while blocking" % ", ".join(_short(m) for m in CS.suggest()[:4]))
+    if x["gpu_off"] is not None:
+        faster = x["gpu_off"] < base * 0.95
+        rep.add(NOTE if faster else INFO, "GPU override %s for this rig: on %.0f ms, off %.0f ms" % (
+            "is SLOWER than off" if faster else "helps or is the same", base, x["gpu_off"]),
+            "Preferences > Animation > GPU Override: off on this computer" if faster else "")
+    if x["skins"]:
+        rep.add(INFO, "what each heavy skin costs (%s, each switched off on its own)" % _short(c), "; ".join(
+            "%s %.1f ms (%.1f above the ~%.1f ms every skin costs) - %d vertices, %d joints" % (
+                mesh, gain, real, x["overhead"], v, n) for _s, mesh, v, n, gain, real in x["skins"]))
+
+
 def check_ready(rep):
     """5.6.27: Ready for animators - what would bite them, in one list."""
     rep.start("Ready for animators")
@@ -1047,8 +1085,9 @@ def check_ready(rep):
     try:
         from gus_rigtool.core import repair
         keys = repair.stray_keys()
-    except Exception:
+    except Exception as e:                             # 5.6.29: said, not taken as "no keys"
         keys = []
+        rep.add(INFO, "couldn't look for keys on constrained channels", str(e))
     if keys:
         bad += 1
         rep.add(WARN, "keys left in the rig on constrained channels (%d)" % len(keys),

@@ -1289,13 +1289,16 @@ def find_repairs(*_):
     for child in cmds.columnLayout(col, query=True, childArray=True) or []:
         cmds.deleteUI(child)
     cmds.setParent(col)
-    if not items:
+    if not items and not repair.ERRORS:
         cmds.text(label="Nothing to repair.", align="left")
+    for what, why in repair.ERRORS:                  # 5.6.29: a check that couldn't run says so
+        cmds.text(label="  couldn't check: %s - %s" % (what, why), align="left", font="smallPlainLabelFont")
     for it in items:
         cmds.checkBox(N("Rep_" + it.id), label="%s  (%d)" % (it.label, it.count), value=True, annotation=it.detail)
         cmds.text(label="      " + it.detail, align="left", font="smallPlainLabelFont")
     cmds.setParent("..")
-    utils.info(TOOL, "%d repair(s) found." % len(items), "warn" if items else "ok")
+    utils.info(TOOL, "%d repair(s) found%s." % (len(items), "; %d check(s) couldn't run - listed" % len(
+        repair.ERRORS) if repair.ERRORS else ""), "warn" if items or repair.ERRORS else "ok")
 
 
 def apply_repairs(*_):

@@ -130,6 +130,19 @@ def rig_controls():
     return sorted(out, key=lambda x: x.count("|"))
 
 
+def mirror_table_controls(A, ctrls):
+    """5.6.29: the controls Publish learns the mirror table on - the rig's controls and every other control Gus
+    Animtool sees in the character (ribbons, face, cloth outside controls_grp: 5.6.28 learned 182 of the Hare's 366,
+    and the cape's ribbons were the ones it was made for)."""
+    ns = A.namespace_of(ctrls[0]) if ctrls else ""
+    try:
+        more = A.character_controls(ns)
+    except Exception:                                  # Animtool can't list them: the rig's own still learn
+        more = []
+    seen = set(ctrls)
+    return list(ctrls) + [c for c in more if c not in seen and not seen.add(c)]
+
+
 def _hand_groups(top, ctrls):
     """A hand-made rig: the plain groups above its controls (offsets...), up to its top group. Nothing else."""
     ctrl_set = set(ctrls)
@@ -246,7 +259,7 @@ def publish(options=None):
                 from gus_rigtool.maya_check import _animtool
                 _animtool()
                 from gus_animtool import anim as A
-                learned = A.learn_rest(nodes=ctrls)
+                learned = A.learn_rest(nodes=mirror_table_controls(A, ctrls))   # 5.6.29: every control
                 if learned:
                     done.append("mirror table learned on %d controls" % learned)
             except Exception:                              # no Animtool here: Animtool works it out live
