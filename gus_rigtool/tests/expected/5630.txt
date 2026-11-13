@@ -9,7 +9,7 @@ PASS Publish saves the default pose on every control Animtool sees (the ribbons 
 PASS Unpublish clears the table on the same controls Publish learned it on (366, not 182)
 PASS the pupil: a parent constraint on the control itself is found
 PASS zeroed: the control reads 0, the constraint is on its group now, the control stays where it was
-PASS an aim constraint isn't moved for you - it says to do that one by hand
+PASS a pole vector constraint isn't moved for you - it says to do that one by hand
 PASS a control to begin with
 PASS marked 'not a control': the checker, Publish and Animtool leave it out
 PASS marking it again changes nothing

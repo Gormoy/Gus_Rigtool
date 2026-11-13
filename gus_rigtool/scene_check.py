@@ -141,6 +141,15 @@ def check_checker(rep):
                 rep.add(status, "%s (%d)" % (name, len(n)), shown + (" - Checker > Duplicate names > Fix renames "
                                                                      "the extra copies" if cid == "dup_names"
                                                                      else ""))
+            elif cid == "mesh_history":                        # 5.6.31: what it is, and where to clean it
+                rows = []
+                for m in n[:MAX_NAMES]:
+                    hist, ref = checker.history_detail(m)
+                    rows.append("%s: %s - %s" % (_short(m), ", ".join(hist[:3]) + (" ..." if len(hist) > 3 else ""),
+                                                 "in the model file" if ref else "in this file"))
+                rep.add(status, "%s (%d)" % (name, len(n)), "; ".join(rows) + " - careful: history that places a "
+                        "mesh (a mirror, a move) moves it when it's deleted; the Checker's fix puts back any that "
+                        "move")
             else:
                 rep.add(status, "%s (%d)" % (name, len(n)), _names(n))
 

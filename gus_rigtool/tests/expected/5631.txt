@@ -1,0 +1,10 @@
+PASS an aim constraint on the control can be moved now (5.6.30 said 'move it by hand')
+PASS zeroed: the control reads 0, the aim is on its group, the control stays where it was
+PASS the new aim keeps the old one's settings: aim Z, up Y, world up the head (object)
+PASS its own settings read one by one
+PASS the left eye moved when its history went: put back, and said (keep that history)
+PASS a mesh that doesn't move loses its history as before
+PASS the history named with its type, and referenced = the model file
+PASS the report: each mesh's history and where to clean it (this file / the model file), and a warning
+PASS Remove: a Head_squash_off with nothing connected goes; one still in use stays
+9/9 passed

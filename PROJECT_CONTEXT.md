@@ -1,15 +1,16 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
-This file was written on 2026-11-09 at the end of a long working chat. Give it to a new chat, together with
-`CLAUDE.md` and `Gus_Rigtool_install.zip`, to continue the work. It covers what the project is, how we work,
-what was built in this chat, the Hare rig's state, and what's open.
+Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
+session (5.6.28 - 5.6.31). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.31`; `main` holds only the licence so far). It covers what the
+project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
 
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.27, about 147 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.31, about 151 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -41,12 +42,18 @@ what was built in this chat, the Hare rig's state, and what's open.
 7. He likes **big releases**. He often says "everything" or "I'll let you work through the night".
 8. Plain words. He judges results in Maya: what moves, what looks wrong.
 9. He often sends diagnostic output back. When something is unclear in Maya, write a **small diagnostic script**
-   he can run that changes nothing (undo off, everything put back), and ask him to paste the result.
+   he can run that changes nothing (undo off, everything put back), and ask him to paste the result. Keep them in
+   `scripts/diagnostics/` (repo only, not in the zip).
+10. **Two lanes for new work** (agreed in 5.6.28): what he needs to finish the Hare goes in when needed, each with an
+    impact note first (files, risk, tests, what to check in Maya); "nice to have" waits for the clean-up stages of
+    the roadmap. No feature without tests; a real-Maya check for anything that moves the rig.
+11. It's a **personal tool**, used in **Maya 2024 until the short is finished**. He works mainly on **Windows**,
+    sometimes on his Mac. After a release he usually says to push the branch (only the branch: no merge, no PR).
 
 ## 3. The Hare rig (current state)
 
-- **Scene:** `/Volumes/T7/The Tree That Bloomed in Winter/TTTBMW_Hare_Rigging/scenes/Hare_Rigging_v197_NewSkinWeigh.ma`
-  (v195 and v196 came before it). macOS, Maya 2024.
+- **Scene:** `Hare_Rigging_v199_NewSkinWeigh.ma` in `.../TTTBMW_Hare_Rigging/scenes/` (on Windows `H:/Assignments/The
+  Tree That Bloomed in Winter/`, on the Mac `/Volumes/T7/...`). Maya 2024.
 - **Model:** a reference to `Geo_Hare_08_MovedTail.mb`, namespace **`Geo_Hare_07`**.
 - **Scale of the rig:** 995 joints, 367 controls, 24 meshes, 55 skins, 850 constraints, 17 ribbon builds,
   14 guide modules.
@@ -82,43 +89,42 @@ what was built in this chat, the Hare rig's state, and what's open.
   - The cape controls 04, 07, 10, 19, 22 and 25 have `_sdk` groups that are parent-constrained to the clavicle
     and humerus.
 
-### Last Check this scene (5.6.27, v196): what was still open
+### Last Check this scene (5.6.30, v199, Windows): what's still open
 
-1. Collar and Cape_Ribbon "right side doesn't mirror". Fixed by marking them **Not symmetric** (not done yet).
-2. L/R_Pupil_ctrl aren't at zero and are driven by a constraint, and so is Tongue_end_IK_ctrl. The fix: move the
-   offset and the constraint onto their offset groups.
-3. Six hidden old controls (above). Delete them or drop their control role.
-4. Model file clean-up in `Geo_Hare_08_MovedTail.mb`:
-   - non-deformer history on 12 meshes (Hare_Body included);
-   - duplicate names (Belt, Gums_UP, Hare_Body, Teeth_Up);
-   - Redshift unknown nodes;
-   - 21 `Eye_geo:` leftover namespaces;
-   - 20 unused Orig shapes.
-5. Joint up-axis flips and twists, and sleeve joints that aren't exact mirrors. These are low priority.
-6. **Not published yet**, so the mirror table shows 0 of 366. Save, Publish, then Deliver.
+1. **Collar and Cape_Ribbon** "right side doesn't mirror": mark them **Ribbon tab > Not symmetric** (not done yet).
+2. **L / R_Pupil_ctrl** (aim constraint on the control) and **Tongue_end_IK_ctrl**: 5.6.31's **Behaviour > Rest here >
+   Keep the pose, zero** moves aim constraints too - run it on them.
+3. **L_IK_Elbow_ctrl / L_IK_Wrist_ctrl**: the left side's old controls, still hidden by hand - **Behaviour > Not a
+   control** (the right side, Neck_ctrl and Head_ctrl are marked).
+4. **Non-deformer history** on Bandage_L / R, Bandages_Arms and both eyes. **Don't delete the eyes' history**: Gus
+   tried and the left eye jumped to the other side (it's probably the mirror that made it). 5.6.31's report names
+   the nodes; the Checker's fix now puts back any mesh that moves. The bandages: clean in the model file.
+5. Model file clean-up in `Geo_Hare_08_MovedTail.mb`: duplicate names (Belt, Gums_UP, Hare_Body, Teeth_Up),
+   21 `Eye_geo:` leftover namespaces, 20 unused Orig shapes.
+6. Joint up-axis flips (14), Nose and R_Humerus twisted, sleeve joints not exact mirrors - low priority.
+7. Before delivering: Auto Key off, playback "every frame" (the jiggles), save, Publish, Deliver.
 
-### Fixed by 5.6.27 Repair (confirmed in the v196 report)
-- The belt losing form at x2: Delta Mush displacement is now tied to globalScale, and the scale check passes.
-- The hidden `...ShapeDeformed` meshes in the middle of the skin → Head_squash chains were removed.
-- Head_squash "Missing componentTags" warnings (450 per session): gone.
-- The picker check now finds the rig's picker.
+### Done since 5.6.27 (confirmed in Maya)
+- The **head squash was taken out** (to add again later - Make no longer needs component tags, 5.6.28).
+- The **mirror table** and the **default pose** are on all 362 controls (Publish).
+- **Clothes switch**: Visibility_ctrl.Clothes + Hood_Geo, Shirt_Geo, Pants_Geo, Bandages_Geo (Full / Hidden).
+- The **Mouth** is symmetric within the skin-mirror tolerance; the pupil joints' scale is 1.
+- pairBlend1 / 2 are reported as normal space blends.
+- **Delta Mush**: displacement fed by Global_ctrl.globalScale keeps every mesh's form at x2 (checked with the
+  diagnostic: "now" 0.000; unplugged up to 1.88). deltaMush1 (Shirt, Scale XYZ 2 2 4) and deltaMush2
+  (Bandages_Arms, 1 0.001 3) have odd Scale XYZ on purpose (Gus fitted them that way).
 
-### Speed measurements (dragging COG, Maya 2024 on his Mac)
+### Speed (dragging COG, Maya 2024, Windows, 5.6.30)
 
 | Measured | Result |
 |---|---|
-| Normal | 45–48 ms per step (about 22 fps) |
-| GPU override off | 43 ms: **faster than on**, so no skin is on the graphics card |
-| Delta Mush, jiggle/wave expressions, squash or follicles off | no real gain (1–2% each) |
-| All skins off | about 20 ms |
-| Meshes not drawn | 17 ms |
-| Each skin off on its own | about 4 ms saved even for tiny skins: a fixed overhead, likely GPU override |
-| Real costs above that overhead | Hood ~6 ms (skinCluster18, 677 vertices, 94 joints), Hare_Body ~3.5 ms (skinCluster10, 7,300 vertices, 172 joints), Pants ~3 ms (skinCluster23, 754 vertices, 181 joints), Shirt ~2.5 ms (skinCluster17, 1,031 vertices, 105 joints) |
+| Normal | 103-111 ms per step (about 9-10 fps) - this PC; the Mac's 45 ms (22 fps) isn't comparable |
+| Clothes hidden (Visibility_ctrl.Clothes) | 60 ms (17 fps), 44 ms saved |
+| Each piece hidden | Hood 18 ms, Pants 12, Shirt 9, Bandages 3 |
+| Each skin off on its own | Hood 22 ms, Hare_Body 14, Pants 13, Shirt 10; the fixed per-skin cost is ~0 here |
+| GPU override off | about the same (104 vs 108 ms) |
 
-- **pairBlend1 and pairBlend2 are NOT stray keys.** They blend two space constraints on
-  `L/R_humerus_FK_space_grp` (rotate), weight 1. That's normal; the checker message is wrong about them.
-
-## 4. What this chat built (5.6.23 to 5.6.27)
+## 4. What was built (5.6.23 to 5.6.31)
 
 - **5.6.23:**
   - a more professional picker UI;
@@ -173,23 +179,37 @@ what was built in this chat, the Hare rig's state, and what's open.
 - `hare_speed_check.py`: times COG/World dragging with each heavy part switched off.
 - `hare_skin_cost.py`: times each skin on its own, GPU override on vs off, and inspects the pairBlends.
 
-## 5. Open items: the proposed 5.6.28 (waiting for Gus's OK)
+### 5.6.28 - 5.6.31 (Claude Code, 2026-11-10 to 13)
+- **5.6.28** (the 5.6.27 review): Repair no longer empties component tag expressions; Make head squash works
+  without tags; the mirror table keeps joints' translate and reads custom attributes at default; Make the right
+  side mirror the left also refuses held offsets / pairBlends; safe mode by UUID, unsteady frames skipped, only
+  its own undo step; the speed drag always put back with Auto Key off; pairBlend space blends called normal;
+  Unpublish clears the mirror table.
+- **5.6.29**: the Clothes switch; Speed: clothes hidden / GPU off / each skin; Publish learns the table on every
+  Animtool control; Repair takes out joints with no weight; checks that can't run say so; run_tests.py 4 at a
+  time with exact names; scripts/audit/control_options.py.
+- **5.6.30**: bandages and a switch per piece; Keep the pose moves a control's constraint onto its group; Not a
+  control (gusNotControl); Go there... in Check this scene; default pose on every control.
+- **5.6.31**: Keep the pose moves aim constraints (the pupils); the Checker's history fix puts back a mesh that
+  moves; the history warning names the nodes and where to clean them; Remove head squash leaves no switch node.
 
-1. **Speed section:** per-skin timing with the ~4 ms per-skin overhead taken out, and a note when GPU override is
-   slower than off for this rig.
-2. **pairBlend message:** a pairBlend fed only by constraints is a space blend and shouldn't be flagged. Only real
-   keys plus a constraint should warn.
-3. **Clothes: full / hidden** switch on the visibility control for Hood, Shirt and Pants. Hiding them while
-   blocking should save most of the ~15 ms.
-4. **Clothes skins clean-up, through safe mode:** remove zero-weight joints (Hood and Pants have 4 each) and
-   report how many joints each vertex really uses.
-5. Ideas raised but not planned:
-   - a one-click "move the constraint and offset onto the offset group" for the pupils and tongue;
-   - an in-Maya check section for 5.6.27 in `maya_check.py`.
+## 5. Open items and the roadmap
 
-Questions that were waiting for Gus:
-1. For item 3: hide the clothes, or show a lighter stand-in?
-2. Make 5.6.28 with all four items, or leave the rig as it is (it already runs at about 22 fps)?
+Next for the Hare: the list in section 3. The review (5.6.28) and the roadmap agreed with Gus:
+1. **Stage 1 (during the film)**: real-Maya tests with `mayapy` on Maya 2024 (Windows and Mac): build, skin,
+   IK/FK jump, mirror pose, Publish / Unpublish.
+2. **Stage 2 (quiet weeks)**: one shared control maker in `core/` (every option: distance in front, pivot on
+   the shape, shape turns, group stack, line width, tag as controller) used by Shapes, Make controls, Ribbon,
+   Builder, IK spline, World levels; merge **Shapes + Make controls** into one Controls tab (today's Make controls
+   look as default, a clear Custom panel); every control tagged as a Maya controller; skin mirror in one place;
+   one shape mirror; side-colour settings out of the Mirror tab; logic out of tools/ (checker queries, shape
+   library, group maker); one updater; split pickerqt.py; IK/FK matching with stretch / soft IK (only used for
+   exaggerated poses, so not urgent).
+3. **Stage 3 (after the film)**: Maya 2025-2027 (PySide6, Python 3.13 - the fake tests already pass on 3.13;
+   Maya 2027's built-in ngSkinTools skinning), merge Checker + Check this scene, a short README, the Hare as a
+   demo rig once the short is out.
+4. Ideas raised: a Check this scene test that the head squash moves every mesh it should (when it comes back);
+   per-skin timing in a separate button if Check this scene gets slow (it takes ~48 s now).
 
 ## 6. Useful facts and gotchas
 
@@ -211,5 +231,12 @@ Questions that were waiting for Gus:
 - **Heredocs:** writing Python through bash heredocs has caused escaped-backslash bugs (`\\n`). Check regexes
   after writing.
 - **Whole-repo lint** gives thousands of false errors (the tests `exec` the fakes). Lint only the changed files.
-- **Prefix matching:** `run_tests.py <name>` matches as a prefix, and `--update` with a short name can update more
-  tests than you meant.
+- **Test names:** since 5.6.29 `run_tests.py` takes exact names (`name*` for a prefix); `--update` needs names
+  and prints each diff.
+- **The fake Maya** (`tests/fakemaya.py`): `ls` has no wildcards, constraint commands ignore `name=` (they're
+  called `<driven>_parentConstraint1`) and connect themselves to the driven node, only `skinCluster` counts as a
+  `geometryFilter`, `skinCluster` / `listHistory` queries return nothing (patch them in a test). Since 5.6.28 it
+  remembers `defaultValue` for `attributeQuery(listDefault=True)`.
+- **Delta Mush** `displacement` has a hard maximum of 1 for `setAttr`, but a connection from globalScale passes 2
+  through (and that's what keeps the belt's form).
+- **Python's `a or b if c else d`** is `(a or b) if c else d` - it was right; brackets only for clarity.

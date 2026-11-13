@@ -1,3 +1,33 @@
+Gus_Rigtool 5.6.31 - the pupils' aim, history that can't be deleted blindly, notes for the next session
+
+Keep the pose, zero the selected controls (Controls > Behaviour > Rest here) moves an aim constraint too - the
+Hare's pupils. The group above gets the same aim (target, aim and up axes, world up type, object and vector),
+the control reads 0 and stays where it is. Pole vector constraints and keys blended with a constraint are still
+left for you, and it says why.
+
+Non-deformer history:
+- The Checker's fix (bake the history) runs each mesh through safe mode: one that moves - the left eye did when
+  its history was deleted - is put back and listed. That history places the mesh (a mirror, a move): keep it, or
+  redo the mesh in the model file.
+- Check this scene names the history on each mesh (node and type) and says where to clean it: in this file, or in
+  the model file for a referenced mesh.
+
+Remove head squash: a Head_squash_off switch node left with nothing connected goes too.
+
+PROJECT_CONTEXT.md (the notes a new session starts from) now covers 5.6.28 - 5.6.31, the Hare's current state,
+the Windows speed numbers and the roadmap; CLAUDE.md says 5.6.31.
+
+Decisions I made:
+- Controls hidden on purpose by a toggle (the ear tweaks, IK / FK) needed no change: the hidden-by-a-group check
+  already leaves out a group whose visibility something drives. The two still listed (L_IK_Elbow_ctrl_Offset_GRP,
+  L_IK_Wrist_ctrl_GRP) were hidden by hand.
+- An aim constraint's world up object is passed on only when its world up type uses one (object / object
+  rotation).
+- The Checker's history fix compares at rest only (deleting history is a rest-pose change).
+
+Tested against the fake Maya only (tests/test_5631.py, the full suite). Not tested in real Maya: Keep the pose on
+the pupils' aim constraints, the history fix putting a moved mesh back, the history names in the report.
+
 Gus_Rigtool 5.6.30 - the Hare's open items: the pupils zero, old controls set aside, Go there; the clothes per
 piece; the whole default pose and mirror table
 

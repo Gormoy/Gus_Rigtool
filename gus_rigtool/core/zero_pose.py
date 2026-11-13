@@ -66,7 +66,25 @@ def at_rest(c):
     return True
 
 
-MOVABLE = ("parentConstraint", "pointConstraint", "orientConstraint", "scaleConstraint")
+MOVABLE = ("parentConstraint", "pointConstraint", "orientConstraint", "scaleConstraint", "aimConstraint")
+AIM_FLAGS = ("aimVector", "upVector", "worldUpType", "worldUpVector", "worldUpObject")   # 5.6.31: the pupils'
+
+
+def _aim_flags(con):
+    """An aim constraint's own settings (aim / up axes, world up), as flags for the new one."""
+    out = {}
+    for f in AIM_FLAGS:
+        try:
+            v = cmds.aimConstraint(con, query=True, **{f: True})
+        except (RuntimeError, TypeError, ValueError):
+            continue
+        if v is None or v == []:
+            continue
+        if f == "worldUpObject" and isinstance(v, (list, tuple)):
+            v = v[0] if v else None
+        if v is not None:
+            out[f] = v
+    return out
 
 
 def constraints_on(c):
@@ -92,9 +110,14 @@ def _read_constraints(cons):
     for con in cons:
         kind = cmds.nodeType(con)
         fn = getattr(cmds, kind)
+        flags = dict(ribbon._skip_flags(con, kind))
+        if kind == "aimConstraint":
+            flags.update(_aim_flags(con))                 # 5.6.31: same aim, up and world up
+            if flags.get("worldUpType") not in ("object", "objectrotation"):
+                flags.pop("worldUpObject", None)
         data.append((fn, fn(con, query=True, targetList=True) or [],
                      [cmds.getAttr(con + "." + a) for a in fn(con, query=True, weightAliasList=True) or []],
-                     ribbon._skip_flags(con, kind), _short(con)))
+                     flags, _short(con)))
     return data
 
 

@@ -336,10 +336,22 @@ def find_mesh_history(scope):
     return [n for n in transforms(scope) if is_mesh(n) and _non_deformer_history(_shapes(n)[0])]
 
 
+def history_detail(n):
+    """5.6.31: (the history nodes as 'name (type)', referenced) - what 'non-deformer history' is on a mesh, and
+    whether it's fixed here or in the model file."""
+    nodes = _non_deformer_history(_shapes(n)[0]) if _shapes(n) else []
+    try:
+        ref = bool(cmds.referenceQuery(n, isNodeReferenced=True))
+    except RuntimeError:
+        ref = False
+    return ["%s (%s)" % (naming.short_name(h), cmds.nodeType(h)) for h in nodes], ref
+
+
 def fix_mesh_history(nodes):
     """5.6.22: a mesh inside a referenced file can't lose its history here (Maya refuses - the fix crashed):
     left, and said - fix it in the model file."""
-    done, ref = 0, []
+    from gus_rigtool.core import safe
+    done, ref, moved = 0, [], []
     for n in nodes:
         try:
             if cmds.referenceQuery(n, isNodeReferenced=True):
@@ -347,11 +359,19 @@ def fix_mesh_history(nodes):
                 continue
         except RuntimeError:
             pass
-        try:
-            cmds.bakePartialHistory(n, prePostDeformers=True)
-            done += 1
+        try:                                           # 5.6.31: undone if the mesh moves (the left eye did)
+            kept, _why = safe.run(lambda n=n: cmds.bakePartialHistory(n, prePostDeformers=True),
+                                  label="gusrigHistory", states=("rest",))
+            if kept:
+                done += 1
+            else:
+                moved.append(n)
         except RuntimeError:
             ref.append(n)
+    if moved:
+        utils.warn("Checker", "%d mesh(es) moved when their history went, so it was put back: %s - that history "
+                   "places the mesh (a mirror, a move): keep it, or redo the mesh in the model file" % (
+                       len(moved), ", ".join(naming.short_name(x) for x in moved[:6])))
     if ref:
         utils.warn("Checker", "%d mesh(es) are in a referenced file - delete their history in the model file "
                    "(%s), then reload the reference: %s" % (len(ref), _ref_file(ref[0]),

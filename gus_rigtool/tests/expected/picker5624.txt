@@ -65,7 +65,7 @@ PASS Item panel on a frame: title above, centred, size 20
 PASS ... on a text: its own size
 PASS right-click a frame's title (animating): select all in it, key, reset at the top
 PASS Pairs window: the problem listed with its suggestion
-== Gus Animtool 5.6.30 | picker from: auto | window open: True | unsaved: True
+== Gus Animtool 5.6.31 | picker from: auto | window open: True | unsaved: True
 == your look: {"theme": "dark", "text_scale": 1.0, "compact": false, "sel_rgb": [1.0, 1.0, 1.0], "sel_width": 2.0, "sel_fill": true, "hover": "lighter", "hover_rgb": [0.55, 0.85, 1.0], "add_at": "front", "snap": true, "grid_size": 8.0, "silhouette": true, "silhouette_alpha": 0.6, "list_shown": false, "list_float": false, "lines": true, "keyed": true, "behind": false, "allow_edit": false, "badges": true, "ikfk_fade": true, "minimap": true, "shape_favs": [], "shape_recent": [], "panel_open": ["Place & size", "Text", "Connector"], "panel_float": false, "side_rgb": {"L": [0.2, 0.4, 1.0], "C": [1.0, 0.85, 0.2], "R": [1.0, 0.25, 0.25]}}
 -- Body            51 items {'frame': 1, 'select': 47, 'toggle': 1, 'command': 1, 'text': 1} | page 3248 x 433, usual button 24 | normalize: False | page text x1.0 | picture: True | outline: False | connectors 0 | layers -
 -- Face            14 items {'select': 14} | page 400 x 301, usual button 30 | normalize: False | page text x1.0 | picture: False | outline: False | connectors 0 | layers -

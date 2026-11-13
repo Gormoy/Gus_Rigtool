@@ -119,10 +119,11 @@ check("zeroed: the control reads 0, the constraint is on its group now, the cont
 reset()
 createNode("transform", name="Tongue_ctrl")
 createNode("nurbsCurve", name="Tongue_ctrlShape", parent="Tongue_ctrl")
-createNode("aimConstraint", name="Tongue_aim")
-connectAttr("Tongue_aim.constraintRotateX", "Tongue_ctrl.rotateX")
+createNode("poleVectorConstraint", name="Tongue_pv")              # 5.6.31: aim constraints move now
+connectAttr("Tongue_pv.constraintTranslateX", "Tongue_ctrl.translateX")
 _c, why = zero_pose.constraints_on(ls("Tongue_ctrl", long=True)[0])
-check("an aim constraint isn't moved for you - it says to do that one by hand", "aimConstraint" in (why or ""))
+check("a pole vector constraint isn't moved for you - it says to do that one by hand",
+      "poleVectorConstraint" in (why or ""))
 
 # --- 4. Not a control
 reset()

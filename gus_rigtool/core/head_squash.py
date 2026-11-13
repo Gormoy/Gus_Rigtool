@@ -777,6 +777,10 @@ def remove():
         if holder and holder != CTRL and cmds.objExists(holder) and attr and \
                 cmds.attributeQuery(attr, node=holder, exists=True):
             cmds.deleteAttr(holder + "." + attr)
+        for n in [x for x in cmds.ls(type="reverse") or []              # 5.6.31: a switch node left with nothing
+                  if x.split("|")[-1].split(":")[-1].startswith("Head_squash_off")]:
+            if not cmds.listConnections(n + ".outputX", source=False, destination=True):
+                cmds.delete(n)
         repaired = repair_curves(curves)
         clean_copies([m for m in data.get("meshes", []) if cmds.objExists(m) and len(cmds.ls(m)) == 1])
     return repaired
