@@ -1,3 +1,30 @@
+Gus_Rigtool 5.6.34 - the pupils left alone, Keep the pose in safe mode, Check this scene no longer crashes Maya
+
+The pupils: each eyeball joint follows its pupil control's own rotate values (an orient constraint reads
+L_Pupil_ctrl.rotate), so 5.6.33's Keep the pose - which zeroed those values - turned the eyes. They were fine as
+they were: the pupils are scale-only controls, their locked channels aren't the animator's.
+- Checker > Controls not at zero: only channels an animator can move count. Locked or driven channels don't (the
+  pupils aren't listed any more).
+- Keep the pose (Controls > Behaviour > Rest here): no longer unlocks anything (5.6.33's change taken out).
+- Keep the pose leaves alone a control whose own values drive something, and says which: "its own values drive
+  something (L_Pupil_ctrl.rotate -> L_Eyeball_jnt_orientConstraint1...)".
+- Keep the pose runs through safe mode: if any mesh moves, it's all put back and the mesh is named.
+
+Check this scene crashed Maya on the Hare every time from its buttons (Checker tab, Settings tab), but never
+from the Script Editor. The check moves the rig, refreshes the view for the speed timing and opens windows - done
+inside the button's click, Maya fell over. The buttons now start it once the click is over.
+
+Decisions I made:
+- "Drives something" is any connection out of the control's translate / rotate / scale (or one axis of them). It
+  may leave out a control used as a constraint target that would have zeroed fine; safe mode can't see a joint
+  turning that no mesh shows, so leaving it out is the safe side.
+- The check starts at the lowest priority after the click (Maya runs it when the click and the redraw are done).
+- tests/test_5633.py: its Keep the pose check now expects locked channels left as they are.
+
+Tested against the fake Maya only (tests/test_5634.py, the full suite). Not tested in real Maya: the buttons no
+longer crashing (it fits Gus's tests - the same work from the Script Editor never crashed - but it is the likely
+cause, not a proven one), the pupils skipped with the message, safe mode on Keep the pose.
+
 Gus_Rigtool 5.6.33 - the bandages' history for real, the pupils at zero, honest zero fixes, the slider warning
 
 Non-deformer history: 5.6.32's fix missed the Clothes switch in real Maya. Maya 2024 describes a condition node

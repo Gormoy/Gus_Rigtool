@@ -1268,6 +1268,19 @@ def accept_window(rep=None):
     cmds.showWindow(win)
 
 
+def run_later():
+    """5.6.34: what the Check this scene buttons call - the check starts once the click is over. Run inside the
+    click (it moves the rig, refreshes the view for the speed timing, opens windows), it crashed Maya on the Hare
+    every time; the same run from the Script Editor never did."""
+    def go():
+        try:
+            run()
+        except Exception as e:
+            from gus_rigtool.core import ui
+            ui.report_error(e, "scene_check")
+    cmds.evalDeferred(go, lowestPriority=True)
+
+
 def run(show=True):
     """Check the open scene (reads only); shows the report and saves it. Returns the text."""
     rep = report()

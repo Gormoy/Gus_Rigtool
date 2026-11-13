@@ -1488,7 +1488,7 @@ def build(prefix="p_checker_"):
     cmds.button(label="Copy report", command=_w(copy_report))
     cmds.setParent("..")
     cmds.button(label="Check this scene: full diagnosis (ribbons, follows, labels, skin...)", height=26,
-                command=_w(_guard(lambda *_: __import__("gus_rigtool.scene_check", fromlist=["x"]).run())),
+                command=_w(lambda *_: __import__("gus_rigtool.scene_check", fromlist=["x"]).run_later()),
                 annotation="Reads the whole scene and writes a report to send: problems first, then each ribbon, "
                            "follow, skin, stuck control... Nothing changes.")
     ui.end_section()

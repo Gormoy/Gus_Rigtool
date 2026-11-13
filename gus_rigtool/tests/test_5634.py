@@ -74,4 +74,19 @@ with mock.patch.object(safe, "run", fake_run), \
 check("Behaviour > Keep the pose goes through safe mode: something moved, so it's put back and named",
       seen and seen[0][1] == ("rest",) and warned and "put back" in warned[0] and "L_Eye_geo" in warned[0])
 
+# --- 4. Check this scene starts after the click (run inside it, Maya crashed on the Hare every time)
+from gus_rigtool import scene_check
+later, ran = [], []
+with mock.patch.object(cmds, "evalDeferred", lambda fn, **k: later.append((fn, k))), \
+        mock.patch.object(scene_check, "run", lambda show=True: ran.append(show)):
+    scene_check.run_later()
+    check("the button only schedules it: nothing runs during the click", later and not ran and
+          later[0][1].get("lowestPriority"))
+    later[0][0]()
+    check("then it runs, with its report window", ran == [True])
+for f in ("../tools/checker.py", "../tools/settings_tab.py"):
+    src = open(f).read()
+    check("%s: its Check this scene button uses run_later" % f.split("/")[-1],
+          ".run_later()" in src and 'scene_check", fromlist=["x"]).run())' not in src)
+
 print("%d/%d passed" % (sum(ok), len(ok)))

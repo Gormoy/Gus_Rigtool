@@ -276,7 +276,7 @@ def build(prefix="p_settings_"):
                            "Gus Animtool action, the ribbons, follows, face kit, correctives and picker, then the "
                            "self-test. Problems are listed first. A report to send if anything fails.")
     cmds.button(label="Check this scene (reads only, your character)", height=26,
-                command=_w(_guard(lambda *_: __import__("gus_rigtool.scene_check", fromlist=["x"]).run())),
+                command=_w(lambda *_: __import__("gus_rigtool.scene_check", fromlist=["x"]).run_later()),
                 annotation="Reads the open file - ribbons, follows, joint labels, skin, stuck controls, fixes, face "
                            "kit, guides, connections, picker and every Checker test - and writes a diagnosis. "
                            "Nothing in the scene changes.")
