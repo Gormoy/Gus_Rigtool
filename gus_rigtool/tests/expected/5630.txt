@@ -1,0 +1,21 @@
+PASS pieces from the names: Hood, Pants, Bandages (Bandage_L, Bandages_Arms); the belt isn't clothes
+PASS found by name: the hood and both bandages (5.6.29 missed the bandages), not the belt
+PASS the plan lists each piece and its meshes
+PASS a Full / Hidden per piece next to Clothes (Hood_Geo, Bandages_Geo)
+PASS a piece is hidden when Clothes or its own switch is on Hidden (Clothes + piece > 0)
+PASS both bandages hide with Bandages_Geo, their skins switch off with it
+PASS removed: the piece switches and their nodes go too
+PASS Publish saves the default pose on every control Animtool sees (the ribbons too), not only controls_grp's
+PASS Unpublish clears the table on the same controls Publish learned it on (366, not 182)
+PASS the pupil: a parent constraint on the control itself is found
+PASS zeroed: the control reads 0, the constraint is on its group now, the control stays where it was
+PASS an aim constraint isn't moved for you - it says to do that one by hand
+PASS a control to begin with
+PASS marked 'not a control': the checker, Publish and Animtool leave it out
+PASS marking it again changes nothing
+PASS a control again
+PASS each problem with a place to fix it gets a Go button: the collar, the pupils, the old controls
+PASS the ones fixed outside the tool (a plugin) and plain info get none
+PASS each piece hidden on its own, through its own switch: Hood saves 30 ms, Bandages 8 ms
+PASS Check this scene lists them, the biggest saving first
+20/20 passed

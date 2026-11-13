@@ -1067,6 +1067,9 @@ def _speed_more(rep, speed, t):
         if CS.suggest():
             rep.add(INFO, "no Clothes switch yet", "Build > Visibility switches > Clothes: full / hidden - hides %s "
                     "and switches their skins off while blocking" % ", ".join(_short(m) for m in CS.suggest()[:4]))
+    if x.get("pieces"):                                    # 5.6.30: each piece hidden on its own
+        rep.add(INFO, "each clothes piece hidden on its own (%s)" % _short(c), "; ".join(
+            "%s saves %.0f ms" % (part, ms) for part, ms in sorted(x["pieces"], key=lambda r: -r[1])))
     if x["gpu_off"] is not None:
         faster = x["gpu_off"] < base * 0.95
         rep.add(NOTE if faster else INFO, "GPU override %s for this rig: on %.0f ms, off %.0f ms" % (
@@ -1161,6 +1164,57 @@ def report():
     return rep
 
 
+# 5.6.30: where each problem is fixed - (words in the problem, button label, tool key, section)
+GO_THERE = [
+    (r"don't mirror their left twin|not exactly symmetric", "Ribbon > Not symmetric / Make symmetric", "ribbon",
+     "Build and mirror"),
+    (r"controls not at zero|driven by a constraint", "Behaviour > Rest here (keep the pose, zero)", "behaviour",
+     "Rest here"),
+    (r"hidden by a group above", "Behaviour > Not a control", "behaviour", "Not a control"),
+    (r"mirror table learned", "Build > Publish", "build", "Publish (clean rig for animators)"),
+    (r"keys left in the rig|hidden meshes in the middle|delta mush not tied|carry no weight", "Checker > Repair",
+     "checker", "Repair"),
+    (r"jiggle", "Skin > Jiggle and wave", "skin", "Jiggle and wave"),
+    (r"dragging moves at|no clothes switch", "Build > Visibility switches (Clothes)", "build", "Visibility switches"),
+]
+
+
+def go_targets(rep):
+    """5.6.30: [(problem, label, tool, section)] - each warning / note that has a place to fix it, once per place."""
+    import re as _re
+    out, seen = [], set()
+    for _sec, status, name, detail in rep.rows:
+        if status not in (WARN, NOTE) and "no clothes switch" not in name:
+            continue
+        for rx, label, tool, section in GO_THERE:
+            if _re.search(rx, name.lower()) and (tool, section, name) not in seen:
+                seen.add((tool, section, name))
+                out.append((name, label, tool, section))
+                break
+    return out
+
+
+def go_window(rep):
+    """A small window: each problem and a Go button to the tab and section that fixes it."""
+    from gus_rigtool.core import ui
+    win = "gusRigGoThereWin"
+    targets = go_targets(rep)
+    if cmds.window(win, exists=True):
+        cmds.deleteUI(win)
+    cmds.window(win, title="Gus_Rigtool - go there", widthHeight=(560, 60 + 26 * max(len(targets), 1)))
+    cmds.scrollLayout(childResizable=True)
+    cmds.columnLayout(adjustableColumn=True, rowSpacing=2)
+    if not targets:
+        cmds.text(label="  Nothing in this report has a tab to go to.", align="left")
+    for name, label, tool, section in targets:
+        cmds.rowLayout(numberOfColumns=2, adjustableColumn=1, columnAttach=[(1, "both", 4), (2, "both", 2)])
+        cmds.text(label=name[:70], align="left", annotation=name)
+        cmds.button(label="Go: " + label, width=250, command=lambda *_, t=tool, sc=section: ui.go_to_tool(t, sc))
+        cmds.setParent("..")
+    cmds.showWindow(win)
+    return win
+
+
 def accept_window(rep=None):
     """Tick the warnings / notes that are intended; Accept: they pass from now on (until something new shows up on
     the same line). Forget: every accepted one warns again."""
@@ -1220,7 +1274,8 @@ def run(show=True):
         try:
             from gus_rigtool.core import ui
             ui.report_window("Gus_Rigtool - Check this scene", text + ("\nSaved: %s" % path if path else ""),
-                             extra=[("Accept warnings...", lambda *_: accept_window(rep))])
+                             extra=[("Go there...", lambda *_: go_window(rep)),       # 5.6.30
+                                    ("Accept warnings...", lambda *_: accept_window(rep))])
         except Exception:
             pass
     return text

@@ -122,6 +122,18 @@ def zero_here(*_):
         len(done), (", %d skipped - see the Script Editor" % len(skipped)) if skipped else ""))
 
 
+def set_role(control, *_):
+    """5.6.30: the selected curves marked 'not a control' (control False), or a control again."""
+    from gus_rigtool.core import control_role
+    sel = cmds.ls(selection=True, long=True, type="transform") or []
+    if not sel:
+        raise RuntimeError("select the curves first.")
+    got = control_role.set_role(sel, control=control)
+    utils.info(TOOL, "%d curve(s) %s%s." % (len(got), "are controls again" if control else "marked: not a control",
+                                          (" (%d already were)" % (len(sel) - len(got))) if len(got) < len(sel)
+                                          else ""))
+
+
 # ---- page -----------------------------------------------------------------------------------------------------
 
 def build(prefix="p_behaviour_"):
@@ -185,9 +197,19 @@ def build(prefix="p_behaviour_"):
     ui.end_section()
     ui.section("Rest here", step=4, help_text="A control moved to where it should rest (a cape ribbon control, the "
                "eyes): its move / turn / scale go into the group above it - nothing moves, the control reads 0 "
-               "there, and resetting it brings it back to this spot. Skipped (and said why) when its group has other "
-               "things under it or its channels are locked / driven. One undo.")
+               "there, and resetting it brings it back to this spot. A control driven by a constraint (the pupils): "
+               "the constraint goes onto the group with it (5.6.30). A group that can't take it gets a <control>_rest "
+               "group of its own. One undo.")
     ui.main_button("Keep the pose, zero the selected controls", _w(_guard(zero_here)), "Nothing moves.")
+    ui.end_section()
+    ui.section("Not a control", step=5, collapse=True, help_text="A curve that isn't a control any more (an old "
+               "hidden one): marked, the checker, Publish and Gus Animtool leave it out - no 'hidden by a group' "
+               "warning, no default pose, no picker button. Nothing in the rig changes. 'A control again' takes the "
+               "mark off. One undo.")
+    ui.row(2, 150)
+    cmds.button(label="Not a control (selected)", command=_w(_guard(lambda *_: set_role(False))))
+    cmds.button(label="A control again", command=_w(_guard(lambda *_: set_role(True))))
+    cmds.setParent("..")
     ui.end_section()
     ui.note("Lock / hide channels: the Channels page.")
 

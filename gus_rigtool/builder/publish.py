@@ -107,6 +107,8 @@ def is_published():
 
 
 def _is_ctrl(node):
+    if cmds.attributeQuery("gusNotControl", node=node, exists=True):    # 5.6.30: marked 'not a control'
+        return False
     shapes = cmds.listRelatives(node, shapes=True, fullPath=True, noIntermediate=True) or []
     return any(cmds.nodeType(s) == "nurbsCurve" for s in shapes)
 
@@ -128,6 +130,17 @@ def rig_controls():
     from gus_rigtool.builder import existing
     out += [c for c in existing.adopted_controls() if c not in out]
     return sorted(out, key=lambda x: x.count("|"))
+
+
+def _animtool_module():
+    """Gus Animtool's anim module, or None when it can't be loaded here."""
+    try:
+        from gus_rigtool.maya_check import _animtool
+        _animtool()
+        from gus_animtool import anim as A
+        return A
+    except Exception:
+        return None
 
 
 def mirror_table_controls(A, ctrls):
@@ -242,9 +255,11 @@ def publish(options=None):
         unpublish(quiet=True)
     log, done = _Log(), []
     ctrls = rig_controls()
+    A = _animtool_module()
+    every = mirror_table_controls(A, ctrls) if A else list(ctrls)    # 5.6.30: the ribbons / face too
     with utils.undo_chunk("gusrigPublish"):
         if o["default_pose"]:
-            for c in ctrls:
+            for c in every:
                 pose = {}
                 for a in cmds.listAttr(c, keyable=True) or []:
                     plug = c + "." + a
@@ -254,12 +269,9 @@ def publish(options=None):
                             pose[a] = float(v)
                 controls.add_string(c, POSE_ATTR, json.dumps(pose, sort_keys=True))
                 log.pose.append(c)
-            done.append("default pose saved on %d controls" % len(ctrls))
+            done.append("default pose saved on %d controls" % len(every))
             try:                                           # 5.6.27: the mirror table (nothing moves)
-                from gus_rigtool.maya_check import _animtool
-                _animtool()
-                from gus_animtool import anim as A
-                learned = A.learn_rest(nodes=mirror_table_controls(A, ctrls))   # 5.6.29: every control
+                learned = A.learn_rest(nodes=every) if A else 0              # 5.6.29: every control
                 if learned:
                     done.append("mirror table learned on %d controls" % learned)
             except Exception:                              # no Animtool here: Animtool works it out live
@@ -403,7 +415,8 @@ def unpublish(quiet=False):
                 cmds.delete(s)
         from gus_rigtool.core import network_tools
         network_tools.unprotect()
-        cleared = clear_mirror_table()                  # 5.6.28: an edited rig mustn't mirror from an old table
+        A = _animtool_module()                         # 5.6.30: the same controls Publish learned (366, not 182)
+        cleared = clear_mirror_table(mirror_table_controls(A, rig_controls()) if A else None)
         controls.add_string(rig, STATE_ATTR, "")
     if not quiet:
         utils.info(TOOL, "rig unpublished: channels, sets and visibility are back as they were%s." % (

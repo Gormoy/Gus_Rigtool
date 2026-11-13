@@ -1,7 +1,9 @@
 """
 Clothes switch (5.6.29): Visibility_ctrl.Clothes - Full / Hidden - for the heavy clothes meshes (the Hare's Hood,
-Shirt, Pants). Hidden: the meshes aren't drawn and their deformers (skin, delta mush...) are switched off, so
-Maya doesn't work them out - the rig moves faster while blocking. Full: everything as it was.
+Shirt, Pants, bandages). Hidden: the meshes aren't drawn and their deformers (skin, delta mush...) are switched
+off, so Maya doesn't work them out - the rig moves faster while blocking. Full: everything as it was.
+5.6.30: and a Full / Hidden per piece (Hood_Geo, Shirt_Geo, Pants_Geo, Bandages_Geo...): a piece is hidden when its
+own switch or Clothes is on Hidden. (The belt stays out: it isn't in the names.)
 
 Only deformers that move nothing but the switched meshes are switched off (a head squash or a lattice shared
 with the body is left alone). Nothing moves when it's made: at Full the meshes and deformers are as before.
@@ -22,7 +24,19 @@ from gus_rigtool.core import naming, utils
 ATTR = "Clothes"                         # the switch: 0 Full, 1 Hidden
 ENUM = "Full:Hidden"
 DATA = "gusClothesSwitch"                # on the switch control: what it drives (JSON)
-PATTERN = r"hood|shirt|pants|trouser|skirt|jacket|coat|dress|cloak"
+PARTS = (("Hood", r"hood"), ("Shirt", r"shirt"), ("Pants", r"pants|trouser"), ("Bandages", r"bandage"),
+         ("Skirt", r"skirt"), ("Jacket", r"jacket|coat|cloak"), ("Dress", r"dress"))      # 5.6.30: bandages too
+PATTERN = "|".join(rx for _p, rx in PARTS)
+PART_SUFFIX = "_Geo"                     # Hood_Geo... (not "Hood": that's the controls' switch per part)
+
+
+def part_of(mesh):
+    """The piece a mesh belongs to (Hood, Shirt, Pants, Bandages...), from its name; "Other" when none fits."""
+    short = _short(mesh)
+    for part, rx in PARTS:
+        if re.search(rx, short, re.IGNORECASE):
+            return part
+    return "Other"
 
 
 def _switch_control():
@@ -100,11 +114,20 @@ def plan(meshes):
     return meshes, kept, switched
 
 
+def _by_part(meshes):
+    out = {}
+    for m in meshes:
+        out.setdefault(part_of(m), []).append(m)
+    return out
+
+
 def describe(meshes):
     meshes, kept, switched = plan(meshes)
-    lines = ["Visibility_ctrl.Clothes (Full / Hidden):",
-             "  meshes hidden: %s" % (", ".join(_short(m) for m in meshes) or "none"),
-             "  switched off with them: %s" % (", ".join(_short(d) for d in switched) or "none")]
+    lines = ["Visibility_ctrl.Clothes (Full / Hidden) and one per piece:"]
+    for part, ms in sorted(_by_part(meshes).items()):
+        lines.append("  %s%s: %s" % (part, PART_SUFFIX, ", ".join(_short(m) for m in ms)))
+    lines.append("  switched off with them: %s" % (", ".join(_short(d) for d in switched) or "none"))
+    lines.append("  (not in it: anything not listed - select the meshes to choose them yourself)")
     if kept:
         lines.append("  left on: %s" % "; ".join("%s (%s)" % (_short(d), w) for d, w in kept))
     return lines
@@ -134,19 +157,41 @@ def make(meshes, sw=None):
             remove(sw)
         if not cmds.attributeQuery(ATTR, node=sw, exists=True):
             cmds.addAttr(sw, longName=ATTR, attributeType="enum", enumName=ENUM, defaultValue=0, keyable=True)
-        rev = cmds.createNode("reverse", name="Clothes_switch_rev", skipSelect=True)
-        cmds.connectAttr(sw + "." + ATTR, rev + ".inputX")
-        shown, busy = [], []
-        for t in meshes:
-            plug = t + ".visibility"
-            if cmds.listConnections(plug, source=True, destination=False) or not cmds.getAttr(plug, settable=True):
-                busy.append(t)
-                continue
-            cmds.connectAttr(rev + ".outputX", plug, force=True)
-            shown.append(t)
-        for d in switched:
-            cmds.connectAttr(sw + "." + ATTR, d + ".nodeState", force=True)
-        data = {"meshes": shown, "deformers": switched, "reverse": rev, "skipped": busy}
+        shown, busy, nodes, parts = [], [], [], {}
+        for part, ms in sorted(_by_part(meshes).items()):
+            attr = part + PART_SUFFIX
+            if not cmds.attributeQuery(attr, node=sw, exists=True):
+                cmds.addAttr(sw, longName=attr, attributeType="enum", enumName=ENUM, defaultValue=0, keyable=True)
+            # hidden when Clothes or this piece is on Hidden: (Clothes + piece) > 0
+            pma = cmds.createNode("plusMinusAverage", name="Clothes_%s_pma" % part, skipSelect=True)
+            cond = cmds.createNode("condition", name="Clothes_%s_hidden" % part, skipSelect=True)
+            rev = cmds.createNode("reverse", name="Clothes_%s_rev" % part, skipSelect=True)
+            cmds.connectAttr(sw + "." + ATTR, pma + ".input1D[0]")
+            cmds.connectAttr(sw + "." + attr, pma + ".input1D[1]")
+            cmds.connectAttr(pma + ".output1D", cond + ".firstTerm")
+            cmds.setAttr(cond + ".operation", 2)                      # greater than 0
+            cmds.setAttr(cond + ".colorIfTrueR", 1)
+            cmds.setAttr(cond + ".colorIfFalseR", 0)
+            cmds.connectAttr(cond + ".outColorR", rev + ".inputX")
+            nodes += [pma, cond, rev]
+            mine = set()
+            for t in ms:
+                mine |= _all_shapes(t)
+                plug = t + ".visibility"
+                if cmds.listConnections(plug, source=True, destination=False) or not cmds.getAttr(plug, settable=True):
+                    busy.append(t)
+                    continue
+                cmds.connectAttr(rev + ".outputX", plug, force=True)
+                shown.append(t)
+            dfm = [d for d in switched if set(_deforms(d) or []) <= mine]
+            for d in dfm:
+                cmds.connectAttr(cond + ".outColorR", d + ".nodeState", force=True)
+            parts[part] = {"attr": attr, "meshes": [t for t in ms if t in shown], "deformers": dfm}
+        done = set(d for p in parts.values() for d in p["deformers"])
+        for d in switched:                             # one deformer across two pieces: the master alone
+            if d not in done:
+                cmds.connectAttr(sw + "." + ATTR, d + ".nodeState", force=True)
+        data = {"meshes": shown, "deformers": switched, "nodes": nodes, "parts": parts, "skipped": busy}
         if not cmds.attributeQuery(DATA, node=sw, exists=True):
             cmds.addAttr(sw, longName=DATA, dataType="string")
         cmds.setAttr(sw + "." + DATA, json.dumps(data), type="string")
@@ -170,10 +215,12 @@ def remove(sw=None):
                 for src in cmds.listConnections(d + ".nodeState", source=True, destination=False, plugs=True) or []:
                     cmds.disconnectAttr(src, d + ".nodeState")
                 cmds.setAttr(d + ".nodeState", 0)
-        if data.get("reverse") and cmds.objExists(data["reverse"]):
-            cmds.delete(data["reverse"])
-        for a in (ATTR, DATA):
-            if cmds.attributeQuery(a, node=sw, exists=True):
+        gone = [n for n in data.get("nodes", []) + [data.get("reverse")] if n and cmds.objExists(n)]
+        if gone:
+            cmds.delete(gone)
+        attrs = [ATTR, DATA] + [p.get("attr") for p in data.get("parts", {}).values()]
+        for a in attrs:
+            if a and cmds.attributeQuery(a, node=sw, exists=True):
                 cmds.deleteAttr(sw + "." + a)
     return True
 

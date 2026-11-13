@@ -954,7 +954,7 @@ def _build_part(s, pop=True, advanced=True):
                            "only those - on Visibility_ctrl too (one of its switches). Lists them first; one undo.")
     cmds.setParent("..")
     ui.row(2, 170)
-    cmds.button(label="Clothes: a switch per part", command=_w(_guard(vis_clothes)),
+    cmds.button(label="Clothes controls: per part", command=_w(_guard(vis_clothes)),     # 5.6.30: the controls
                 annotation="The secondary controls (collar, cape, sleeves, pants, belt, hood, bandages, tail, "
                            "tweaks...) one switch each, under Secondary_Ctrls - on Visibility_ctrl, or on the "
                            "control you select. Run again after adding controls. Shows the plan first; one undo.")
@@ -965,9 +965,10 @@ def _build_part(s, pop=True, advanced=True):
     cmds.setParent("..")
     ui.row(2, 170)                                  # 5.6.29: the heavy clothes off while blocking (speed)
     cmds.button(label="Clothes: full / hidden", command=_w(_guard(vis_clothes_hidden)),
-                annotation="Visibility_ctrl.Clothes (Full / Hidden): the selected meshes - or Hood, Shirt, Pants... "
-                           "found by name - hidden, and their own skin / delta mush switched off, so the rig moves "
-                           "faster while blocking. Shows the plan first; safe mode checks nothing moves at Full.")
+                annotation="The clothes MESHES: Visibility_ctrl.Clothes (Full / Hidden) and one per piece "
+                           "(Hood_Geo, Shirt_Geo, Pants_Geo, Bandages_Geo) - the selected meshes, or the ones found by "
+                           "name - hidden, and their own skin / delta mush switched off, so the rig moves faster while "
+                           "blocking. Shows the plan first; safe mode checks nothing moves at Full.")
     cmds.button(label="Remove full / hidden", command=_w(_guard(vis_clothes_hidden_remove)),
                 annotation="The Clothes switch goes: the meshes shown, their deformers on. One undo.")
     cmds.setParent("..")
@@ -1074,8 +1075,9 @@ def vis_clothes_hidden(*_):
     kept, got = safe.run(lambda: CS.make(meshes), label="gusrigClothesSwitch", states=("rest",))
     if not kept:
         raise RuntimeError("the clothes switch was undone - %s" % got)
-    utils.info(TOOL, "Visibility_ctrl.Clothes: %d mesh(es), %d deformer(s) switched with them%s." % (
-        len(got["meshes"]), len(got["deformers"]), "; visibility driven already, left alone: " + ", ".join(
+    utils.info(TOOL, "Visibility_ctrl.Clothes + %s: %d mesh(es), %d deformer(s) switched with them%s." % (
+        ", ".join(p["attr"] for p in got["parts"].values()), len(got["meshes"]), len(got["deformers"]),
+        "; visibility driven already, left alone: " + ", ".join(
             naming.short_name(x) for x in got["skipped"]) if got["skipped"] else ""))
 
 

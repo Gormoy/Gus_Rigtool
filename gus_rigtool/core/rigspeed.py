@@ -77,9 +77,10 @@ def _autokey_off():
 SKIPPED = {}                  # 5.6.29: {control: why it couldn't be timed} - the last time_drag()
 
 
-def time_drag(controls=None, steps=STEPS, skins_off=False, off=None):
+def time_drag(controls=None, steps=STEPS, skins_off=False, off=None, hide=None, attrs=None):
     """{control: ms per step} dragging translateX (everything put back, no undo steps). skins_off: the same
-    with every skin switched off for the test (what the skinning costs); off: these deformers switched off.
+    with every skin switched off for the test (what the skinning costs); off: these deformers switched off;
+    hide: these meshes hidden; attrs: {plug: value} set for the test (5.6.30: a piece's Clothes switch).
     5.6.29: a control that can't be timed is in SKIPPED with the reason (it was left out without a word)."""
     from gus_rigtool.core import safe
     controls = controls if controls is not None else drag_controls()
@@ -89,10 +90,13 @@ def time_drag(controls=None, steps=STEPS, skins_off=False, off=None):
         back = []
         key_was = _autokey_off()
         every = (cmds.ls(type="skinCluster") or []) if skins_off else []
-        for s in every + list(off or []):
+        temp = [(s + ".nodeState", 1) for s in every + list(off or [])]
+        temp += [(m + ".visibility", 0) for m in hide or []] + list((attrs or {}).items())
+        for plug, value in temp:
             try:
-                back.append((s, cmds.getAttr(s + ".nodeState")))
-                cmds.setAttr(s + ".nodeState", 1)
+                if cmds.getAttr(plug, settable=True):
+                    back.append((plug, cmds.getAttr(plug)))
+                    cmds.setAttr(plug, value)
             except Exception:
                 pass
         out = {}
@@ -107,9 +111,9 @@ def time_drag(controls=None, steps=STEPS, skins_off=False, off=None):
                 except Exception as e:
                     SKIPPED[c] = str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__
         finally:
-            for s, v in back:
+            for plug, v in reversed(back):
                 try:
-                    cmds.setAttr(s + ".nodeState", v)
+                    cmds.setAttr(plug, v)
                 except Exception:
                     pass
             if key_was:
@@ -157,7 +161,8 @@ def extra_timings(control, steps=8, top=6, small=2):
       'skins': [(skin, mesh, vertices, influences, ms saved, ms above the overhead)] - the heaviest first,
       'skipped': [why something wasn't timed]}"""
     from gus_rigtool.core import clothes_switch as CS
-    out = {"base": None, "clothes": None, "gpu_off": None, "overhead": 0.0, "skins": [], "skipped": []}
+    out = {"base": None, "clothes": None, "gpu_off": None, "overhead": 0.0, "skins": [], "skipped": [],
+           "pieces": []}
 
     def one(**k):
         t = time_drag([control], steps=steps, **k)
@@ -180,6 +185,26 @@ def extra_timings(control, steps=8, top=6, small=2):
                 out["gpu_off"] = one()
         finally:
             gpu_set(True)
+    out["pieces"] = []                                 # 5.6.30: each clothes piece hidden on its own
+    try:
+        data = CS.read()
+        if data.get("parts"):
+            sw = CS._switch_control()
+            for part, p in sorted(data["parts"].items()):
+                ms = one(attrs={"%s.%s" % (sw, p["attr"]): 1})
+                if ms is not None:
+                    out["pieces"].append((part, max(0.0, out["base"] - ms)))
+        else:
+            by = {}
+            for m in CS.suggest():
+                by.setdefault(CS.part_of(m), []).append(m)
+            for part, ms_ in sorted(by.items()):
+                _m, _k, dfm = CS.plan(ms_)
+                ms = one(hide=ms_, off=dfm)
+                if ms is not None:
+                    out["pieces"].append((part, max(0.0, out["base"] - ms)))
+    except Exception as e:
+        out["skipped"].append("clothes pieces: %s" % e)
     sized = []
     for skin in cmds.ls(type="skinCluster") or []:
         try:

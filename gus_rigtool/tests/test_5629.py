@@ -61,13 +61,13 @@ with mock.patch.object(cmds, "listHistory", history), mock.patch.object(cmds, "d
           switched == ["skinCluster18", "skinCluster23", "Pants_deltaMush"] and
           kept == [("Head_squash", "it deforms other meshes too")])
     data = CS.make(["Hood", "Pants"])
-    rev = data["reverse"]
+    rev = "Clothes_Hood_rev"                       # 5.6.30: one per piece (Clothes or the piece hides it)
     check("Visibility_ctrl.Clothes (Full / Hidden): the meshes' visibility through a reverse, the deformers' "
-          "node state straight", getAttr("Visibility_ctrl.Clothes") == 0 and
+          "node state from the piece's 'hidden'", getAttr("Visibility_ctrl.Clothes") == 0 and
           listConnections("Hood.visibility", source=True, destination=False) == [rev] and
           listConnections("skinCluster23.nodeState", source=True, destination=False, plugs=True) ==
-          ["Visibility_ctrl.Clothes"] and not listConnections("Head_squash.nodeState", source=True,
-                                                               destination=False))
+          ["Clothes_Pants_hidden.outColorR"] and not listConnections("Head_squash.nodeState", source=True,
+                                                                     destination=False))
     check("what it drives is kept on the switch", CS.read()["meshes"] == ["|Hood", "|Pants"])
     seen = []
     with CS.hidden() as there:

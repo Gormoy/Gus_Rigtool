@@ -2,7 +2,7 @@ PASS the rig's controls, then every other control Animtool sees (the cape's ribb
 PASS Animtool can't list them: the rig's own still learn
 PASS found by name: the skinned clothes (Hood, Pants), not the body
 PASS switched with them: their own skins and delta mush; the head squash (it moves the body too) stays on
-PASS Visibility_ctrl.Clothes (Full / Hidden): the meshes' visibility through a reverse, the deformers' node state straight
+PASS Visibility_ctrl.Clothes (Full / Hidden): the meshes' visibility through a reverse, the deformers' node state from the piece's 'hidden'
 PASS what it drives is kept on the switch
 PASS for timing: hidden for a moment, then back at Full
 PASS made again: the old one goes first (Pants back on)

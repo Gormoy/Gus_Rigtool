@@ -502,6 +502,8 @@ def named_suffix():
 def is_control(n):
     if cmds.attributeQuery("gusRole", node=n, exists=True):          # a Gus_Rigtool guide
         return False
+    if cmds.attributeQuery("gusNotControl", node=n, exists=True):    # 5.6.30: marked 'not a control'
+        return False
     ns = namespace_of(n)
     members = _profile_members(ns)
     if members is not None:
@@ -688,6 +690,8 @@ def character_controls(ns=None):
         if t in seen or namespace_of(t) != ns:
             continue
         seen.add(t)
+        if cmds.attributeQuery("gusNotControl", node=t, exists=True):    # 5.6.30: marked 'not a control'
+            continue
         if (t in auto) if auto is not None else is_control(t):
             out.append(t)
     return out

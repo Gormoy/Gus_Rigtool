@@ -1,3 +1,49 @@
+Gus_Rigtool 5.6.30 - the Hare's open items: the pupils zero, old controls set aside, Go there; the clothes per
+piece; the whole default pose and mirror table
+
+Clothes (Build > Visibility switches):
+- "Clothes: full / hidden" finds the bandages too (Bandage_L, Bandage_R, Bandages_Arms); the belt stays out.
+- A Full / Hidden per piece next to Clothes - Hood_Geo, Shirt_Geo, Pants_Geo, Bandages_Geo: a piece is hidden when
+  its own switch or Clothes is on Hidden, and its own skin / delta mush switch off with it. The plan lists the
+  pieces and their meshes (anything not listed isn't in it - select the meshes to choose them yourself).
+- The old "Clothes: a switch per part" button is now "Clothes controls: per part": it always was for the
+  clothes' CONTROLS (one switch per part), not the meshes.
+
+Keep the pose, zero the selected controls (Controls > Behaviour > Rest here): a control driven by a constraint (the
+pupils, the tongue's end) - the constraint goes onto the group above it (a <control>_rest group of its own when
+that one can't take it), the control reads 0 and stays where it is. Before, the constraint pulled it away. Keys
+and a constraint blended on a control (pairBlend) and aim / pole vector constraints are left for you, and it says
+why.
+
+Not a control (Controls > Behaviour > Not a control): the selected curves are marked - the checker, Publish and
+Gus Animtool leave them out (the Hare's old Head_ctrl, Neck_ctrl, IK elbow / wrist: no 'hidden by a group' warning,
+no default pose, no picker button). "A control again" takes the mark off. Nothing in the rig changes.
+
+Check this scene: "Go there..." under the report - each problem with a place to fix it and a button that opens that
+tab and section (Ribbon > Not symmetric, Behaviour > Rest here / Not a control, Build > Publish, Checker >
+Repair...).
+
+Publish: the default pose (what Reset goes back to) is saved on every control Gus Animtool sees, like the mirror
+table - 366 on the Hare, not 182 (the pupils now reset to where you placed them). Unpublish clears the mirror table
+on those same controls (5.6.29 left the ribbons' table behind).
+
+Speed: each clothes piece hidden on its own (through its own switch when there is one): which piece is worth
+hiding.
+
+Decisions I made:
+- Each piece's switch is called <piece>_Geo, so it can't clash with the controls' switch per part (Hood, Pants...).
+- A deformer that moves two pieces' meshes follows Clothes only.
+- Keep the pose moves parent, point, orient and scale constraints (same targets, weights and skipped axes, maintain
+  offset); the others it leaves to you.
+- "Not a control" uses the mark the sliders board's frames already carry (gusNotControl).
+- Go there only lists warnings and notes it can place (and the "no clothes switch" line); the rest are fixed
+  outside these tabs (the model file, Maya's preferences).
+- CLAUDE.md says 5.6.30 now.
+
+Tested against the fake Maya only (tests/test_5630.py, the full suite). Not tested in real Maya: the pupils and the
+tongue through Keep the pose, the per-piece switches, Not a control in the picker, the Go there window, the
+per-piece timing.
+
 Gus_Rigtool 5.6.29 - speed for the Hare: the clothes off while blocking, what each skin costs; Publish learns
 the whole mirror table; checks that can't run say so
 
