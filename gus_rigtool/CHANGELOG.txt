@@ -1,3 +1,40 @@
+Gus_Rigtool 5.6.32 - the bandages' false history warning, a head squash removed half-way, Keep the pose on meshes
+
+Non-deformer history (Checker, Check this scene): the nodes of the Clothes switch (Clothes_Bandages_hidden,
+Clothes_Bandages_pma) are no longer taken for model history on the bandages. They only switch the bandages' skin
+on and off; they reach the mesh through the skin's on / off setting, not its shape. Anything that only drives a
+setting is left out the same way: utility nodes, keys, unit conversions, expressions. Real history
+(polySmoothFace, transformGeometry...) is still found.
+
+Remove head squash (Face tab):
+- On a published rig its nodes were locked (Publish protects utility nodes), so Remove stopped half-way: "Cannot
+  delete locked node 'Head_squash_factor_md'". Now it unlocks them first; what stays is locked again.
+- A squash removed half-way: the same button cleans what's left - Head_squash_off, Head_squash_factor_md and the
+  ears' L / R_Ear_ctrls_grp_squash_follow groups. What's under a follow group (the ear controls) moves up one
+  level and stays where it is. It runs through safe mode: if anything moves, it's all put back and listed.
+
+Keep the pose (Controls > Behaviour > Rest here) with only meshes selected says so - select the control curves
+(L_Pupil_ctrl, R_Pupil_ctrl), not the eye meshes - instead of "0 control(s) zeroed".
+
+"Step must be less than range": the tool's own sliders all have a sound range and step. scripts/diagnostics/
+slider_range.py lists the attributes in the scene whose min and max are too close for a slider - Maya prints
+that warning when it draws one (Attribute Editor, Channel Box).
+
+Decisions I made:
+- "Only drives a setting" is told by Maya's classification (utility nodes) plus keys, unit conversions,
+  expressions, choice, network, time, blendWeighted, remapValue - not by following each plug, which is harder to
+  get right without real Maya to test on.
+- A leftover is found by name: Head_squash_..., <name>_squash_follow, _squash_srf, _squash_fol. Head_squash_ctrl
+  counts only when it's no squash any more.
+- Only a _squash_follow group hands its children up (they are the ear controls); any other leftover group
+  (Head_squash_grp, the planes) goes with what's in it.
+- The leftover clean-up compares at rest only (safe mode), like the Checker's history fix. A full Remove keeps
+  its 5.6.31 behaviour (no safe mode), as the lattice coming off changes the meshes on purpose.
+
+Tested against the fake Maya only (tests/test_5632.py, the full suite; the test's delete refuses locked nodes like
+Maya). Not tested in real Maya: the unlocking, the leftover clean-up on the Hare, the history check with Maya's
+real classification, the slider script.
+
 Gus_Rigtool 5.6.31 - the pupils' aim, history that can't be deleted blindly, notes for the next session
 
 Keep the pose, zero the selected controls (Controls > Behaviour > Rest here) moves an aim constraint too - the

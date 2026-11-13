@@ -17,6 +17,8 @@ stay on the squashed face. Past the lattice the effect fades out (ears, neck): t
 import json
 import math
 
+import re
+
 import maya.cmds as cmds
 
 from gus_rigtool.core import naming, utils
@@ -739,13 +741,96 @@ def _build(head, meshes, members, face, centre, size, h, fade, curves, made, out
     return c
 
 
+LEFT_TYPES = ("transform", "reverse", "multiplyDivide", "plusMinusAverage", "condition", "clamp", "setRange",
+              "blendColors", "multDoubleLinear", "addDoubleLinear", "unitConversion", "remapValue")
+LEFT_NAME = re.compile(r"^Head_squash_|_squash_(follow|srf|fol)\d*$")
+
+
+def leftovers():
+    """5.6.32: what a squash removed half-way leaves (Publish had locked its nodes): Head_squash_off,
+    Head_squash_factor_md, the ears' <name>_squash_follow groups... The Head_squash_ctrl itself counts only when
+    it's no squash any more (find() says none)."""
+    out = []
+    for n in cmds.ls(type=list(LEFT_TYPES), long=True) or []:
+        short = _short(n).split(":")[-1]
+        if not LEFT_NAME.search(short) or n in out:
+            continue
+        if short == CTRL and find():
+            continue
+        out.append(n)
+    return out
+
+
+def _locked_under(nodes):
+    """The nodes and everything under them that are locked (Publish's protect), unlocked; returns their names to
+    lock again afterwards."""
+    got = []
+    for n in nodes:
+        if not cmds.objExists(n):
+            continue
+        for x in [n] + (cmds.listRelatives(n, allDescendents=True, fullPath=True) or []):
+            try:
+                if cmds.lockNode(x, query=True, lock=True)[0]:
+                    cmds.lockNode(x, lock=False)
+                    got.append(_short(x))
+            except (RuntimeError, ValueError, TypeError):
+                pass
+    return got
+
+
+def _relock(names):
+    for name in names:
+        for x in cmds.ls(name, long=True) or []:
+            cmds.lockNode(x, lock=True)
+
+
+def clean_leftovers():
+    """5.6.32: the leftovers go. A _squash_follow group: what's under it moves up one level, where it is (the ear
+    controls stay put), then the group goes; any other leftover group goes with what's in it. Nodes still locked by Publish are unlocked first; what stays is locked
+    again. Returns the names gone."""
+    from gus_rigtool.core import spaces
+    found = leftovers()
+    if not found:
+        return []
+    gone = []
+    with utils.undo_chunk("gusrigHeadSquashLeftovers"):
+        relock = _locked_under(found)
+        groups = sorted([n for n in found if cmds.nodeType(n) == "transform"], key=lambda x: -x.count("|"))
+        for g in groups:                                     # the deepest first
+            g = _long(_short(g)) or (g if cmds.objExists(g) else None)
+            if not g:
+                continue
+            parent = (cmds.listRelatives(g, parent=True, fullPath=True) or [None])[0]
+            if _short(g).split(":")[-1].rstrip("0123456789").endswith("_squash_follow"):   # the ears ride in it
+                for k in cmds.listRelatives(g, children=True, type="transform", fullPath=True) or []:
+                    if "constraint" not in cmds.nodeType(k).lower():
+                        spaces._parent_keeping(k, parent)
+            gone.append(_short(g))                           # Head_squash_grp, the planes...: with what's in it
+            cmds.delete(g)
+        for n in found:
+            if cmds.objExists(n) and cmds.nodeType(n) != "transform":
+                gone.append(_short(n))
+                cmds.delete(n)
+        _relock([x for x in relock if x not in gone])
+    return gone
+
+
 def remove():
-    """Everything the squash made; the meshes and curves back as they were."""
+    """Everything the squash made; the meshes and curves back as they were. 5.6.32: Publish's locks come off
+    first; with no squash but its leftovers (a remove that stopped half-way), the leftovers go - see
+    clean_leftovers()."""
     c = find()
     if not c:
+        if leftovers():
+            clean_leftovers()
+            return 0
         raise RuntimeError("no head squash in this scene.")
     data = read()
     with utils.undo_chunk("gusrigHeadSquashRemove"):
+        mine = [data.get("group"), data.get("ffd")] + data.get("nodes", []) + data.get("deformers", []) + \
+            [e.get("group") for e in data.get("ears", [])] + [g for e in data.get("ears", [])
+                                                               for _n, g in e.get("deltas", [])]
+        relock = _locked_under([x for x in (_long(m) for m in mine if m) if x])
         _unride(data.get("riders", []), data.get("ffd"))     # 5.6.18
         curves = _deformed_curves(data.get("ffd"))
         from gus_rigtool.core import spaces
@@ -783,6 +868,8 @@ def remove():
                 cmds.delete(n)
         repaired = repair_curves(curves)
         clean_copies([m for m in data.get("meshes", []) if cmds.objExists(m) and len(cmds.ls(m)) == 1])
+        clean_leftovers()                                # 5.6.32: anything still there by name
+        _relock([x for x in relock if cmds.objExists(x)])
     return repaired
 
 

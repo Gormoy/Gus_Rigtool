@@ -208,6 +208,14 @@ def make_squash(*_):
 
 def remove_squash(*_):
     from gus_rigtool.core import head_squash as HS
+    if not HS.find() and HS.leftovers():             # 5.6.32: a remove that stopped half-way (Publish's locks)
+        from gus_rigtool.core import safe
+        kept, got = safe.run(HS.clean_leftovers, label="gusrigHeadSquashLeftovers", states=("rest",))
+        if not kept:
+            utils.warn(TOOL, "the head squash leftovers were put back - something moved when they went: %s" % got)
+            return
+        utils.info(TOOL, "head squash leftovers removed, nothing moved: %s." % ", ".join(got))
+        return
     n = HS.remove()
     utils.info(TOOL, "head squash removed - the meshes are as they were%s." % (
         "; %d face control(s) repaired (colour, visibility switch, their shape's name)" % n if n else ""))

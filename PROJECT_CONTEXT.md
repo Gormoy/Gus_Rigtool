@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.31). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.31`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.32). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.32`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.31, about 151 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.32, about 152 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -89,16 +89,22 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   - The cape controls 04, 07, 10, 19, 22 and 25 have `_sdk` groups that are parent-constrained to the clavicle
     and humerus.
 
-### Last Check this scene (5.6.30, v199, Windows): what's still open
+### Last Check this scene (5.6.31, Windows): what's still open
 
-1. **Collar and Cape_Ribbon** "right side doesn't mirror": mark them **Ribbon tab > Not symmetric** (not done yet).
+1. **Collar and Cape_Ribbon**: fixed in 5.6.31's report.
 2. **L / R_Pupil_ctrl** (aim constraint on the control) and **Tongue_end_IK_ctrl**: 5.6.31's **Behaviour > Rest here >
-   Keep the pose, zero** moves aim constraints too - run it on them.
+   Keep the pose, zero** moves aim constraints too - run it on them (select the control curves: Gus selected the
+   eye meshes, which zeroes nothing; 5.6.32 says so).
 3. **L_IK_Elbow_ctrl / L_IK_Wrist_ctrl**: the left side's old controls, still hidden by hand - **Behaviour > Not a
    control** (the right side, Neck_ctrl and Head_ctrl are marked).
 4. **Non-deformer history** on Bandage_L / R, Bandages_Arms and both eyes. **Don't delete the eyes' history**: Gus
    tried and the left eye jumped to the other side (it's probably the mirror that made it). 5.6.31's report names
-   the nodes; the Checker's fix now puts back any mesh that moves. The bandages: clean in the model file.
+   the nodes; the Checker's fix now puts back any mesh that moves. The bandages' warning was false: the Clothes
+   switch's nodes (5.6.32 leaves them out). The eyes' transformGeometry after the skin must stay.
+   Head squash: Gus took it out; Remove stopped half-way on Publish's locks and left Head_squash_off,
+   Head_squash_factor_md, L / R_Ear_ctrls_grp_squash_follow (the ears still follow the head) - 5.6.32's Remove
+   cleans them. "Step must be less than range" warnings on opening / some tabs: scripts/diagnostics/
+   slider_range.py to find the attribute. Picker: Save after Clean up.
 5. Model file clean-up in `Geo_Hare_08_MovedTail.mb`: duplicate names (Belt, Gums_UP, Hare_Body, Teeth_Up),
    21 `Eye_geo:` leftover namespaces, 20 unused Orig shapes.
 6. Joint up-axis flips (14), Nose and R_Humerus twisted, sleeve joints not exact mirrors - low priority.
@@ -124,7 +130,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 | Each skin off on its own | Hood 22 ms, Hare_Body 14, Pants 13, Shirt 10; the fixed per-skin cost is ~0 here |
 | GPU override off | about the same (104 vs 108 ms) |
 
-## 4. What was built (5.6.23 to 5.6.31)
+## 4. What was built (5.6.23 to 5.6.32)
 
 - **5.6.23:**
   - a more professional picker UI;
@@ -179,7 +185,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - `hare_speed_check.py`: times COG/World dragging with each heavy part switched off.
 - `hare_skin_cost.py`: times each skin on its own, GPU override on vs off, and inspects the pairBlends.
 
-### 5.6.28 - 5.6.31 (Claude Code, 2026-11-10 to 13)
+### 5.6.28 - 5.6.32 (Claude Code, 2026-11-10 to 13)
 - **5.6.28** (the 5.6.27 review): Repair no longer empties component tag expressions; Make head squash works
   without tags; the mirror table keeps joints' translate and reads custom attributes at default; Make the right
   side mirror the left also refuses held offsets / pairBlends; safe mode by UUID, unsteady frames skipped, only
@@ -192,6 +198,9 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   control (gusNotControl); Go there... in Check this scene; default pose on every control.
 - **5.6.31**: Keep the pose moves aim constraints (the pupils); the Checker's history fix puts back a mesh that
   moves; the history warning names the nodes and where to clean them; Remove head squash leaves no switch node.
+- **5.6.32**: the history check leaves out nodes that only drive a setting (the Clothes switch on the bandages);
+  Remove head squash unlocks Publish's locks and cleans a squash removed half-way; Keep the pose says when no
+  control is selected; scripts/diagnostics/slider_range.py.
 
 ## 5. Open items and the roadmap
 

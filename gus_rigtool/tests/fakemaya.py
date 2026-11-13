@@ -693,3 +693,11 @@ def renameAttr(plug, new):
 
 
 cmds.renameAttr = renameAttr
+
+
+_UTILITY = ("condition", "plusMinusAverage", "reverse", "multiplyDivide", "clamp", "setRange", "blendColors",
+            "multDoubleLinear", "addDoubleLinear")
+def getClassification(t, **k):
+    """5.6.32: Maya's node classification - the utility nodes only."""
+    return ["utility/general"] if t in _UTILITY else [""]
+cmds.getClassification = getClassification

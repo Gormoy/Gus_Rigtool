@@ -114,6 +114,10 @@ def stop_remove(*_):
 def zero_here(*_):
     from gus_rigtool.core import zero_pose
     sel = _ctrls()
+    curves = [n for n in sel if cmds.listRelatives(n, shapes=True, type="nurbsCurve")]
+    if not curves:                                   # 5.6.32: the eye meshes were selected, not the pupil controls
+        raise RuntimeError("no controls in the selection (%s) - select the control curves, e.g. L_Pupil_ctrl and "
+                           "R_Pupil_ctrl, not the meshes." % ", ".join(_short(n) for n in sel[:4]))
     done, skipped = zero_pose.apply(sel)
     for c, why in skipped:
         print("Keep the pose: %s skipped - %s" % (_short(c), why))

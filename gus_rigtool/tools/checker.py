@@ -318,10 +318,26 @@ def find_jnt_twist(scope, limit=30.0):
 _DEFORMER_PARTS = ("tweak", "groupParts", "groupId", "objectSet", "dagPose", "shadingEngine")
 
 
+# 5.6.32: nodes that only drive a setting (a deformer's on / off, a weight) - never the mesh's shape. The Clothes
+# switch's nodes reach the bandages through their skin's nodeState and were taken for model history.
+_NOT_SHAPE = ("unitConversion", "expression", "choice", "network", "time", "blendWeighted", "remapValue")
+
+
+def _drives_a_setting(h):
+    t = cmds.nodeType(h)
+    if t in _NOT_SHAPE or t.startswith("animCurve"):
+        return True
+    try:
+        return any(c.startswith("utility") for c in cmds.getClassification(t) or [])
+    except (RuntimeError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def _non_deformer_history(shape):
     out = []
     for h in cmds.listHistory(shape, pruneDagObjects=True) or []:
-        if cmds.objectType(h, isAType="geometryFilter") or cmds.nodeType(h) in _DEFORMER_PARTS:
+        if cmds.objectType(h, isAType="geometryFilter") or cmds.nodeType(h) in _DEFORMER_PARTS or \
+                _drives_a_setting(h):
             continue
         out.append(h)
     return out
