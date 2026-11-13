@@ -1,3 +1,33 @@
+Gus_Rigtool 5.6.35 - real-Maya tests (Stage 1 of the roadmap)
+
+The offline tests use a fake Maya; three times lately it passed and real Maya didn't (the bandages' history, the
+pupils, the crash). Now the tool can be tested inside real Maya 2024 - mayapy, Maya's own Python, with no window:
+
+- gus_rigtool/realmaya/run_maya_tests.bat (Windows) or run_maya_tests.command (Mac): double-click. It finds
+  Maya 2024 by itself (or asks once where mayapy is), runs the tests, and writes maya_test_results.txt next to
+  itself - the file to send.
+- The tests build their own small scenes: a. Keep the pose on a control whose rotate drives an eye (the pupils);
+  b. the history check with the Clothes switch on a skin (the bandages); c. Remove head squash on a published rig
+  (locked leftovers); e. the biped built, skinned, published, unpublished (the self-test's steps); d. Check this
+  scene from start to end on it; f. IK/FK switch with no jump and mirror pose on it.
+- Your scene last: the first run asks for it (drag the .ma / .mb in, or Enter to skip) and remembers it. It's
+  opened, Check this scene runs, and it's closed - never saved. Its full report is at the end of the results.
+
+Decisions I made:
+- Your scene is opened as it is rather than copied first: copying a scene breaks its reference paths when they
+  are relative, and mayapy never saves or autosaves, so the file isn't touched.
+- Test e reuses the self-test's biped steps (maya_check.check_rig), so both check the same thing; a step that
+  only fails without a window will show up there on the first run, and gets sorted then.
+- Test a also redoes 5.6.33's change by hand and says how much the eye moves - it tells us whether that was really
+  what turned the Hare's eyes.
+- Your choices are kept in your home folder (gus_maya_tests.json, gus_maya_tests_mayapy.txt), so a new zip keeps
+  them. Delete them to choose again.
+- The tests are in gus_rigtool/realmaya/ (a new folder; nothing overwritten).
+
+Tested against the fake Maya only (tests/test_5635.py, the full suite): the runner's steps, your scene asked once
+and remembered, the results file, the launchers' paths. Whether the real-Maya tests themselves pass, only your
+Maya can say - the first run is the test of the tests.
+
 Gus_Rigtool 5.6.34 - the pupils left alone, Keep the pose in safe mode, Check this scene no longer crashes Maya
 
 The pupils: each eyeball joint follows its pupil control's own rotate values (an orient constraint reads

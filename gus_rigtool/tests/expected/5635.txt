@@ -1,0 +1,16 @@
+PASS a path dragged in: quotes and Mac's '\ ' taken off
+PASS the first run asks for the scene and keeps it
+PASS the next run doesn't ask again
+PASS --no-scene skips it this time
+PASS --scene PATH changes it
+PASS Enter alone: skipped, and not asked again
+  that isn't a .ma / .mb file - skipped (run again with --scene PATH to choose it).
+PASS not a scene file: skipped
+PASS Maya started, every test run in order, then your scene, then Maya closed
+PASS a new empty scene before a and e only (d and f use the biped)
+PASS the results file is written next to the runner, with the version and your scene
+PASS Windows: Maya 2024's mayapy.exe, Windows line endings, asks once if it isn't there
+PASS Mac: Maya 2024's mayapy in /Applications, runnable by double-click
+PASS a pupils, b history, c head squash, then e builds the biped, d and f run on it
+PASS your scene is never saved: no save anywhere in the tests or the runner
+14/14 passed

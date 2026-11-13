@@ -6,7 +6,7 @@ Put this file at the root of the repository. Claude Code reads it automatically 
 
 Gus_Rigtool is a personal rigging toolkit for **Maya 2024+** (Python 3.10 inside Maya; code must also lint as
 Python 3.7). It ships with **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`), the animators' tools: picker,
-pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.34**.
+pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.35**.
 
 Owner: Gus (Gustavo), a rigger on macOS. He is finishing the **Hare** rig for the short "The Tree That Bloomed in
 Winter". He writes in English (sometimes Portuguese) and prefers plain words over jargon.
@@ -74,6 +74,10 @@ gus_rigtool/
   Gus the diffs first. After accepting, `grep -l "^FAIL" expected/*.txt` must print nothing.
 - After a version bump, `animtool30`, `updater`, `anim_ui` and the picker tests show CHANGED (the version string).
   That's expected.
+- **Real-Maya tests** (since 5.6.35): `gus_rigtool/realmaya/` - Gus double-clicks `run_maya_tests.bat` (Windows)
+  or `run_maya_tests.command` (Mac); mayapy runs `maya_cases.py` and writes `maya_test_results.txt`, which he
+  sends. They can't run here. Add a case there for anything the fake Maya can't show, and list in the release
+  message which cases to run.
 - Lint only the changed files: `ruff check --select F --target-version py37 <files>`. Linting the whole repo
   reports thousands of false errors, because tests use names from `exec`'d fakes.
 

@@ -1,4 +1,4 @@
-Gus_Rigtool 5.6.34 - what's new since 4.0
+Gus_Rigtool 5.6.35 - what's new since 4.0
 
 5.4.0: the window reorganised - tabs by job, Controls > Behaviour (limits, in front, stop at the body),
 My tools under the search box, Home suggests from your selection, and a Map of where everything is.

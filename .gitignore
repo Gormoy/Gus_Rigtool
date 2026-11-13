@@ -7,3 +7,6 @@ Gus_*_install.zip
 # personal data written by the tools in Maya (saved shapes, skin backups)
 gus_rigtool/data/*
 !gus_rigtool/data/README.txt
+
+# real-Maya test results (written next to the runner)
+gus_rigtool/realmaya/maya_test_results.txt
