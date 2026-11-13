@@ -1,3 +1,33 @@
+Gus_Rigtool 5.6.36 - after the first real-Maya run (Mac): sturdier Check this scene, the tests fixed, the eye dry run
+
+The first real-Maya run (Mac, Maya 2024) passed the pupils, the bandages' history, the head squash leftovers, the
+whole biped (build, skin, fixes, rebuild, Publish, Deliver, Unpublish) and Check this scene on it. It also
+showed that 5.6.33's change, done in a clean scene, doesn't turn an eye - so the Hare's eyes jumped for another
+reason, still to find.
+
+Check this scene (it crashed on the Hare on the Mac, where the model file didn't load):
+- Skin: a skin whose mesh isn't loaded is said ("its mesh isn't loaded - weights not read"); the others still read.
+- Checker > Vertices over the influence limit: a skin with no influences left is skipped (it divided by zero).
+- Non-deformer history: a reference node isn't listed (Geo_Hare_07RNfosterParent1).
+- Speed: in Maya with no window (the real-Maya tests) it says "skipped" instead of 0 ms.
+
+The real-Maya tests:
+- f. IK/FK and mirror: on the left wrist's IK control (5.6.35 took the pole vector control) and Maya works the arm
+  out before each measure.
+- g. new: the self-test's rig checks (biped and quadruped: IK/FK match, mirror, soft IK, spaces, stretch...).
+- Your scene: the model file is found on this computer even when the scene saved the other one's path (H:/... on
+  the Mac): the same place inside this project folder, or the file in the project's assets folder.
+- Your scene: the eye dry run - what 5.6.33 did to the pupils, done on your scene, lists every joint and mesh that
+  moves; then undone, and the scene is closed without saving anyway.
+
+Decisions I made:
+- The project is the folder above 'scenes'; the scene opens with its references unloaded, then each is loaded from
+  this computer's copy. Nothing is written into the scene (it's never saved).
+- The eye dry run lists anything that moves more than 0.001 - the ten biggest.
+- Test f measures only the arm joints (the names with clav, humer, radius, ulna, wrist, hand, elbow, arm).
+
+Tested against the fake Maya only (tests/test_5636.py, the full suite). The real-Maya tests need your run.
+
 Gus_Rigtool 5.6.35 - real-Maya tests (Stage 1 of the roadmap)
 
 The offline tests use a fake Maya; three times lately it passed and real Maya didn't (the bandages' history, the

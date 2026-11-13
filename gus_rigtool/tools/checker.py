@@ -342,7 +342,8 @@ _NOT_SHAPE = ("unitConversion", "expression", "choice", "network", "time", "blen
               # 5.6.33: by name too - Maya 2024 says 'drawdb/shader/operation/condition:utility/general', and
               # plusMinusAverage is 'math/operation', so the 5.6.32 classification check missed them
               "condition", "plusMinusAverage", "reverse", "multiplyDivide", "clamp", "setRange", "blendColors",
-              "multDoubleLinear", "addDoubleLinear", "floatMath", "floatLogic", "floatCondition")
+              "multDoubleLinear", "addDoubleLinear", "floatMath", "floatLogic", "floatCondition",
+              "reference")                 # 5.6.36: a reference node (seen when the model file didn't load)
 SETTING_CLASSES = ("utility", "math")
 
 
@@ -489,6 +490,8 @@ def find_skin_influences(scope, limit=4):
             # skin's own weight list instead, as the eyelid check did
             for v in _over_limit_from_plugs(skin, limit):
                 out.append("%s.vtx[%d]" % (mesh_t, v))
+            continue
+        if not count:                   # 5.6.36: a skin with no influences left (its reference didn't load)
             continue
         for v in range(len(weights) // count):
             used = sum(1 for w in weights[v * count:(v + 1) * count] if w > 1e-5)

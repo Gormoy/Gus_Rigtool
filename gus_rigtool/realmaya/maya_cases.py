@@ -207,36 +207,57 @@ def scene_check_run(rep):
     rep.add(INFO, "its result", got.text().splitlines()[3] if len(got.text().splitlines()) > 3 else "")
 
 
+ARM = ("clav", "humer", "radius", "ulna", "wrist", "hand", "elbow", "arm")
+
+
+def _settle():
+    """5.6.36: make Maya work everything out before measuring (no window: nothing asks it to)."""
+    try:
+        cmds.dgdirty(allPlugs=True)
+    except Exception:
+        pass
+    cmds.currentTime(cmds.currentTime(query=True), update=True)
+
+
+def _arm_spots():
+    return {j: p for j, p in _joint_spots().items() if any(k in j.split("|")[-1].lower() for k in ARM)}
+
+
 def ikfk_mirror(rep):
-    """f. Animtool on the biped: IK/FK switch with no jump, mirror pose."""
+    """f. Animtool on the biped: IK/FK switch with no jump, mirror pose - on the left wrist's IK control (5.6.35
+    took the pole vector control by mistake and measured before Maya had caught up)."""
     rep.start("f. IK/FK switch and mirror pose (Gus Animtool, on the biped)")
     A = rep.step("Gus Animtool", _animtool)
     if not A:
         return
     ctrls = A.character_controls()
-    ik = [c for c in ctrls if c.split("|")[-1].startswith("L_") and "ik" in c.lower() and
-          any(k in c.lower() for k in ("arm", "wrist", "hand"))]
-    rep.add(OK if ik else NOTE, "the left arm's IK control", ik[0].split("|")[-1] if ik else "not found")
+    ik = [c for c in ctrls if c.split("|")[-1].lower().startswith("l_") and "ik" in c.lower() and
+          ("wrist" in c.lower() or "hand" in c.lower()) and "pv" not in c.split("|")[-1].lower()]
+    rep.add(OK if ik else NOTE, "the left wrist's IK control", ik[0].split("|")[-1] if ik else "not found")
     if not ik:
         return
     c = ik[0]
     cmds.currentTime(1)
     try:
-        cmds.move(4, 6, 3, c, relative=True, worldSpace=True)
+        cmds.move(-3, 4, 6, c, relative=True, worldSpace=True)
     except RuntimeError as e:
         rep.add(NOTE, "move the IK control", str(e))
+    _settle()
+    spots = _arm_spots()
+    rep.add(INFO, "arm joints measured", "%d" % len(spots))
     cmds.select(c, replace=True)
-    spots = _joint_spots()
     rep.step("switch to FK", A.switch, "fk")
-    rep.expect("to FK: no joint jumped", _moved(spots, _joint_spots()) < 0.01,
-               "the most a joint moved: %.4f" % _moved(spots, _joint_spots()))
+    _settle()
+    rep.expect("to FK: no arm joint jumped", _moved(spots, _arm_spots()) < 0.01,
+               "the most a joint moved: %.4f" % _moved(spots, _arm_spots()))
     cmds.select(c, replace=True)
     rep.step("switch to IK", A.switch, "ik")
-    rep.expect("back to IK: no joint jumped", _moved(spots, _joint_spots()) < 0.01,
-               "the most a joint moved: %.4f" % _moved(spots, _joint_spots()))
+    _settle()
+    rep.expect("back to IK: no arm joint jumped", _moved(spots, _arm_spots()) < 0.01,
+               "the most a joint moved: %.4f" % _moved(spots, _arm_spots()))
 
     def mirror_gap():
-        now = _joint_spots()
+        now = _arm_spots()
         gaps = []
         for j, p in now.items():
             short = j.split("|")[-1]
@@ -249,34 +270,167 @@ def ikfk_mirror(rep):
     gap0 = mirror_gap()
     cmds.select(c, replace=True)
     rep.step("mirror pose L>R", A.mirror_pose, "L>R")
+    _settle()
     gap1 = mirror_gap()
     rep.expect("the right arm now mirrors the left", gap1 < 0.05 and gap1 < gap0,
                "left / right gap before %.3f, after %.3f" % (gap0, gap1))
 
 
+def rig_selftest(rep):
+    """g. 5.6.36: the self-test's rig checks (biped and quadruped: IK/FK match, mirror, soft IK, spaces, stretch...),
+    the same 80 checks Settings > Self-test runs - they need no window."""
+    from gus_rigtool.builder import selftest
+    rep.start("g. Rig self-test (the builder's own checks)")
+    text = rep.step("self-test", selftest.run) or ""
+    fails = [ln.strip() for ln in text.splitlines() if ln.strip().startswith("FAIL")]
+    head = text.splitlines()[0] if text else ""
+    rep.expect("no check failed", text and not fails, "; ".join(fails[:8]) or head)
+    for ln in text.splitlines()[1:2]:
+        rep.add(INFO, "its result", ln.strip())
+
+
 STATE = {}
 
 
+def project_of(path):
+    """The project folder: the one above 'scenes' (TTTBMW_Hare_Rigging), or the scene's own folder."""
+    parts = os.path.abspath(path).replace("\\", "/").split("/")
+    for i in range(len(parts) - 1, 0, -1):
+        if parts[i].lower() == "scenes":
+            return "/".join(parts[:i])
+    return os.path.dirname(os.path.abspath(path)).replace("\\", "/")
+
+
+def local_path(wanted, project):
+    """5.6.36: a reference saved on one computer (H:/Assignments/.../TTTBMW_Hare_Rigging//assets/x.mb) found on this
+    one: the same place inside this project folder, or the file in its assets / scenes folder. None if not found."""
+    if not wanted:
+        return None
+    w = wanted.replace("\\", "/")
+    while "//" in w[1:]:
+        w = w[0] + w[1:].replace("//", "/")
+    if os.path.isfile(w):
+        return w
+    name = project.rstrip("/").split("/")[-1]
+    key = "/" + name + "/"
+    if key in w:
+        got = project.rstrip("/") + "/" + w.split(key, 1)[1]
+        if os.path.isfile(got):
+            return got
+    for sub in ("assets", "scenes", ""):
+        got = os.path.join(project, sub, os.path.basename(w)).replace("\\", "/")
+        if os.path.isfile(got):
+            return got
+    return None
+
+
+def _load_references(rep, project):
+    """Each reference loaded from this computer's copy of the project (the Windows drive's path fixed)."""
+    for rn in cmds.ls(type="reference") or []:
+        if rn == "sharedReferenceNode" or "_UNKNOWN_REF_NODE_" in rn:
+            continue
+        try:
+            wanted = cmds.referenceQuery(rn, filename=True, unresolvedName=True, withoutCopyNumber=True)
+        except RuntimeError:
+            continue
+        got = local_path(wanted, project)
+        if not got:
+            rep.add(NOTE, "model file not found on this computer", "%s (looked in %s)" % (wanted, project))
+            continue
+        try:
+            cmds.file(got, loadReference=rn, prompt=False)
+            rep.add(OK, "model file loaded", got)
+        except RuntimeError as e:
+            rep.add(NOTE, "model file %s" % got, str(e)[:200])
+
+
+def eye_dry_run(rep):
+    """5.6.36: what 5.6.33's Keep the pose did to the pupils, done on your scene to see what moves - then undone,
+    and the scene is closed without saving anyway."""
+    from gus_rigtool.core import world_turn as WT
+    pupils = [n for n in ("L_Pupil_ctrl", "R_Pupil_ctrl") if len(cmds.ls(n)) == 1]
+    if not pupils:
+        rep.add(INFO, "eye dry run", "no L_Pupil_ctrl / R_Pupil_ctrl in this scene")
+        return
+    joints = cmds.ls(type="joint", long=True) or []
+    meshes = [cmds.listRelatives(m, parent=True, fullPath=True)[0]
+              for m in cmds.ls(type="mesh", noIntermediate=True, long=True) or []]
+
+    def look():
+        _settle()
+        out = {j: _pos(j) for j in joints}
+        for m in meshes:
+            try:
+                out[m] = cmds.exactWorldBoundingBox(m)
+            except RuntimeError:
+                pass
+        return out
+    before = look()
+    cmds.undoInfo(state=True)
+    cmds.undoInfo(openChunk=True, chunkName="gusEyeDryRun")
+    try:
+        for c in pupils:
+            c = cmds.ls(c, long=True)[0]
+            p = cmds.listRelatives(c, parent=True, fullPath=True)[0]
+            m = _wm(c)
+            g = cmds.createNode("transform", name=c.split("|")[-1] + "_dryrun", parent=p, skipSelect=True)
+            c = cmds.ls(cmds.parent(c, g, relative=True)[0], long=True)[0]
+            for a in ("translate", "rotate"):
+                for x in "XYZ":
+                    plug = "%s.%s%s" % (c, a, x)
+                    if cmds.listConnections(plug, source=True, destination=False):
+                        continue
+                    cmds.setAttr(plug, lock=False)
+                    cmds.setAttr(plug, 0)
+            cmds.xform(g, worldSpace=True, matrix=WT._mul(WT._inv(cmds.xform(c, query=True, objectSpace=True,
+                                                                                 matrix=True)), m))
+        after = look()
+    finally:
+        cmds.undoInfo(closeChunk=True)
+    moved = sorted(((_diff(before[k], after[k]), k.split("|")[-1]) for k in before if k in after), reverse=True)
+    moved = [(d, n) for d, n in moved if d > TOL]
+    rep.add(INFO if not moved else NOTE, "eye dry run: 5.6.33's Keep the pose on %s" % ", ".join(pupils),
+            "nothing moved" if not moved else "moved: " + ", ".join("%s %.3f" % (n, d) for d, n in moved[:10]))
+    try:
+        cmds.undo()
+    except RuntimeError:
+        pass
+
+
 def hare(rep, path):
-    """Your scene: opened, Check this scene run, closed - never saved."""
+    """Your scene: opened (its model file found on this computer), Check this scene run, the eye dry run, closed -
+    never saved."""
     from gus_rigtool import scene_check
     rep.start("Your scene (opened, never saved)")
     if not os.path.isfile(path):
         rep.add(NOTE, "your scene", "not found: %s" % path)
         return
-    rep.step("open it", lambda: cmds.file(path, open=True, force=True, ignoreVersion=True,
-                                          prompt=False) and os.path.basename(path))
+    project = project_of(path)
+    try:
+        cmds.workspace(project, openWorkspace=True)
+    except RuntimeError:
+        try:
+            cmds.workspace(directory=project)
+        except RuntimeError:
+            pass
+    rep.add(INFO, "project", project)
+    rep.step("open it (the model file not yet)", lambda: cmds.file(path, open=True, force=True, ignoreVersion=True,
+                                                                   prompt=False, loadReferenceDepth="none")
+             and os.path.basename(path))
+    _load_references(rep, project)
     got = rep.step("Check this scene", scene_check.report)
     if got:
-        crashed = [r for r in got.rows if "check itself crashed" in r[2]]
+        crashed = [r for r in got.rows if "check itself crashed" in r[2] or "check crashed" in r[2]]
         rep.expect("no section crashed", not crashed, "; ".join("%s: %s" % (r[0], r[3].splitlines()[0])
                                                               for r in crashed)[:600])
         APPENDIX["scene"] = "\n\n==== Check this scene on your scene ====\n" + got.text()
+    rep.guard("eye dry run", eye_dry_run, rep)
     cmds.file(new=True, force=True)                  # closed without saving
     rep.add(INFO, "closed without saving", path)
 
 
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
-         ("f. IK/FK and mirror", ikfk_mirror)]
+         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
+# (g makes its own scenes)

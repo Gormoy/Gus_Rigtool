@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.35). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.35`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.36). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.36`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.35, about 155 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.36, about 156 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -130,7 +130,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 | Each skin off on its own | Hood 22 ms, Hare_Body 14, Pants 13, Shirt 10; the fixed per-skin cost is ~0 here |
 | GPU override off | about the same (104 vs 108 ms) |
 
-## 4. What was built (5.6.23 to 5.6.35)
+## 4. What was built (5.6.23 to 5.6.36)
 
 - **5.6.23:**
   - a more professional picker UI;
@@ -185,7 +185,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - `hare_speed_check.py`: times COG/World dragging with each heavy part switched off.
 - `hare_skin_cost.py`: times each skin on its own, GPU override on vs off, and inspects the pairBlends.
 
-### 5.6.28 - 5.6.35 (Claude Code, 2026-11-10 to 13)
+### 5.6.28 - 5.6.36 (Claude Code, 2026-11-10 to 13)
 - **5.6.28** (the 5.6.27 review): Repair no longer empties component tag expressions; Make head squash works
   without tags; the mirror table keeps joints' translate and reads custom attributes at default; Make the right
   side mirror the left also refuses held offsets / pairBlends; safe mode by UUID, unsteady frames skipped, only
@@ -212,6 +212,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   run_maya_tests.py in mayapy; maya_cases.py holds the tests (a pupils, b history, c squash leftovers, e biped
   build/publish, d Check this scene, f IK/FK + mirror) and Gus's scene opened, never saved. Results:
   realmaya/maya_test_results.txt.
+- **5.6.36**: first real-Maya run (Mac) passed a-e; 5.6.33's change doesn't turn an eye in a clean scene (the
+  Hare's eye jump has another cause: the eye dry run on Gus's scene lists what moves). Check this scene no longer
+  crashes when the model reference didn't load; Speed skipped with no window; test f fixed; g = builder self-test;
+  the scene's references are found inside the local project folder (the Mac had H:/ paths).
 
 ## 5. Open items and the roadmap
 

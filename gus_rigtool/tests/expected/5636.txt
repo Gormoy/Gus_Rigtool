@@ -1,0 +1,14 @@
+PASS the project is the folder above 'scenes'
+PASS the Windows path (H:/...//assets/...) found in this computer's project
+PASS only the file name right: found in the project's assets folder
+PASS not there at all: None (the results say where it looked)
+PASS a path that's already right is kept
+PASS Skin: the mesh that didn't load is said, the section doesn't crash (it did on the Mac)
+PASS MissingMesh is a ValueError, so Repair's skin read still skips it
+PASS Vertices over the influence limit: a skin with no influences left is skipped (division by zero on the Mac)
+PASS a reference node isn't 'non-deformer history' (Geo_Hare_07RNfosterParent1 on the Mac)
+PASS Speed: skipped and said why when Maya has no window (it read 0 ms on the Mac)
+PASS test f takes the wrist's IK control, never the pole vector, and lets Maya catch up before measuring
+PASS the self-test's rig checks run too (g, after f)
+PASS your scene: the model loaded from this computer, then the eye dry run, then closed without saving
+13/13 passed

@@ -8,7 +8,7 @@ Install / update: drag drag_to_maya_animtool.mel into Maya's viewport, or Update
 
 import os
 
-__version__ = "5.6.35"               # always the same as Gus_Rigtool's (a test checks it)
+__version__ = "5.6.36"               # always the same as Gus_Rigtool's (a test checks it)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 

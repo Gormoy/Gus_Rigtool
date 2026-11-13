@@ -401,6 +401,11 @@ def check_labels(rep):
     rep.add(OK, "%d joint(s) skinning a mesh read" % len(joints))
 
 
+class MissingMesh(ValueError):
+    """5.6.36: the skin's mesh isn't there as a mesh (the Hare on the Mac: the model file's path was the Windows
+    drive, so the reference didn't load)."""
+
+
 def _skin_weights(skin):
     """(vertex count, [sum of weights per vertex], [total weight per influence]) by the API."""
     import maya.api.OpenMaya as om
@@ -412,6 +417,8 @@ def _skin_weights(skin):
     if not geo:
         return 0, [], []
     path = om.MDagPath.getAPathTo(geo[0])
+    if not path.hasFn(om.MFn.kMesh):        # 5.6.36: not a mesh (its reference didn't load: a stand-in node)
+        raise MissingMesh(path.partialPathName())
     cfn = om.MFnSingleIndexedComponent()
     comp = cfn.create(om.MFn.kMeshVertComponent)
     cfn.setCompleteData(om.MFnMesh(path).numVertices)
@@ -455,8 +462,13 @@ def check_skin(rep):
         facts = "%s, %d influences, max %d%s, normalize %s" % (
             _names(geo, 2), len(infl), mx, " (kept)" if cmds.getAttr(skin + ".maintainMaxInfluences") else "",
             {0: "off", 1: "interactive", 2: "post"}.get(norm, norm))
-        if geo and cmds.nodeType(geo[0]) == "mesh":
-            n, sums, per = _skin_weights(skin)
+        try:
+            got = _skin_weights(skin) if geo and cmds.nodeType(geo[0]) == "mesh" else None
+        except MissingMesh as e:                    # 5.6.36: its model file didn't load - the others still read
+            got = None
+            facts += ", its mesh isn't loaded (%s) - weights not read" % e
+        if got:
+            n, sums, per = got
             bad = [i for i, s in enumerate(sums) if abs(s - 1.0) > 1e-3]
             unused = [infl[i] for i, t in enumerate(per) if t < 1e-6 and i < len(infl)]
             facts += ", %d vertices" % n
@@ -1005,6 +1017,9 @@ def check_speed(rep):
     deformers that print a warning on every update. Fixes: Repair (safe mode)."""
     from gus_rigtool.core import rigspeed as speed
     rep.start("Speed")
+    if cmds.about(batch=True):                  # 5.6.36: mayapy - nothing is drawn, the times would read 0 ms
+        rep.add(INFO, "speed skipped", "Maya runs without a window here (the real-Maya tests): nothing is drawn")
+        return
     gpu = speed.gpu_on()
     try:
         t = speed.time_drag()
