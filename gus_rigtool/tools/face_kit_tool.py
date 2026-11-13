@@ -564,7 +564,7 @@ def build(prefix="p_face_"):
                "others (nothing pins them). Mirrored.")
     cmds.rowLayout(numberOfColumns=2, columnWidth2=(110, 50))
     cmds.text(label="Controls per brow", align="right")
-    cmds.intField(N("BrowCount"), value=int(s["brow_count"]), minValue=2, maxValue=9, changeCommand=_w(_save))
+    cmds.intField(N("BrowCount"), value=int(s["brow_count"]), minValue=2, maxValue=9, step=1, changeCommand=_w(_save))
     cmds.setParent("..")
     ui.main_button("Make brows", _w(_guard(make_brows)), "From the selected edges along the left brow.")
     ui.end_section()

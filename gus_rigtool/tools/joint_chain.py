@@ -688,7 +688,7 @@ def build(prefix="p_joints_"):
     _labeled("Start number / padding")
     cmds.rowLayout(numberOfColumns=2, columnWidth2=(80, 80))
     cmds.intField(N("Start"), value=int(s["start_number"]), minValue=0, maxValue=1000000, step=1, changeCommand=_w(_on_change))
-    cmds.intField(N("Pad"), value=int(s["padding"]), minValue=1, maxValue=6, changeCommand=_w(_on_change))
+    cmds.intField(N("Pad"), value=int(s["padding"]), minValue=1, maxValue=6, step=1, changeCommand=_w(_on_change))
     cmds.setParent("..")
     cmds.setParent("..")
     cmds.checkBox(N("AddSide"), label="Add the side from the position (tail -> L_tail)", value=s["add_side"],
@@ -726,7 +726,7 @@ def build(prefix="p_joints_"):
                         annotation="Control joints: smooth bending (skinned to the curve). "
                                    "Clusters: one per curve CV, more direct.")
     _labeled("Controls")
-    cmds.intField(N("IKCount"), value=int(s["ik_count"]), minValue=2, maxValue=5,
+    cmds.intField(N("IKCount"), value=int(s["ik_count"]), minValue=2, maxValue=5, step=1,
                   changeCommand=_w(_on_change))
     cmds.setParent("..")
     _labeled("Control shape")

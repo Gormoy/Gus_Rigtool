@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.32). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.32`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.33). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.33`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.32, about 152 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.33, about 153 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -130,7 +130,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 | Each skin off on its own | Hood 22 ms, Hare_Body 14, Pants 13, Shirt 10; the fixed per-skin cost is ~0 here |
 | GPU override off | about the same (104 vs 108 ms) |
 
-## 4. What was built (5.6.23 to 5.6.32)
+## 4. What was built (5.6.23 to 5.6.33)
 
 - **5.6.23:**
   - a more professional picker UI;
@@ -185,7 +185,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - `hare_speed_check.py`: times COG/World dragging with each heavy part switched off.
 - `hare_skin_cost.py`: times each skin on its own, GPU override on vs off, and inspects the pairBlends.
 
-### 5.6.28 - 5.6.32 (Claude Code, 2026-11-10 to 13)
+### 5.6.28 - 5.6.33 (Claude Code, 2026-11-10 to 13)
 - **5.6.28** (the 5.6.27 review): Repair no longer empties component tag expressions; Make head squash works
   without tags; the mirror table keeps joints' translate and reads custom attributes at default; Make the right
   side mirror the left also refuses held offsets / pairBlends; safe mode by UUID, unsteady frames skipped, only
@@ -201,6 +201,9 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - **5.6.32**: the history check leaves out nodes that only drive a setting (the Clothes switch on the bandages);
   Remove head squash unlocks Publish's locks and cleans a squash removed half-way; Keep the pose says when no
   control is selected; scripts/diagnostics/slider_range.py.
+- **5.6.33**: the history check reads Maya's whole classification (the bandages for real); Keep the pose zeroes
+  locked channels (the pupils' translate Z / rotate, full turns) and relocks them; the Checker's zero fix says what
+  it can't change; the "Step must be less than range" fields (Joints Padding / IK count, Face Brow count).
 
 ## 5. Open items and the roadmap
 

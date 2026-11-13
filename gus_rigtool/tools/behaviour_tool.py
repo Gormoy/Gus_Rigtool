@@ -121,6 +121,8 @@ def zero_here(*_):
     done, skipped = zero_pose.apply(sel)
     for c, why in skipped:
         print("Keep the pose: %s skipped - %s" % (_short(c), why))
+    for c, what in zero_pose.LEFT:                   # 5.6.33: say what isn't at zero after all
+        utils.warn(TOOL, "Keep the pose: %s.%s - something drives it, so it stays" % (_short(c), what))
     utils.info(TOOL, "%d control(s) zeroed where they are (their groups took the pose - a new <control>_rest group "
                "where the one above couldn't)%s." % (
         len(done), (", %d skipped - see the Script Editor" % len(skipped)) if skipped else ""))

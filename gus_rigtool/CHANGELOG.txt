@@ -1,3 +1,32 @@
+Gus_Rigtool 5.6.33 - the bandages' history for real, the pupils at zero, honest zero fixes, the slider warning
+
+Non-deformer history: 5.6.32's fix missed the Clothes switch in real Maya. Maya 2024 describes a condition node
+as 'drawdb/shader/operation/condition:utility/general' and plusMinusAverage as 'math/operation'; 5.6.32 only
+looked at the start of that text, for 'utility'. Now every part of it is read, math nodes count too, and the
+switch's node types are also listed by name. The bandages show no history.
+
+Keep the pose (Controls > Behaviour > Rest here): locked channels that aren't at rest - the pupils' translate Z
+9.75, rotate Y -37.65 and the full turns (-720 / 720) on X and Z - are unlocked for a moment, zeroed with the group
+taking the pose (nothing moves) and locked again. A channel something drives stays as it is, and it says so.
+
+Checker > Controls not at zero > Fix: counts only the controls it really changed ("fixed 2" before, when nothing
+changed), and lists the channels it can't change (locked or driven) with their values - with where to go: Keep
+the pose zeroes those without moving the control.
+
+"Step must be less than range" (on opening, the Joints and Face tabs): three number fields had a range smaller
+than Maya's default drag step of 10 - Joints > Padding (1-6), Joints > IK count (2-5), Face > Brow count (2-9).
+They step by 1 now.
+
+Decisions I made:
+- The Checker's fix still doesn't unlock anything: setting a locked channel to 0 there would move the control
+  (the pupils). It points to Keep the pose, which moves the pose to the group.
+- Keep the pose unlocks only channels that nothing drives; a driven channel is never touched.
+- A full turn (720) is zeroed like any other value: on a locked channel nothing animates through it.
+
+Tested against the fake Maya only (tests/test_5633.py, the full suite), with Maya 2024's classification text from
+Gus's check. Not tested in real Maya: the pupils zeroed through their locked channels, the history check, the
+fields' warning gone.
+
 Gus_Rigtool 5.6.32 - the bandages' false history warning, a head squash removed half-way, Keep the pose on meshes
 
 Non-deformer history (Checker, Check this scene): the nodes of the Clothes switch (Clothes_Bandages_hidden,

@@ -125,13 +125,29 @@ def find_ctrl_zero(scope):
 
 
 def fix_ctrl_zero(nodes):
+    """Free channels to 0 (scale 1). 5.6.33: counts only the controls it changed, and says which channels it can't
+    change (locked or driven) - Behaviour > Rest here > Keep the pose zeroes those without moving the control."""
+    done, stuck = 0, []
     for n in nodes:
+        changed = False
         for attr, value in (("translate", 0.0), ("rotate", 0.0), ("scale", 1.0)):
             for a in "XYZ":
                 plug = "%s.%s%s" % (n, attr, a)
+                v = cmds.getAttr(plug)
+                if abs(v - value) <= EPS:
+                    continue
                 if _settable(plug):
                     cmds.setAttr(plug, value)
-    return len(nodes)
+                    changed = True
+                else:
+                    stuck.append("%s.%s%s %g (%s)" % (naming.short_name(n), attr, a, round(v, 3),
+                                                      "locked" if cmds.getAttr(plug, lock=True) else "driven"))
+        done += changed
+    if stuck:
+        utils.warn(TOOL, "%d channel(s) can't be zeroed here: %s - select those controls and use Behaviour > Rest "
+                   "here > Keep the pose (the group takes the pose, nothing moves)" % (len(stuck),
+                                                                                       ", ".join(stuck[:8])))
+    return done
 
 
 def _time_curves(n):
@@ -320,7 +336,12 @@ _DEFORMER_PARTS = ("tweak", "groupParts", "groupId", "objectSet", "dagPose", "sh
 
 # 5.6.32: nodes that only drive a setting (a deformer's on / off, a weight) - never the mesh's shape. The Clothes
 # switch's nodes reach the bandages through their skin's nodeState and were taken for model history.
-_NOT_SHAPE = ("unitConversion", "expression", "choice", "network", "time", "blendWeighted", "remapValue")
+_NOT_SHAPE = ("unitConversion", "expression", "choice", "network", "time", "blendWeighted", "remapValue",
+              # 5.6.33: by name too - Maya 2024 says 'drawdb/shader/operation/condition:utility/general', and
+              # plusMinusAverage is 'math/operation', so the 5.6.32 classification check missed them
+              "condition", "plusMinusAverage", "reverse", "multiplyDivide", "clamp", "setRange", "blendColors",
+              "multDoubleLinear", "addDoubleLinear", "floatMath", "floatLogic", "floatCondition")
+SETTING_CLASSES = ("utility", "math")
 
 
 def _drives_a_setting(h):
@@ -328,7 +349,8 @@ def _drives_a_setting(h):
     if t in _NOT_SHAPE or t.startswith("animCurve"):
         return True
     try:
-        return any(c.startswith("utility") for c in cmds.getClassification(t) or [])
+        return any(part.startswith(SETTING_CLASSES) for c in cmds.getClassification(t) or []
+                   for part in c.split(":"))
     except (RuntimeError, ValueError, TypeError, AttributeError):
         return False
 

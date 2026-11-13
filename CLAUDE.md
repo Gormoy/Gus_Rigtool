@@ -6,7 +6,7 @@ Put this file at the root of the repository. Claude Code reads it automatically 
 
 Gus_Rigtool is a personal rigging toolkit for **Maya 2024+** (Python 3.10 inside Maya; code must also lint as
 Python 3.7). It ships with **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`), the animators' tools: picker,
-pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.32**.
+pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.33**.
 
 Owner: Gus (Gustavo), a rigger on macOS. He is finishing the **Hare** rig for the short "The Tree That Bloomed in
 Winter". He writes in English (sometimes Portuguese) and prefers plain words over jargon.

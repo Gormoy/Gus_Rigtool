@@ -14,6 +14,7 @@ from gus_rigtool.core import naming, utils
 from gus_rigtool.core import world_turn as WT
 
 REST = (("translate", 0.0), ("rotate", 0.0), ("scale", 1.0))
+LEFT = []                                # 5.6.33: after apply(): (control, channel driven and not at rest)
 
 
 def _short(n):
@@ -59,7 +60,9 @@ def at_rest(c):
         for ax in "XYZ":
             plug = "%s.%s%s" % (c, a, ax)
             try:
-                if cmds.getAttr(plug, settable=True) and abs(cmds.getAttr(plug) - v) > 1e-6:
+                free = cmds.getAttr(plug, settable=True) or (cmds.getAttr(plug, lock=True) and not
+                                                             cmds.listConnections(plug, source=True, destination=False))
+                if free and abs(cmds.getAttr(plug) - v) > 1e-6:     # 5.6.33: a locked channel counts too
                     return False
             except (RuntimeError, ValueError):
                 continue
@@ -136,6 +139,8 @@ def apply(ctrls):
     why skipped)]). 5.6.30: a control driven by a constraint (the pupils) - the constraint goes onto the group
     (a <control>_rest group of its own when the one above can't take it), the control reads 0, nothing moves."""
     done, skipped = [], []
+    left = LEFT
+    del left[:]
     with utils.undo_chunk("gusrigZeroPose"):
         for c in ctrls:
             c = (cmds.ls(c, long=True) or [c])[0]
@@ -159,11 +164,20 @@ def apply(ctrls):
                     skipped.append((c, "%s - and no group could go above it (%s)" % (why, e)))
                     continue
             m = cmds.xform(c, query=True, worldSpace=True, matrix=True)
+            relock = []
             for a, v in REST:
                 for ax in "XYZ":
                     plug = "%s.%s%s" % (c, a, ax)
+                    if cmds.getAttr(plug, lock=True) and abs(cmds.getAttr(plug) - v) > 1e-6 and \
+                            not cmds.listConnections(plug, source=True, destination=False):
+                        cmds.setAttr(plug, lock=False)          # 5.6.33: the pupils' locked rotate / translate
+                        relock.append(plug)
                     if cmds.getAttr(plug, settable=True):
                         cmds.setAttr(plug, v)
+                    elif abs(cmds.getAttr(plug) - v) > 1e-6:
+                        left.append((c, "%s%s driven at %g" % (a, ax, round(cmds.getAttr(plug), 3))))
+            for plug in relock:
+                cmds.setAttr(plug, lock=True)
             p = cmds.listRelatives(c, parent=True, fullPath=True)[0]
             local = cmds.xform(c, query=True, objectSpace=True, matrix=True)    # what's left (locked channels)
             cmds.xform(p, worldSpace=True, matrix=WT._mul(WT._inv(local), m))
