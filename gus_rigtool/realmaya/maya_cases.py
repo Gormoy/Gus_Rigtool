@@ -225,7 +225,7 @@ def _arm_spots():
 
 def ikfk_mirror(rep):
     """f. Animtool on the biped: IK/FK switch with no jump, mirror pose - on the left wrist's IK control (5.6.35
-    took the pole vector control by mistake and measured before Maya had caught up)."""
+    took the pole vector control by mistake and measured before Maya had caught up), both arms in IK first."""
     rep.start("f. IK/FK switch and mirror pose (Gus Animtool, on the biped)")
     A = rep.step("Gus Animtool", _animtool)
     if not A:
@@ -238,6 +238,15 @@ def ikfk_mirror(rep):
         return
     c = ik[0]
     cmds.currentTime(1)
+    # 5.6.37: the biped's arms start in FK - both into IK first (at rest: nothing moves), or moving the IK control
+    # moves nothing and 'to FK' rightly snaps the arm to it (5.6.36 read that as a 6-unit jump)
+    twin = [x for x in ctrls if x.split("|")[-1].lower() == "r_" + c.split("|")[-1][2:].lower()]
+    cmds.select([c] + twin[:1], replace=True)
+    rest = _arm_spots()
+    rep.step("both arms to IK", A.switch, "ik")
+    _settle()
+    rep.expect("to IK at rest: nothing moved", _moved(rest, _arm_spots()) < 0.01,
+               "the most a joint moved: %.4f" % _moved(rest, _arm_spots()))
     try:
         cmds.move(-3, 4, 6, c, relative=True, worldSpace=True)
     except RuntimeError as e:

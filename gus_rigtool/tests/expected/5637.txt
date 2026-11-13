@@ -1,0 +1,4 @@
+PASS both arms (the left IK control and its right twin) go to IK first
+PASS going to IK at rest is checked too: nothing may move
+PASS in that order: to IK, then the move, then to FK and back, then the mirror
+3/3 passed

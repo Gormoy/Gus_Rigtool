@@ -1,3 +1,20 @@
+Gus_Rigtool 5.6.37 - real-Maya test f: both arms in IK first
+
+The second real-Maya run (Mac) was clean apart from test f: the Hare opened with its model file found on the T7
+drive, Check this scene ran through it with no crash (55 skins read), and the self-test's 80 rig checks passed.
+Test f failed because of the test: the biped's arms start in FK, so moving the wrist's IK control moved nothing and
+'to FK' rightly snapped the arm to it - 6 units, exactly the move. Now both arms go to IK first (checked: nothing
+moves at rest), then the move, FK and back, and the mirror.
+
+The eye dry run on the Hare: 5.6.33's change to the pupils moves the eye meshes 0.009 cm and no joint - not the
+jump Gus saw. The cause is still open (the Ctrl+Z after it, or the open Maya window's evaluation); Keep the pose
+leaves the pupils alone and runs in safe mode since 5.6.34, so it can't come back through the tool.
+
+Decisions I made:
+- The right arm goes to IK with the left, so the mirror check has an arm in IK to mirror onto.
+
+Tested against the fake Maya only (tests/test_5637.py, the full suite). Test f itself needs your run.
+
 Gus_Rigtool 5.6.36 - after the first real-Maya run (Mac): sturdier Check this scene, the tests fixed, the eye dry run
 
 The first real-Maya run (Mac, Maya 2024) passed the pupils, the bandages' history, the head squash leftovers, the
