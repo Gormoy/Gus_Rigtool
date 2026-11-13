@@ -2,7 +2,7 @@ PASS Maya 2024's 'drawdb/...:utility/general' and 'math/operation': both seen as
 PASS and by name, whatever Maya answers
 PASS the bandages: only real model history is listed
 PASS Checker > Controls not at zero > Fix: 0 fixed, not '2' (all locked), and it says which and where to go
-PASS Keep the pose: the locked channels read 0 now (5.6.32 left 9.75, -720, -37.65, 720)
+PASS Keep the pose leaves the locked channels as they are (5.6.34: unlocking them turned the Hare's eyes)
 PASS they're locked again, as you left them
 PASS the pupil stays where it was (its group took the pose)
 PASS the Checker has nothing left to say

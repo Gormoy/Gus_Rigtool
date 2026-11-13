@@ -1,0 +1,12 @@
+PASS what the pupil's own values feed is found: rotate into the eyeball's orient constraint
+PASS Keep the pose leaves it and says why (5.6.33 zeroed it and the eyes turned)
+PASS nothing changed on it
+PASS Checker: locked channels aren't the animator's - the pupils aren't 'not at zero'
+PASS a free channel off rest still counts (scale X 1.5)
+PASS a control that feeds nothing: zeroed, its group took the pose
+PASS Behaviour > Keep the pose goes through safe mode: something moved, so it's put back and named
+PASS the button only schedules it: nothing runs during the click
+PASS then it runs, with its report window
+PASS checker.py: its Check this scene button uses run_later
+PASS settings_tab.py: its Check this scene button uses run_later
+11/11 passed
