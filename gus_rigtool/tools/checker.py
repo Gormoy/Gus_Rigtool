@@ -118,8 +118,10 @@ def find_ctrl_zero(scope):
     for n in transforms(scope):
         if not is_control(n):
             continue
-        t, r, s = _vals(n, "translate"), _vals(n, "rotate"), _vals(n, "scale")
-        if any(abs(v) > EPS for v in t + r) or any(abs(v - 1.0) > EPS for v in s):
+        off = [abs(cmds.getAttr(p) - rest) > EPS and _settable(p)       # 5.6.34: locked / driven channels
+               for a, rest in (("translate", 0.0), ("rotate", 0.0), ("scale", 1.0))   # aren't the animator's
+               for p in ("%s.%s%s" % (n, a, x) for x in "XYZ")]                   # (the pupils' rotate)
+        if any(off):
             out.append(n)
     return out
 

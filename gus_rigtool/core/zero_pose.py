@@ -55,14 +55,24 @@ def rest_group(c):
     return g, g + "|" + _short(c)
 
 
+def feeds(c):
+    """5.6.34: what the control's own translate / rotate / scale values feed (the Hare's pupils: rotate into the
+    eyeballs' orient constraints) - moving the pose into the group changes what those read, so the eyes turned.
+    [(control plug, what it feeds)]."""
+    out = []
+    for a, _v in REST:
+        for plug in ["%s.%s" % (c, a)] + ["%s.%s%s" % (c, a, ax) for ax in "XYZ"]:
+            for d in cmds.listConnections(plug, source=False, destination=True, plugs=True) or []:
+                out.append((plug.split("|")[-1], d))
+    return out
+
+
 def at_rest(c):
     for a, v in REST:
         for ax in "XYZ":
             plug = "%s.%s%s" % (c, a, ax)
             try:
-                free = cmds.getAttr(plug, settable=True) or (cmds.getAttr(plug, lock=True) and not
-                                                             cmds.listConnections(plug, source=True, destination=False))
-                if free and abs(cmds.getAttr(plug) - v) > 1e-6:     # 5.6.33: a locked channel counts too
+                if cmds.getAttr(plug, settable=True) and abs(cmds.getAttr(plug) - v) > 1e-6:
                     return False
             except (RuntimeError, ValueError):
                 continue
@@ -145,6 +155,9 @@ def apply(ctrls):
         for c in ctrls:
             c = (cmds.ls(c, long=True) or [c])[0]
             cons, why_not = constraints_on(c)
+            fed = feeds(c)
+            if fed and not why_not:
+                why_not = "its own values drive something (%s -> %s) - zeroing it would change that" % fed[0]
             if why_not:
                 skipped.append((c, why_not))
                 continue
@@ -164,20 +177,14 @@ def apply(ctrls):
                     skipped.append((c, "%s - and no group could go above it (%s)" % (why, e)))
                     continue
             m = cmds.xform(c, query=True, worldSpace=True, matrix=True)
-            relock = []
-            for a, v in REST:
+            for a, v in REST:                           # 5.6.34: locked channels stay as they are again
                 for ax in "XYZ":
                     plug = "%s.%s%s" % (c, a, ax)
-                    if cmds.getAttr(plug, lock=True) and abs(cmds.getAttr(plug) - v) > 1e-6 and \
-                            not cmds.listConnections(plug, source=True, destination=False):
-                        cmds.setAttr(plug, lock=False)          # 5.6.33: the pupils' locked rotate / translate
-                        relock.append(plug)
                     if cmds.getAttr(plug, settable=True):
                         cmds.setAttr(plug, v)
-                    elif abs(cmds.getAttr(plug) - v) > 1e-6:
+                    elif abs(cmds.getAttr(plug) - v) > 1e-6 and \
+                            cmds.listConnections(plug, source=True, destination=False):
                         left.append((c, "%s%s driven at %g" % (a, ax, round(cmds.getAttr(plug), 3))))
-            for plug in relock:
-                cmds.setAttr(plug, lock=True)
             p = cmds.listRelatives(c, parent=True, fullPath=True)[0]
             local = cmds.xform(c, query=True, objectSpace=True, matrix=True)    # what's left (locked channels)
             cmds.xform(p, worldSpace=True, matrix=WT._mul(WT._inv(local), m))

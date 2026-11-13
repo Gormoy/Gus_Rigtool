@@ -56,8 +56,8 @@ before = cmds.xform(c, query=True, worldSpace=True, matrix=True)
 done, skipped = zero_pose.apply([c])
 c = ls("L_Pupil_ctrl", long=True)[0]
 vals = [getAttr("%s.%s%s" % (c, a, x)) for a in ("translate", "rotate") for x in "XYZ"]
-check("Keep the pose: the locked channels read 0 now (5.6.32 left 9.75, -720, -37.65, 720)",
-      done and not skipped and all(abs(v) < 1e-6 for v in vals))
+check("Keep the pose leaves the locked channels as they are (5.6.34: unlocking them turned the Hare's eyes)",
+      not skipped and abs(vals[2] - 9.7461) < 1e-6 and abs(vals[4] + 37.6547) < 1e-6)
 check("they're locked again, as you left them", all(getAttr("%s.%s%s" % (c, a, x), lock=True)
                                                     for a in ("translate", "rotate") for x in "XYZ") and
       getAttr(c + ".scaleZ", lock=True) and not getAttr(c + ".scaleX", lock=True))

@@ -118,7 +118,12 @@ def zero_here(*_):
     if not curves:                                   # 5.6.32: the eye meshes were selected, not the pupil controls
         raise RuntimeError("no controls in the selection (%s) - select the control curves, e.g. L_Pupil_ctrl and "
                            "R_Pupil_ctrl, not the meshes." % ", ".join(_short(n) for n in sel[:4]))
-    done, skipped = zero_pose.apply(sel)
+    from gus_rigtool.core import safe
+    kept, got = safe.run(lambda: zero_pose.apply(sel), label="gusrigZeroPoseSafe", states=("rest",))   # 5.6.34
+    if not kept:
+        utils.warn(TOOL, "Keep the pose was put back - something moved: %s" % got)
+        return
+    done, skipped = got
     for c, why in skipped:
         print("Keep the pose: %s skipped - %s" % (_short(c), why))
     for c, what in zero_pose.LEFT:                   # 5.6.33: say what isn't at zero after all
