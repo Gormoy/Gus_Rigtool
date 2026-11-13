@@ -1,0 +1,10 @@
+PASS the bandages: the switch's nodes (condition, plusMinusAverage) and a key on it aren't history - 5.6.31 said 'in the model file'
+PASS real model history is still found
+PASS found: the switch node, the factor node, the ear's follow group - not the head or other nodes
+PASS Remove head squash (5.6.31 stopped at 'Cannot delete locked node'): the leftovers are gone
+PASS the ear control moved up to L_Ear_ctrls_grp and stayed where it was
+PASS what stays is locked again, as Publish left it (the ear's constraint, other nodes)
+PASS nothing there: it still says there's no head squash
+PASS a published rig's squash goes in one go (its nodes were locked)
+PASS only the eye mesh selected: it says to select the control curves (5.6.31 said '0 zeroed')
+9/9 passed

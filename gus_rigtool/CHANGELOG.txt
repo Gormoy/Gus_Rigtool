@@ -26,6 +26,8 @@ Decisions I made:
   get right without real Maya to test on.
 - A leftover is found by name: Head_squash_..., <name>_squash_follow, _squash_srf, _squash_fol. Head_squash_ctrl
   counts only when it's no squash any more.
+- A leftover node that still drives something outside the leftovers stays (as 5.6.31 kept a Head_squash_off
+  in use): deleting it could change what it drives.
 - Only a _squash_follow group hands its children up (they are the ear controls); any other leftover group
   (Head_squash_grp, the planes) goes with what's in it.
 - The leftover clean-up compares at rest only (safe mode), like the Checker's history fix. A full Remove keeps

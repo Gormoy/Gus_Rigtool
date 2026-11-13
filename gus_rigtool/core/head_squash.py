@@ -749,7 +749,8 @@ LEFT_NAME = re.compile(r"^Head_squash_|_squash_(follow|srf|fol)\d*$")
 def leftovers():
     """5.6.32: what a squash removed half-way leaves (Publish had locked its nodes): Head_squash_off,
     Head_squash_factor_md, the ears' <name>_squash_follow groups... The Head_squash_ctrl itself counts only when
-    it's no squash any more (find() says none)."""
+    it's no squash any more (find() says none). A node still driving something outside them isn't one (5.6.31
+    kept a Head_squash_off in use)."""
     out = []
     for n in cmds.ls(type=list(LEFT_TYPES), long=True) or []:
         short = _short(n).split(":")[-1]
@@ -758,7 +759,9 @@ def leftovers():
         if short == CTRL and find():
             continue
         out.append(n)
-    return out
+    names = set(_short(n) for n in out)
+    return [n for n in out if cmds.nodeType(n) == "transform" or
+            all(_short(d) in names for d in cmds.listConnections(n, source=False, destination=True) or [])]
 
 
 def _locked_under(nodes):
