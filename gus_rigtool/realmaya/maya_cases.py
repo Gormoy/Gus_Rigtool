@@ -249,10 +249,17 @@ def ikfk_mirror(rep):
                "the most a joint moved: %.4f" % _moved(rest, _arm_spots()))
     try:
         cmds.move(-3, 4, 6, c, relative=True, worldSpace=True)
+        # 5.6.38: the switch keyed the control (Key on switch): unkeyed, the next update put it back and the arm
+        # never moved - 5.6.37's 'no jump' passes measured nothing
+        cmds.setKeyframe(c, attribute=["translate", "rotate"])
     except RuntimeError as e:
         rep.add(NOTE, "move the IK control", str(e))
     _settle()
     spots = _arm_spots()
+    went = _moved(rest, spots)
+    if not rep.expect("the left arm followed its IK control (or there's nothing to measure)", went > 0.5,
+                      "it moved %.3f" % went):
+        return
     rep.add(INFO, "arm joints measured", "%d" % len(spots))
     cmds.select(c, replace=True)
     rep.step("switch to FK", A.switch, "fk")

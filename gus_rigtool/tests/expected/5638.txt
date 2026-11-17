@@ -1,0 +1,3 @@
+PASS the move is keyed right after it
+PASS the arm must have moved more than half a unit, or the test stops and says so
+2/2 passed

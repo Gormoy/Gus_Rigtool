@@ -1,3 +1,16 @@
+Gus_Rigtool 5.6.38 - real-Maya test f: the move keyed, the arm checked to have moved
+
+The third real-Maya run (Mac) was clean apart from test f's mirror check, which showed the left and right arms
+already mirrored before the mirror: the left arm had never moved. The IK/FK switch keys the controls (Key on
+switch), so the test's unkeyed move of the IK control was put back at the next update - and 5.6.37's 'no jump'
+passes measured an arm that hadn't moved. Now the move is keyed, and the test first checks the arm really moved
+(more than half a unit); if not, it says so and stops instead of passing.
+
+Decisions I made:
+- Translate and rotate are keyed on the IK control at the current frame (the same frame the switch keyed).
+
+Tested against the fake Maya only (tests/test_5638.py, the full suite). Test f needs your run.
+
 Gus_Rigtool 5.6.37 - real-Maya test f: both arms in IK first
 
 The second real-Maya run (Mac) was clean apart from test f: the Hare opened with its model file found on the T7
