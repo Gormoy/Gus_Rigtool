@@ -286,6 +286,13 @@ def ikfk_mirror(rep):
     gap0 = mirror_gap()
     cmds.select(c, replace=True)
     rep.step("mirror pose L>R", A.mirror_pose, "L>R")
+    # 5.6.39: what the mirror wrote, read before Maya updates (the right control is keyed from the switch: an
+    # unkeyed value goes back at the next update) - then keyed, so the arm keeps it
+    vals = [[round(v, 3) for v in cmds.getAttr(x + "." + a)[0]] for x in [c] + twin[:1] for a in ("translate",
+                                                                                                 "rotate")]
+    rep.add(INFO, "values right after the mirror (left translate, rotate / right translate, rotate)", str(vals))
+    if twin:
+        cmds.setKeyframe(twin[0], attribute=["translate", "rotate"])
     _settle()
     gap1 = mirror_gap()
     rep.expect("the right arm now mirrors the left", gap1 < 0.05 and gap1 < gap0,
@@ -358,6 +365,75 @@ def _load_references(rep, project):
             rep.add(OK, "model file loaded", got)
         except RuntimeError as e:
             rep.add(NOTE, "model file %s" % got, str(e)[:200])
+
+
+def scale_pair(left, right, tol=0.25):
+    """5.6.39: (moved vertices, biggest move) of each side -> a note when one side does much less (the Hare's left
+    pupil moved 62 stray vertices above the eye, the right one its pupil), else None."""
+    (ln, lm), (rn, rm) = left, right
+    if not ln and not rn:
+        return None
+    if not ln or not rn:
+        return "one side moves nothing (left %d vertices, right %d)" % (ln, rn)
+    big = max(lm, rm)
+    if abs(lm - rm) > tol * big:
+        return "the two sides don't match: left moves up to %.3f, right %.3f (%d / %d vertices)" % (lm, rm, ln, rn)
+    return None
+
+
+def _shown_meshes_of(joint):
+    out = []
+    for k in set(cmds.listConnections(joint, type="skinCluster") or []):
+        for g in cmds.skinCluster(k, query=True, geometry=True) or []:
+            t = (cmds.listRelatives(g, parent=True, fullPath=True) or [None])[0]
+            for sh in cmds.listRelatives(t, shapes=True, fullPath=True, noIntermediate=True) or [] if t else []:
+                if sh not in out:
+                    out.append(sh)
+    return out
+
+
+def _scale_effect(ctrl, shapes, factor=1.5):
+    before = {sh: cmds.xform(sh + ".vtx[*]", query=True, worldSpace=True, translation=True) for sh in shapes}
+    was = cmds.getAttr(ctrl + ".scaleX")
+    cmds.setAttr(ctrl + ".scaleX", was * factor)
+    _settle()
+    n, most = 0, 0.0
+    for sh in shapes:
+        a, b = before[sh], cmds.xform(sh + ".vtx[*]", query=True, worldSpace=True, translation=True)
+        for i in range(0, min(len(a), len(b)), 3):
+            d = max(abs(a[i + k] - b[i + k]) for k in range(3))
+            if d > 1e-4:
+                n += 1
+                most = max(most, d)
+    cmds.setAttr(ctrl + ".scaleX", was)
+    _settle()
+    return n, most
+
+
+def scale_twins(rep):
+    """5.6.39: each left control whose scale drives a joint (the pupils) scaled with its right twin: the meshes you
+    see must change, and about the same on both sides. Put back after; the scene is never saved."""
+    pairs = []
+    for c in cmds.ls("L_*", type="transform") or []:
+        dst = [d for d in cmds.listConnections(c + ".scale", source=False, destination=True) or []
+               if cmds.nodeType(d) == "joint"]
+        twin = "R_" + c[2:]
+        if dst and len(cmds.ls(twin)) == 1 and cmds.getAttr(c + ".scaleX", settable=True) and \
+                cmds.getAttr(twin + ".scaleX", settable=True):
+            rd = [d for d in cmds.listConnections(twin + ".scale", source=False, destination=True) or []
+                  if cmds.nodeType(d) == "joint"]
+            if rd:
+                pairs.append((c, twin, dst[0], rd[0]))
+    if not pairs:
+        rep.add(INFO, "scale controls", "no left control whose scale drives a joint")
+        return
+    for lc, rc, lj, rj in pairs:
+        left = _scale_effect(lc, _shown_meshes_of(lj))
+        right = _scale_effect(rc, _shown_meshes_of(rj))
+        why = scale_pair(left, right)
+        rep.add(NOTE if why else OK, "%s / %s scaled: the meshes follow alike" % (lc, rc),
+                why or "left %d vertices (up to %.3f), right %d (up to %.3f)" % (left[0], left[1], right[0],
+                                                                                  right[1]))
 
 
 def eye_dry_run(rep):
@@ -441,6 +517,7 @@ def hare(rep, path):
                                                               for r in crashed)[:600])
         APPENDIX["scene"] = "\n\n==== Check this scene on your scene ====\n" + got.text()
     rep.guard("eye dry run", eye_dry_run, rep)
+    rep.guard("scale controls, left and right", scale_twins, rep)
     cmds.file(new=True, force=True)                  # closed without saving
     rep.add(INFO, "closed without saving", path)
 

@@ -1,3 +1,24 @@
+Gus_Rigtool 5.6.39 - real-Maya tests: the mirror read before Maya updates; pupils and other scale controls,
+left against right
+
+The fourth real-Maya run (Mac) passed IK/FK for real: the left arm followed its IK control (6 units) and switching
+to FK and back moved no arm joint (0.0000). The mirror check still failed: the right IK control is keyed too (from
+the switch), so the mirrored values went back at the next update.
+
+- f. IK/FK and mirror: the values the mirror wrote are read straight after it (left and right, shown in the
+  results), then the right control is keyed, then the left / right gap is measured.
+- Your scene: new check - each left control whose scale drives a joint (the pupils) is scaled with its right twin
+  (x1.5, then put back): the meshes you see must change, and about the same on both sides. The Hare's left pupil
+  moved 62 stray vertices above the eye instead of its pupil (its weights; fixed by hand in the scene) - this
+  check would have said so.
+
+Decisions I made:
+- 'About the same' = the biggest vertex move on each side within a quarter of each other.
+- Scale controls are found by their link: a left control whose scale is connected to a joint's scale, with an R_
+  twin connected the same way. Only X is scaled (the pupils' uniform scale feeds X too).
+
+Tested against the fake Maya only (tests/test_5639.py, the full suite). Both checks need your run.
+
 Gus_Rigtool 5.6.38 - real-Maya test f: the move keyed, the arm checked to have moved
 
 The third real-Maya run (Mac) was clean apart from test f's mirror check, which showed the left and right arms

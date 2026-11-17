@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.38). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.38`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.39). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.39`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.38, about 158 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.39, about 159 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -130,7 +130,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 | Each skin off on its own | Hood 22 ms, Hare_Body 14, Pants 13, Shirt 10; the fixed per-skin cost is ~0 here |
 | GPU override off | about the same (104 vs 108 ms) |
 
-## 4. What was built (5.6.23 to 5.6.38)
+## 4. What was built (5.6.23 to 5.6.39)
 
 - **5.6.23:**
   - a more professional picker UI;
@@ -185,7 +185,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - `hare_speed_check.py`: times COG/World dragging with each heavy part switched off.
 - `hare_skin_cost.py`: times each skin on its own, GPU override on vs off, and inspects the pairBlends.
 
-### 5.6.28 - 5.6.38 (Claude Code, 2026-11-10 to 13)
+### 5.6.28 - 5.6.39 (Claude Code, 2026-11-10 to 13)
 - **5.6.28** (the 5.6.27 review): Repair no longer empties component tag expressions; Make head squash works
   without tags; the mirror table keeps joints' translate and reads custom attributes at default; Make the right
   side mirror the left also refuses held offsets / pairBlends; safe mode by UUID, unsteady frames skipped, only
@@ -222,6 +222,11 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - **5.6.38**: test f keys the IK control after moving it (the switch keyed it: an unkeyed move is undone at the
   next update) and checks the arm moved before measuring jumps. **Gotcha for real-Maya tests:** after an Animtool
   switch, a moved control must be keyed, and a "no change" pass is only meaningful if something moved first.
+- **5.6.39**: test f reads the mirrored values and keys the right control; new scene check scales each L_ control
+  driving a joint's scale with its R_ twin and compares. **The Hare (v202 is the current file - "v210" was misnamed):**
+  the left pupil didn't scale - its weights were on 62 stray vertices above the eye. Gus fixed it in the scene with a
+  script (selected pupil ring -> L_Pupil_jnt 1, rest -> L_Eyeball_jnt), then did the same on the right so both match.
+  The eyes' Orig shapes don't read reliably with xform (vertex matching by shape failed) - use selection-based fixes.
 
 ## 5. Open items and the roadmap
 

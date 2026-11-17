@@ -1,0 +1,9 @@
+PASS both pupils moving the same: nothing to say
+PASS the Hare before the fix (62 stray vertices barely moving, the right pupil 0.06): said
+PASS one side moving nothing: said
+PASS neither side moves (nothing skinned to them): nothing to compare
+PASS a small difference (under a quarter) is fine
+PASS test f: the values are read right after the mirror, then the right control is keyed, then measured
+PASS your scene: the left / right scale check runs after the eye dry run, before closing without saving
+PASS the scaled controls are put back
+8/8 passed
