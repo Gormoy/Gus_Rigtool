@@ -1,17 +1,11 @@
 Onion Skin 1.0 - see-through 3D ghosts of the past / next keys, in every camera, for several characters.
-Maya 2024+ (Windows or Mac). Nothing to install, no PyMEL. Standalone (no other tool needed).
+Maya 2024+ (Windows or Mac). No PyMEL or other tools needed (standalone).
 
-SET UP (once)
-1. Unzip into Downloads, so you have  Downloads\OnionSkin\onion_skin\...
-2. Maya > Script Editor > Python tab, run (your path):
-
-import sys
-sys.path.insert(0, r"C:\Users\3d181gustavo\Downloads\OnionSkin")
-import onion_skin.shelf as s
-s.install()
-
-   An "Onion" button appears on the shelf you have open. From then on: click it.
-   (Mac: sys.path.insert(0, "/Users/gustavocavalcanti/Downloads/OnionSkin"))
+INSTALL OR UPDATE (every new version the same way)
+1. Unzip anywhere (for example Downloads).
+2. Drag drag_to_maya.mel from the OnionSkin folder into Maya's viewport.
+   It installs Onion Skin (or replaces the old version), puts one "Onion" button on the shelf you have open,
+   and opens the window. From then on: click Onion. Your settings are kept.
 
 USE
 1. Select something of each character - a control is enough (it stands for the whole character), or meshes,
