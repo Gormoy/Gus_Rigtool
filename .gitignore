@@ -10,3 +10,6 @@ gus_rigtool/data/*
 
 # real-Maya test results (written next to the runner)
 gus_rigtool/realmaya/maya_test_results.txt
+
+# Onion Skin real-Maya test results
+scripts/onion_skin/tests/onion_test_results.txt
