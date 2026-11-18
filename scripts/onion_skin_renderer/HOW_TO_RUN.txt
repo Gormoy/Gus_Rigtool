@@ -24,9 +24,18 @@ EXTRAS (the box under Toggle Renderer)
 - Auto fill: stop on a frame and the missing ghosts fill by themselves (never during playback).
 - Playblast with onion skins: a pencil test of the playback range with the ghosts in it.
 
+ARCS (the Arcs box) - track arcs like on paper
+1. Select vertices (nose tip, ear tips, a hand) or controls, then press + Add selected points (up to 12).
+2. Stop on a frame: a line shows where each point is, 24 frames back (past colour) and 24 forward (next
+   colour), with a dot on each frame - dots close together = slow, far apart = fast. Keys get a bigger dot,
+   your frame a white one.
+3. Frames before / Frames after: how far it reaches. A dot every: 1 = every frame, 2 = every 2nd...
+4. Change a key: the line is recorded again by itself a moment later. Nothing is added to your scene; the
+   points are forgotten when you open another scene. Playblast with onion skins shows them too.
+
 HOTKEYS (put them on keys you like)
 Windows > Settings/Preferences > Hotkey Editor > Custom Scripts: OnionSkin_Toggle, OnionSkin_Fill,
-OnionSkin_NextKey, OnionSkin_PreviousKey (next / previous key of the onion characters - flip through your keys
+OnionSkin_NextKey, OnionSkin_PreviousKey, OnionSkin_ToggleArcs (next / previous key of the onion characters - flip through your keys
 like paper). Pick one, then type the key you want in the Hotkey Editor.
 
 What changed from the original script:

@@ -1,6 +1,7 @@
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 import onionSkinRenderer.extras as extras
+import onionSkinRenderer.arcs as arcs
 import maya.api.OpenMayaRender as omr
 import maya.api.OpenMayaAnim as oma
 import maya.api.OpenMayaUI as omui
@@ -219,6 +220,9 @@ class ViewRenderOverride(omr.MRenderOverride):
         self.fade = 0.6
         self.relativeBaseOpacity = {}
         self.mainKeysOnly = False
+        # (noPyMEL copy) arcs: lines through where chosen points are, frames back and forward
+        self.arcs = arcs.Arcs()
+        self.animEditedCallbackId = None
         # 
         self.timeCallbackId = 0
         # 
@@ -246,7 +250,7 @@ class ViewRenderOverride(omr.MRenderOverride):
         self.onionSkinPass.setDrawSelectionFilter(True)
         self.renderOperations.append(self.onionSkinPass)
 
-        self.HUDPass = hudRender.viewRenderHUDRender()
+        self.HUDPass = hudRender.viewRenderHUDRender(self)
         self.renderOperations.append(self.HUDPass)
 
         self.presentTarget = presentTarget.viewRenderPresentTarget("presentTarget")
@@ -767,6 +771,11 @@ class ViewRenderOverride(omr.MRenderOverride):
                 self.cameraMovedCallbackIds.append(
                     om.MNodeMessage.addAttributeChangedCallback(transform, self.cameraMovedCB))
             dgIter.next()
+        # (noPyMEL copy) a key or curve changed: the arcs are recorded again
+        try:
+            self.animEditedCallbackId = oma.MAnimMessage.addAnimCurveEditedCallback(self.arcs.animationChanged)
+        except Exception:
+            self.animEditedCallbackId = None
 
     # removing them when the ui is closed
     def deleteCallbacks(self):
@@ -774,6 +783,12 @@ class ViewRenderOverride(omr.MRenderOverride):
         for id in self.cameraMovedCallbackIds:
             om.MMessage.removeCallback(id)
         self.cameraMovedCallbackIds = []
+        if self.animEditedCallbackId is not None:
+            try:
+                om.MMessage.removeCallback(self.animEditedCallbackId)
+            except Exception:
+                pass
+            self.animEditedCallbackId = None
 
     # define if the buffer should be cleared when the camera moves
     def setAutoClearBuffer(self, value):

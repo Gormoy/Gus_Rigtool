@@ -10,6 +10,7 @@ from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 
 import onionSkinRenderer.core as core
 import onionSkinRenderer.extras as extras
+import onionSkinRenderer.arcs as arcs
 import onionSkinRenderer.ui_window as ui_window
 import onionSkinRenderer.wdgt_Frame as wdgt_Frame
 import onionSkinRenderer.wdgt_MeshListObj as wdgt_MeshListObj
@@ -67,6 +68,11 @@ def hk_fill():
 def _keys_of_onion():
     w = _window()
     return extras.character_keys(w.onionObjectNames(), core.OSR_INSTANCE.mainKeysOnly)
+
+
+def hk_toggle_arcs():
+    w = _window()
+    w.arcsShow_chk.setChecked(not w.arcsShow_chk.isChecked())
 
 
 def hk_next_key():
@@ -186,6 +192,7 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         layout.insertWidget(index + 1, self.fill_btn)
         layout.insertWidget(index + 2, self.cameraWarning_lbl)
         layout.insertWidget(index + 3, box)
+        layout.insertWidget(index + 4, self.makeArcsBox())
 
         # Harmony's names for the three looks
         for i, label in enumerate(("Original colours (shaded)", "Coloured (flat)", "Coloured outline")):
@@ -196,8 +203,108 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         self._filling = False
         self._autoFillPending = False
         self.autoFillJob = cmds.scriptJob(event=["timeChanged", self.scheduleAutoFill])
+        # a new or opened scene: its arc points are gone
+        self.sceneJobs = [cmds.scriptJob(event=[e, self.clearArcPoints]) for e in ("SceneOpened", "NewSceneOpened")]
+        # after a key or curve changes, the arcs are recorded again once the changes stop for a moment
+        self.arcTimer = QtCore.QTimer(self)
+        self.arcTimer.setSingleShot(True)
+        self.arcTimer.setInterval(600)
+        self.arcTimer.timeout.connect(self.scheduleAutoFill)
+        core.OSR_INSTANCE.arcs.onDirty = self.arcTimer.start
+
+    # (noPyMEL copy) arcs: a line through where points are, frames back and forward
+    def makeArcsBox(self):
+        box = QtWidgets.QGroupBox("Arcs")
+        v = QtWidgets.QVBoxLayout(box)
+        row = QtWidgets.QHBoxLayout()
+        self.arcsAdd_btn = QtWidgets.QPushButton("+ Add selected points")
+        self.arcsAdd_btn.setToolTip("Select vertices (nose tip, ear tips) or controls, then press this. Up to %d."
+                                    % arcs.MAX_POINTS)
+        self.arcsAdd_btn.clicked.connect(self.addArcPoints)
+        self.arcsClear_btn = QtWidgets.QPushButton("Clear")
+        self.arcsClear_btn.clicked.connect(self.clearArcPoints)
+        row.addWidget(self.arcsAdd_btn)
+        row.addWidget(self.arcsClear_btn)
+        v.addLayout(row)
+        self.arcsList_lbl = QtWidgets.QLabel("No points yet.")
+        self.arcsList_lbl.setWordWrap(True)
+        v.addWidget(self.arcsList_lbl)
+        form = QtWidgets.QFormLayout()
+        self.arcsShow_chk = QtWidgets.QCheckBox("Show arcs")
+        self.arcsShow_chk.toggled.connect(self.setArcsShow)
+        self.arcsBefore_spn = QtWidgets.QSpinBox()
+        self.arcsAfter_spn = QtWidgets.QSpinBox()
+        for spn in (self.arcsBefore_spn, self.arcsAfter_spn):
+            spn.setRange(0, 200)
+            spn.setValue(24)
+            spn.valueChanged.connect(self.setArcsRange)
+        self.arcsDots_spn = QtWidgets.QSpinBox()
+        self.arcsDots_spn.setRange(1, 12)
+        self.arcsDots_spn.setToolTip("A dot every N frames (keys always get a bigger dot). 1 = every frame.")
+        self.arcsDots_spn.valueChanged.connect(self.setArcsDots)
+        form.addRow(self.arcsShow_chk)
+        form.addRow("Frames before", self.arcsBefore_spn)
+        form.addRow("Frames after", self.arcsAfter_spn)
+        form.addRow("A dot every (frames)", self.arcsDots_spn)
+        v.addLayout(form)
+        return box
+
+    def refreshArcList(self):
+        a = core.OSR_INSTANCE.arcs
+        if not a.points:
+            self.arcsList_lbl.setText("No points yet.")
+        else:
+            self.arcsList_lbl.setText("\n".join(a.label(p) for p in a.points))
+
+    def addArcPoints(self):
+        a = core.OSR_INSTANCE.arcs
+        new = [p for p in arcs.from_selection() if p not in a.points]
+        if not new:
+            print("onionSkinRenderer: select vertices (or controls) first, then + Add selected points")
+            return
+        total = a.points + new
+        if len(total) > arcs.MAX_POINTS:
+            print("onionSkinRenderer: arcs - only the first %d points are kept" % arcs.MAX_POINTS)
+        a.setPoints(total)
+        self._arcKeys()
+        self.refreshArcList()
+        self.scheduleAutoFill()
+
+    def clearArcPoints(self, *_):
+        core.OSR_INSTANCE.arcs.clear()
+        self.refreshArcList()
+        core.OSR_INSTANCE.refresh()
+
+    def setArcsShow(self, value):
+        core.OSR_INSTANCE.arcs.show = bool(value)
+        self.scheduleAutoFill()
+        core.OSR_INSTANCE.refresh()
+
+    def setArcsRange(self, *_):
+        a = core.OSR_INSTANCE.arcs
+        a.before, a.after = self.arcsBefore_spn.value(), self.arcsAfter_spn.value()
+        self.scheduleAutoFill()
+        core.OSR_INSTANCE.refresh()
+
+    def setArcsDots(self, value):
+        core.OSR_INSTANCE.arcs.dotEvery = int(value)
+        core.OSR_INSTANCE.refresh()
+
+    def _arcKeys(self):
+        a = core.OSR_INSTANCE.arcs
+        try:
+            a.keys = set(extras.character_keys([n for n, _v in a.points], core.OSR_INSTANCE.mainKeysOnly))
+        except Exception:
+            a.keys = set()
 
     def applyExtrasPrefs(self):
+        self.arcsBefore_spn.setValue(int(self.preferences.setdefault('arcsBefore', 24)))
+        self.arcsAfter_spn.setValue(int(self.preferences.setdefault('arcsAfter', 24)))
+        self.arcsDots_spn.setValue(int(self.preferences.setdefault('arcsDotEvery', 1)))
+        self.arcsShow_chk.setChecked(bool(self.preferences.setdefault('arcsShow', True)))
+        self.setArcsRange()
+        self.setArcsDots(self.arcsDots_spn.value())
+        self.setArcsShow(self.arcsShow_chk.isChecked())
         self.fade_sld.setValue(int(round(float(self.preferences.setdefault('fade', 0.6)) * 100)))
         core.OSR_INSTANCE.setFade(self.fade_sld.value() / 100.0)
         self.mainKeys_chk.setChecked(bool(self.preferences.setdefault('mainKeysOnly', False)))
@@ -205,6 +312,7 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
 
     def setMainKeysOnly(self, value):
         core.OSR_INSTANCE.mainKeysOnly = bool(value)
+        self._arcKeys()
         try:
             core.OSR_INSTANCE.setRelativeFrames(None)
         except Exception as e:
@@ -213,7 +321,8 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
 
     # auto fill: once Maya is idle after a frame change, the ghosts still missing are filled (not during playback)
     def scheduleAutoFill(self, *_):
-        if self._filling or self._autoFillPending or not self.autoFill_chk.isChecked():
+        arcsWait = core.OSR_INSTANCE.arcs.points and core.OSR_INSTANCE.arcs.show
+        if self._filling or self._autoFillPending or not (self.autoFill_chk.isChecked() or arcsWait):
             return
         self._autoFillPending = True
         cmds.evalDeferred(self.autoFill, lowestPriority=True)
@@ -223,23 +332,52 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         try:
             if cmds.play(query=True, state=True) or not core.onionPanel():
                 return
-            core.OSR_INSTANCE.setRelativeFrames(None)
-            missing = [f for f in core.OSR_INSTANCE.neededFrames() if f not in core.OSR_INSTANCE.onionSkinBuffer]
+            missing = []
+            if self.autoFill_chk.isChecked():
+                core.OSR_INSTANCE.setRelativeFrames(None)
+                missing = [f for f in core.OSR_INSTANCE.neededFrames()
+                           if f not in core.OSR_INSTANCE.onionSkinBuffer]
+            a = core.OSR_INSTANCE.arcs
+            arcFrames = a.toRecord(cmds.currentTime(query=True))
         except Exception:
             return
-        if missing:
-            self.visit(missing)
+        if missing or arcFrames:
+            if arcFrames and a.stale:
+                self._arcKeys()
+            self.visit(missing, arcFrames)
+        elif a.points:
+            self.recordArcHere()
 
-    def visit(self, frames):
-        """Visit frames (the onion skin takes their picture), then back - the time always comes back."""
+    def recordArcHere(self):
+        """The current frame is always recorded again (a pose changed without a key shows straight away)."""
+        a = core.OSR_INSTANCE.arcs
+        if a.points and a.show:
+            a.record(cmds.currentTime(query=True))
+            core.OSR_INSTANCE.refresh()
+
+    def visit(self, frames, arcFrames=()):
+        """Visit frames (the onion skin takes their picture; the arcs record where their points are), then back -
+        the time always comes back. Frames only the arcs need are not drawn (faster)."""
         self._filling = True
+        a = core.OSR_INSTANCE.arcs
         now = cmds.currentTime(query=True)
+        pictures = set(frames)
+        arcSet = set(arcFrames)
+        recorded = []
         try:
-            for f in frames:
+            for f in sorted(pictures | arcSet):
                 cmds.currentTime(f, update=True)
-                cmds.refresh(force=True)
+                if a.points and a.show:
+                    a.record(f)
+                    recorded.append(f)
+                if f in pictures:
+                    cmds.refresh(force=True)
+            if arcSet:
+                a.finish(recorded)
         finally:
             cmds.currentTime(now, update=True)
+            if a.points and a.show:
+                a.record(now)
             cmds.refresh(force=True)
             self._filling = False
 
@@ -262,7 +400,12 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         if core.OSR_INSTANCE.getMaxBuffer() < len(frames) + 10:
             core.OSR_INSTANCE.setMaxBuffer(len(frames) + 10)
         print("onionSkinRenderer: taking the pictures of %d frames first..." % len(frames))
-        self.visit(frames)
+        a = core.OSR_INSTANCE.arcs
+        arcFrames = []
+        if a.points and a.show:
+            arcFrames = sorted(set(a.window(start)) | set(frames) | set(a.window(end)))
+            arcFrames = [f for f in arcFrames if a.stale or f not in a.cache]
+        self.visit(frames, arcFrames)
         try:
             cmds.setFocus(panel)
         except RuntimeError:
@@ -313,9 +456,15 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
     #
     def closeEvent(self, event):
         # (noPyMEL copy) the auto fill stops with the window
+        for job in [self.autoFillJob] + list(getattr(self, "sceneJobs", [])):
+            try:
+                if cmds.scriptJob(exists=job):
+                    cmds.scriptJob(kill=job, force=True)
+            except Exception:
+                pass
         try:
-            if cmds.scriptJob(exists=self.autoFillJob):
-                cmds.scriptJob(kill=self.autoFillJob, force=True)
+            self.arcTimer.stop()
+            core.OSR_INSTANCE.arcs.onDirty = None
         except Exception:
             pass
         # when the UI is closed, deactivate the override
@@ -733,6 +882,11 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         data['fade'] = core.OSR_INSTANCE.fade
         data['mainKeysOnly'] = core.OSR_INSTANCE.mainKeysOnly
         data['autoFill'] = self.autoFill_chk.isChecked() if hasattr(self, 'autoFill_chk') else True
+        a = core.OSR_INSTANCE.arcs
+        data['arcsBefore'] = a.before
+        data['arcsAfter'] = a.after
+        data['arcsDotEvery'] = a.dotEvery
+        data['arcsShow'] = a.show
 
         with open(os.path.join(self.toolPath,'settings.txt'), 'w') as outfile:  
             json.dump(data, outfile)

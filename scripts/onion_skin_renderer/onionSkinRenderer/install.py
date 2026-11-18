@@ -102,7 +102,8 @@ def _shelf_button():
 HOTKEYS = (("OnionSkin_Toggle", "Onion skin on / off in the viewport you clicked", "hk_toggle"),
            ("OnionSkin_Fill", "Onion skin: fill the ghosts now", "hk_fill"),
            ("OnionSkin_NextKey", "Onion skin: go to the next key of the onion characters", "hk_next_key"),
-           ("OnionSkin_PreviousKey", "Onion skin: go to the previous key of the onion characters", "hk_previous_key"))
+           ("OnionSkin_PreviousKey", "Onion skin: go to the previous key of the onion characters", "hk_previous_key"),
+           ("OnionSkin_ToggleArcs", "Onion skin: show / hide the arcs", "hk_toggle_arcs"))
 
 
 def _hotkey_commands():
