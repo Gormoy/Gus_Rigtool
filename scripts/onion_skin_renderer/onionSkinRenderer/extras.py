@@ -9,7 +9,7 @@
 import maya.cmds as cmds
 
 CURVE_TYPES = ["animCurveTL", "animCurveTA", "animCurveTU"]
-_CACHE = {"scopes": None, "count": -1, "curves": []}
+_CACHE = {}                 # characters (scopes) -> (how many curves the scene had, their curves)
 
 
 def _long(n):
@@ -94,10 +94,13 @@ def _curves_for(scopes):
     """The animation curves of these characters (kept until the characters or the scene's curves change)."""
     all_curves = cmds.ls(type=CURVE_TYPES) or []
     key = tuple(sorted(scopes))
-    if _CACHE["scopes"] != key or _CACHE["count"] != len(all_curves):
-        _CACHE["scopes"], _CACHE["count"] = key, len(all_curves)
-        _CACHE["curves"] = [c for c in all_curves if any(in_scope(d, s) for d in _driven(c) for s in scopes)]
-    return _CACHE["curves"]
+    got = _CACHE.get(key)
+    if got is None or got[0] != len(all_curves):
+        if len(_CACHE) > 20:
+            _CACHE.clear()
+        got = _CACHE[key] = (len(all_curves), [c for c in all_curves
+                                               if any(in_scope(d, s) for d in _driven(c) for s in scopes)])
+    return got[1]
 
 
 def _main_key_times(curve):

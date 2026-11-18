@@ -14,12 +14,19 @@ START
 3. The line under the ON button says what is happening: how many ghosts show, how many are waiting.
 
 GHOSTS TAB
+- All ghosts: Opacity (all ghosts lighter or stronger at once) and Hide ghosts while playing (on: playback as
+  fast as without; the ghosts come back when you stop).
+- Each character's ghosts sit on ITS OWN keys (the Hare's on the Hare's keys, the Fox's on the Fox's).
 - Ghosts on: Keys (the characters' own keys) / Main keys (breakdowns skipped - keys set with Key > Breakdown)
   / Frames (every N frames).
 - Before / After: how many ghosts each side (- / + buttons, up to 12). Every: for Frames (4 = a ghost every
   4 frames).
 - Fade further: each ghost further away is lighter (100 = no fading).
 - Look: Shaded / Flat colour / Outline (Harmony's three looks).
+- Light table: "The others see-through" - the characters you're not animating become see-through (their own
+  colours), the one you animate stays solid. Which one you animate follows your selection: pick a Hare control
+  and the Fox fades. See-through: how much. Ghosts of: All characters / Only the one I animate (the others'
+  ghosts very faint). Needs two characters or more; it costs one extra drawing of the scene while it's on.
 - Colours: Blue / Orange, Red / Green (Harmony's), or Mine... (pick past, then next).
 - Advanced: one bar per ghost - drag it up or down for that ghost's opacity; all the way down = that ghost off.
 
@@ -37,7 +44,6 @@ ARCS TAB - track arcs like on paper
    are forgotten when you open another scene.
 
 SETTINGS TAB
-- Hide ghosts while playing (on): playback as fast as without the onion skin; ghosts come back when you stop.
 - Auto fill: stop on a frame and the missing ghosts fill by themselves (never during playback).
 - Draw behind the character (off = in front, like Harmony).
 - Pinned frames: + This frame keeps that frame's ghost wherever you go.
@@ -46,8 +52,8 @@ SETTINGS TAB
 Fill (top): takes all the pictures now. With many frames a progress bar shows - Esc stops it.
 
 MINI BAR
-A small bar over Maya: ON, Before - / +, After - / +, Keys / Main / Frames, Fill, Arcs, and the gear (opens the
-window). Drag it by its left edge; it remembers where it was and comes back next time. x closes it.
+A small bar over Maya: ON, Before - / +, After - / +, Keys / Main / Frames, Opacity, Hide (while playing), Fill,
+Arcs, Light (light table), and the gear (opens the window). Drag it by its left edge; it remembers where it was and comes back next time. x closes it.
 
 HOTKEYS (put them on keys you like)
 Windows > Settings/Preferences > Hotkey Editor > Custom Scripts: OnionSkin_Toggle, OnionSkin_Fill,
@@ -59,5 +65,6 @@ What changed from the original script:
 - a control adds its whole character; key ghosts use the characters' own keys (extras.py);
 - in front by default; old pictures cleared when the camera changes, the viewport is resized or you toggle;
 - arcs (arcs.py); a new window and mini bar (window.py, minibar.py, widgets.py) over one shared state
-  (session.py); hide ghosts while playing (core.py);
+  (session.py); hide ghosts while playing, a picture per character (its own keys), the light table and the
+  see-through look 3 in the shaders (core.py, onionSkinShader.*);
 - drag_to_maya.mel installer with a shelf button and hotkey commands.

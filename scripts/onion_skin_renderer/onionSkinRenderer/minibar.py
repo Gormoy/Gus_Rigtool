@@ -73,6 +73,21 @@ class MiniBar(QtWidgets.QWidget):
         self.arcs_btn.setProperty("chip", True)
         self.arcs_btn.setToolTip("Show / hide the arcs (choose the points in the window's Arcs tab)")
         self.arcs_btn.clicked.connect(lambda on: s.setArcs("arcsShow", bool(on)))
+        self.opacity_sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.opacity_sld.setRange(5, 100)
+        self.opacity_sld.setFixedWidth(70)
+        self.opacity_sld.setToolTip("Opacity of all the ghosts")
+        self.opacity_sld.valueChanged.connect(s.setGhostOpacity)
+        self.hide_btn = QtWidgets.QPushButton("Hide ▶")
+        self.hide_btn.setCheckable(True)
+        self.hide_btn.setProperty("chip", True)
+        self.hide_btn.setToolTip("Hide ghosts while playing (playback as fast as without)")
+        self.hide_btn.clicked.connect(lambda on: s.setOption("hideWhilePlaying", bool(on)))
+        self.light_btn = QtWidgets.QPushButton("Light")
+        self.light_btn.setCheckable(True)
+        self.light_btn.setProperty("chip", True)
+        self.light_btn.setToolTip("Light table: the characters you don't animate see-through")
+        self.light_btn.clicked.connect(lambda on: s.setLight("lightTable", bool(on)))
         gear = QtWidgets.QPushButton("⚙")
         gear.setToolTip("Open the onion skin window")
         gear.clicked.connect(self.openWindow)
@@ -96,7 +111,8 @@ class MiniBar(QtWidgets.QWidget):
             return f
 
         for w in (self.handle, self.on_btn, sep(), note("Before"), self.before_stp, note("After"), self.after_stp,
-                  sep(), self.mode_seg, sep(), fill, self.arcs_btn, gear, x):
+                  sep(), self.mode_seg, sep(), note("Opacity"), self.opacity_sld, self.hide_btn, sep(), fill,
+                  self.arcs_btn, self.light_btn, gear, x):
             lay.addWidget(w)
         s.listeners.append(self.refresh)
         self.refresh()
@@ -122,6 +138,14 @@ class MiniBar(QtWidgets.QWidget):
         self.arcs_btn.setChecked(bool(p["arcsShow"]))
         self.arcs_btn.blockSignals(False)
         self.arcs_btn.setEnabled(bool(s.o.arcs.points) or bool(p["arcsShow"]))
+        self.opacity_sld.blockSignals(True)
+        self.opacity_sld.setValue(int(p["opacity"]))
+        self.opacity_sld.blockSignals(False)
+        for b, key in ((self.hide_btn, "hideWhilePlaying"), (self.light_btn, "lightTable")):
+            b.blockSignals(True)
+            b.setChecked(bool(p[key]))
+            b.blockSignals(False)
+        self.light_btn.setEnabled(len(s.characters) > 1 or bool(p["lightTable"]))
 
     def openWindow(self, *_):
         import onionSkinRenderer.window as window

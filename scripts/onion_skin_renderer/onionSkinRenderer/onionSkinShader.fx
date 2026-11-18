@@ -95,6 +95,13 @@ float4 PS_Blend(VS_TO_PS_ScreenQuad In) : SV_TARGET
         float4 result = float4( lerp(source, onionSourceLine * gTint , gBlendSrc * onionSourceLine.a * stencilSource.a));		
         return result;
     }
+    // (noPyMEL copy) light table: this character see-through - blended towards the scene drawn without it,
+    // only inside its own shape (the stencil is its picture on this frame)
+    else if(gType == 3)
+    {
+        float4 shape = gStencilTex.Sample(gStencilSampler, In.UV * gUVTransform.zw + gUVTransform.xy);
+        return float4(lerp(source, onionSource, gBlendSrc * shape.a));
+    }
 
     return source;
 }

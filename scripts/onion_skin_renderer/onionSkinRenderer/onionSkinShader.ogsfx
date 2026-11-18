@@ -115,6 +115,13 @@ GLSLShader PS_Blend
             colorOut = result;
         }
 
+        // (noPyMEL copy) light table: this character see-through - blended towards the scene drawn without it,
+        // only inside its own shape (the stencil is its picture on this frame)
+        else if(gType == 3){
+            vec4 shape = texture2D(gStencilSampler, VSUV * gUVTransform.zw + gUVTransform.xy);
+            colorOut = vec4( lerp(source, onionSource, gBlendSrc * shape.a));
+        }
+
 
 	}
 }

@@ -116,6 +116,22 @@ class OnionWindow(QtWidgets.QWidget):
         v = QtWidgets.QVBoxLayout(page)
         v.setContentsMargins(2, 6, 2, 2)
 
+        box, lay = group("All ghosts")
+        self.opacity_sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.opacity_sld.setRange(5, 100)
+        self.opacity_sld.setToolTip("All the ghosts lighter or stronger at once (each ghost's own bar still counts)")
+        self.opacity_val = QtWidgets.QLabel()
+        self.opacity_val.setFixedWidth(28)
+        self.opacity_sld.valueChanged.connect(lambda val: (self.opacity_val.setText(str(val)),
+                                                           s.setGhostOpacity(val)))
+        lay.addLayout(line("Opacity", self.opacity_sld, self.opacity_val, label_width=LABEL_W))
+        self.hide_chk = QtWidgets.QCheckBox("Hide ghosts while playing (playback as fast as without)")
+        self.hide_chk.setToolTip("While Maya plays, no ghosts are drawn and no pictures taken; they come back when "
+                                 "you stop. Arcs still show.")
+        self.hide_chk.toggled.connect(lambda on: s.setOption("hideWhilePlaying", bool(on)))
+        lay.addWidget(self.hide_chk)
+        v.addWidget(box)
+
         box, lay = group("Before / After")
         self.mode_seg = Segmented([("keys", "Keys"), ("main", "Main keys"), ("frames", "Frames")],
                                   ["Ghosts on the characters' keys", "Only key poses - breakdowns skipped "
@@ -157,6 +173,30 @@ class OnionWindow(QtWidgets.QWidget):
         clear.clicked.connect(s.clearCharacters)
         lay.addLayout(line(add, clear))
         add.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        v.addWidget(box)
+
+        box, lay = group("Light table")
+        self.light_chk = QtWidgets.QCheckBox("The others see-through (the one you animate stays solid)")
+        self.light_chk.setToolTip("Like a light table: the characters you're not animating become see-through. "
+                                  "The one you animate follows your selection.")
+        self.light_chk.toggled.connect(lambda on: s.setLight("lightTable", bool(on)))
+        lay.addWidget(self.light_chk)
+        self.light_sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.light_sld.setRange(10, 95)
+        self.light_sld.setToolTip("How see-through the others are")
+        self.light_val = QtWidgets.QLabel()
+        self.light_val.setFixedWidth(28)
+        self.light_sld.valueChanged.connect(lambda val: (self.light_val.setText(str(val)),
+                                                         s.setLight("lightStrength", val / 100.0)))
+        lay.addLayout(line("See-through", self.light_sld, self.light_val, label_width=LABEL_W))
+        self.ghostsOf_seg = Segmented([("all", "All characters"), ("active", "Only the one I animate")],
+                                      ["Every character's ghosts", "The others' ghosts very faint"])
+        self.ghostsOf_seg.picked.connect(lambda v: s.setLight("ghostsOf", v))
+        lay.addLayout(line("Ghosts of", self.ghostsOf_seg, None, label_width=LABEL_W))
+        self.active_lbl = QtWidgets.QLabel()
+        self.active_lbl.setProperty("note", True)
+        self.active_lbl.setWordWrap(True)
+        lay.addWidget(self.active_lbl)
         v.addWidget(box)
 
         box, lay = group("Colours")
@@ -251,16 +291,13 @@ class OnionWindow(QtWidgets.QWidget):
         v = QtWidgets.QVBoxLayout(page)
         v.setContentsMargins(2, 6, 2, 2)
         box, lay = group("Speed")
-        self.hide_chk = QtWidgets.QCheckBox("Hide ghosts while playing (playback as fast as without)")
-        self.hide_chk.setToolTip("While Maya plays, no ghosts are drawn and no pictures taken. Arcs still show.")
-        self.hide_chk.toggled.connect(lambda on: s.setOption("hideWhilePlaying", bool(on)))
         self.auto_chk = QtWidgets.QCheckBox("Auto fill when you stop on a frame")
         self.auto_chk.setToolTip("The ghosts you need are filled by themselves (never during playback).")
         self.auto_chk.toggled.connect(lambda on: s.setOption("autoFill", bool(on)))
         self.behind_chk = QtWidgets.QCheckBox("Draw behind the character")
         self.behind_chk.setToolTip("Off: ghosts in front of the character, like Harmony.")
         self.behind_chk.toggled.connect(lambda on: s.setOption("drawBehind", bool(on)))
-        for w in (self.hide_chk, self.auto_chk, self.behind_chk):
+        for w in (self.auto_chk, self.behind_chk):
             lay.addWidget(w)
         v.addWidget(box)
 
@@ -409,6 +446,14 @@ class OnionWindow(QtWidgets.QWidget):
 
         # settings
         _set_checked(self.hide_chk, p["hideWhilePlaying"])
+        _set_slider(self.opacity_sld, self.opacity_val, int(p["opacity"]))
+        _set_checked(self.light_chk, p["lightTable"])
+        _set_slider(self.light_sld, self.light_val, int(round(float(p["lightStrength"]) * 100)))
+        self.ghostsOf_seg.setValue(p["ghostsOf"])
+        if len(s.characters) < 2:
+            self.active_lbl.setText("Needs two characters or more.")
+        else:
+            self.active_lbl.setText("Animating: %s  (follows your selection)" % (s.activeName() or "-"))
         _set_checked(self.auto_chk, p["autoFill"])
         _set_checked(self.behind_chk, p["drawBehind"])
         for spn, key in ((self.outline_spn, "outlineWidth"), (self.buffer_spn, "maxBuffer")):
@@ -464,6 +509,13 @@ def _clear(lay):
 def _qcolor(rgb):
     from onionSkinRenderer.qt import QtGui
     return QtGui.QColor(*list(rgb)[:3])
+
+
+def _set_slider(sld, label, value):
+    sld.blockSignals(True)
+    sld.setValue(int(value))
+    sld.blockSignals(False)
+    label.setText(str(sld.value()))
 
 
 def _set_checked(box, value):

@@ -36,6 +36,11 @@ class OSQuadRender(omr.MQuadRender):
 
         self.coreInstance = coreInstance
 
+        # (noPyMEL copy) this pass's own look / in-front setting (the light table uses look 3: see-through)
+        self.typeOverride = None
+        self.drawBehindOverride = None
+        self.useGlobalOpacity = True
+
 
         
 
@@ -63,12 +68,15 @@ class OSQuadRender(omr.MQuadRender):
         if self.shaderInstance is not None:
             self.shaderInstance.setParameter("gSourceTex", self.inputTarget[0])
             self.shaderInstance.setParameter("gSourceTex2", self.inputTarget[1])
-            self.shaderInstance.setParameter("gBlendSrc", self.opacity*self.coreInstance.globalOpacity)
+            self.shaderInstance.setParameter("gBlendSrc", self.opacity * (
+                self.coreInstance.globalOpacity if self.useGlobalOpacity else 1.0))
             self.shaderInstance.setParameter("gTint", self.tint)
-            self.shaderInstance.setParameter("gType", self.coreInstance.onionSkinDisplayType)
+            self.shaderInstance.setParameter("gType", self.coreInstance.onionSkinDisplayType
+                                             if self.typeOverride is None else self.typeOverride)
             self.shaderInstance.setParameter("gOutlineWidth", self.coreInstance.outlineWidth)
             self.shaderInstance.setParameter("gStencilTex", self.stencilTarget)
-            self.shaderInstance.setParameter("gDrawBehind", self.coreInstance.drawBehind)
+            self.shaderInstance.setParameter("gDrawBehind", self.coreInstance.drawBehind
+                                             if self.drawBehindOverride is None else self.drawBehindOverride)
 
         return self.shaderInstance
 

@@ -32,6 +32,7 @@ DEFAULTS = {
     "autoClearBuffer": True, "opacities": {}, "presets": {}, "preset": "",
     "arcsBefore": 24, "arcsAfter": 24, "arcsDotEvery": 1, "arcsShow": True,
     "miniBar": False, "miniBarPos": None,
+    "opacity": 100, "lightTable": False, "lightStrength": 0.5, "ghostsOf": "all",
 }
 
 
@@ -66,6 +67,20 @@ def migrate(old):
         if key in old:
             d[new] = old[key]
     return d
+
+
+def _key(scope):
+    return "%s:%s" % scope
+
+
+def _scene_meshes(exclude=()):
+    """The visible meshes of the scene, without those of these characters (the light table's background)."""
+    out = []
+    for shape in cmds.ls(type=("mesh", "nurbsSurface"), long=True, noIntermediate=True) or []:
+        t = (cmds.listRelatives(shape, parent=True, fullPath=True) or [None])[0]
+        if t and t not in out and not any(extras.in_scope(t, sc) for sc in exclude):
+            out.append(t)
+    return out
 
 
 def character_name(scope):
@@ -105,6 +120,7 @@ class Session(object):
         self.o = core.OSR_INSTANCE
         self.prefs = migrate(self._read())
         self.characters = []          # [{"scope", "name", "meshes", "visible"}]
+        self.active = None            # the character you're animating (light table)
         self.pinned = []              # frames always shown
         self.listeners = []           # windows: called after every change
         self.cameraNote = ""
@@ -167,6 +183,7 @@ class Session(object):
         o.setFade(float(p["fade"]))
         o.setRelativeStep(int(p["every"]))
         o.hideWhilePlaying = bool(p["hideWhilePlaying"])
+        o.setGlobalOpacity(int(p["opacity"]))
         a = o.arcs
         a.before, a.after = int(p["arcsBefore"]), int(p["arcsAfter"])
         a.dotEvery, a.show = int(p["arcsDotEvery"]), bool(p["arcsShow"])
@@ -217,18 +234,10 @@ class Session(object):
         if not any(c["visible"] for c in self.characters):
             return "All characters' ghosts are hidden (their eyes)."
         o = self.o
-        now = cmds.currentTime(query=True)
-        buf = o.onionSkinBuffer
-        showing = 0
-        for idx, bp in o.relativeBlendPasses.items():
-            f = bp.frame if o.relativeKeyDisplay else idx * o.relativeStep + now
-            if bp.active and f in buf:
-                showing += 1
-        showing += len([f for f in o.absoluteBlendPasses if f in buf])
         try:
-            waiting = len([f for f in o.neededFrames() if f not in buf])
+            showing, waiting = o.countGhosts()
         except Exception:
-            waiting = 0
+            showing, waiting = 0, 0
         text = "%d ghost%s showing" % (showing, "" if showing == 1 else "s")
         if waiting:
             text += " · %d waiting (%s)" % (waiting, "they fill when you stop" if self.prefs["autoFill"]
@@ -236,6 +245,8 @@ class Session(object):
         a = o.arcs
         if a.points and a.show:
             text += " · %d arc%s" % (len(a.points), "" if len(a.points) == 1 else "s")
+        if self.prefs["lightTable"] and o.lightTableOn():
+            text += " · light table (%s)" % self.activeName()
         return text
 
     # ---------------------------------------------------------------- ghosts
@@ -277,24 +288,15 @@ class Session(object):
         self.changed()
 
     def _apply_ghosts(self):
-        o = self.o
         b, a = int(self.prefs["before"]), int(self.prefs["after"])
         wanted = [i for i in list(range(-b, 0)) + list(range(1, a + 1)) if self.opacity(i) > 0]
-        for i in list(o.relativeBlendPasses):
-            if i not in wanted:
-                o.removeRelativeTargetFrame(i)
-        for i in wanted:
-            if i not in o.relativeBlendPasses:
-                o.addRelativeTargetFrame(i, self.opacity(i))
-            else:
-                o.setOpacityForRelativeTargetFrame(i, self.opacity(i))
-            if not o.relativeKeyDisplay:
-                o.relativeBlendPasses[i].setFrame(i)
-        if o.relativeKeyDisplay:
-            try:
-                o.setRelativeFrames(None)
-            except Exception as e:
-                print("onionSkinRenderer: %s" % e)
+        self.o.setGhostSlots(dict((i, self.opacity(i)) for i in wanted))
+
+    def setGhostOpacity(self, pct):
+        """Opacity of all the ghosts at once (on top of each ghost's own)."""
+        self.prefs["opacity"] = max(5, min(100, int(pct)))
+        self.o.setGlobalOpacity(self.prefs["opacity"])
+        self.changed()
 
     def setEvery(self, n):
         self.prefs["preset"] = ""
@@ -422,13 +424,45 @@ class Session(object):
         self.changed()
 
     def _apply_characters(self):
-        names = [m for c in self.characters if c["visible"] for m in c["meshes"]]
-        self.o.setTargetObjects(names)
-        if self.o.relativeKeyDisplay:
-            try:
-                self.o.setRelativeFrames(None)
-            except Exception:
-                pass
+        """Each character gets its own pictures and its own keys; the eye hides its ghosts (its picture is
+        still taken - the light table needs it)."""
+        self.o.setCharacters([(_key(c["scope"]), c["meshes"], c["visible"]) for c in self.characters])
+        if self.active not in [_key(c["scope"]) for c in self.characters]:
+            self.active = _key(self.characters[0]["scope"]) if self.characters else None
+        self._apply_light()
+
+    # ---------------------------------------------------------------- light table
+    def activeName(self):
+        c = next((c for c in self.characters if _key(c["scope"]) == self.active), None)
+        return c["name"] if c else ""
+
+    def selectionChanged(self, *_):
+        """The character you're animating follows your selection (a control or mesh of one of the characters)."""
+        if not self.characters:
+            return
+        for n in cmds.ls(selection=True, long=True) or []:
+            sc = extras.scope_of(n.split(".")[0])
+            if any(c["scope"] == sc for c in self.characters):
+                if _key(sc) != self.active:
+                    self.active = _key(sc)
+                    self._apply_light()
+                    self.changed()
+                return
+
+    def setLight(self, key, value):
+        """lightTable / lightStrength / ghostsOf."""
+        self.prefs[key] = value
+        self._apply_light()
+        self.changed()
+
+    def _apply_light(self):
+        p = self.prefs
+        background = []
+        faded = [c["scope"] for c in self.characters if _key(c["scope"]) != self.active]
+        if p["lightTable"] and len(self.characters) > 1:
+            background = _scene_meshes(exclude=faded)
+        self.o.setLightTable(p["lightTable"], float(p["lightStrength"]), self.active, p["ghostsOf"] == "active",
+                             background)
 
     def objectNames(self):
         return [m for c in self.characters if c["visible"] for m in c["meshes"]]
@@ -439,12 +473,12 @@ class Session(object):
         if f not in self.pinned:
             self.pinned.append(f)
             self.pinned.sort()
-            self.o.addAbsoluteTargetFrame(f, 50)
+            self.o.setPinned(dict((x, 50) for x in self.pinned))
             self.changed()
 
     def clearPinned(self, *_):
         self.pinned = []
-        self.o.clearAbsoluteTargetFrames()
+        self.o.setPinned({})
         self.changed()
 
     # ---------------------------------------------------------------- arcs
@@ -503,6 +537,7 @@ class Session(object):
         self.jobs = [cmds.scriptJob(event=["timeChanged", self.scheduleAutoFill])]
         for e in ("SceneOpened", "NewSceneOpened"):
             self.jobs.append(cmds.scriptJob(event=[e, self.newScene]))
+        self.jobs.append(cmds.scriptJob(event=["SelectionChanged", self.selectionChanged]))
         try:
             from onionSkinRenderer.qt import QtCore
             self._arcTimer = QtCore.QTimer()
@@ -519,7 +554,7 @@ class Session(object):
         self._apply_characters()
         self.o.arcs.clear()
         self.pinned = []
-        self.o.clearAbsoluteTargetFrames()
+        self.o.setPinned({})
         self.changed()
 
     def scheduleAutoFill(self, *_):

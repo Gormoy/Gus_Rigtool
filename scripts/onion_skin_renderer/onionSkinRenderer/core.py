@@ -5,12 +5,10 @@ import onionSkinRenderer.arcs as arcs
 import maya.api.OpenMayaRender as omr
 import maya.api.OpenMayaAnim as oma
 import maya.api.OpenMayaUI as omui
-import onionSkinRenderer.mayacompat as pm   # was: import pymel.core as pm (PyMEL not needed)
 import os
 import inspect
 import traceback
 import collections
-import random
 
 import onionSkinRenderer.core_clearRender as clearRender
 import onionSkinRenderer.core_hudRender as hudRender
@@ -150,645 +148,481 @@ def cameraMoves(cam):
     return False
 
 
+MAX_GHOSTS = 12
+FAINT = 0.15                # "only the one I'm animating": the others' ghosts at this much
+
+
+class Character(object):
+    """One character on the onion skin: its picture pass (draws only its meshes), its ghosts (index -> blend
+    pass), its pinned ghosts (frame -> blend pass) and its light table pass."""
+
+    def __init__(self, owner, key, names, ghosts, serial):
+        self.key = key
+        self.names = list(names)
+        self.showGhosts = bool(ghosts)
+        self.serial = serial
+        self.owner = owner
+        sel = om.MSelectionList()
+        for n in self.names:
+            try:
+                sel.add(n)
+            except Exception:
+                pass
+        self.objects = owner.flattenSelectionList(sel)
+        self.capture = sceneRender.OSSceneRender("onionCapture%d" % serial, omr.MClearOperation.kClearAll)
+        self.capture.setSceneFilter(omr.MSceneRender.kRenderShadedItems)
+        self.capture.setDrawSelectionFilter(True)
+        self.capture.setObjectFilterList(self.objects)
+        self.ghosts = {}
+        self.pinned = {}
+        self.wash = None
+
+    def quad(self, name, frame):
+        q = quadRender.OSQuadRender("%s_%d_%s" % (name, self.serial, frame), omr.MClearOperation.kClearNone,
+                                    int(frame), self.owner)
+        q.hasKey = True
+        return q
+
+
 class ViewRenderOverride(omr.MRenderOverride):
-    # constructor
+    """The onion skin's drawing. Every screen refresh: the normal view, then a picture of each onion character
+    alone (kept per frame), then - light table - the other characters made see-through, then each character's
+    ghosts blended on top, then the HUD (arcs) and the result on screen."""
+
     def __init__(self, name):
-        if DEBUG:
-            print ("Initializing ViewRenderOverride")
-
-        #omr.MRenderOverride.__init__(self, name)
         super(ViewRenderOverride, self).__init__(name)
-
-        # name in the renderer dropdown menu
         self.UIName = PLUGIN_NAME
-
-        # this counts through the render passes
-        # restarts for every frame output to the screen
         self.operation = 0
-
-        # label for the onion
-        # current frame, used for setting the onion target key
         self.currentFrame = 0
-        # holds all avaialable onion skin renders
-        # the key to the target is its frame number
+
+        # pictures: frame -> {character key: [target, name]} (all characters are photographed together)
         self.onionSkinBuffer = {}
-        # save the order in which onions where added
         self.onionSkinBufferQueue = collections.deque()
-        # max amount of buffered frames
         self.maxOnionSkinBufferSize = 200
-        # store blend passes for relative onion skin display
-        # a pass is stored when the user activates it in the ui with the "v" icon
-        self.relativeBlendPasses = {}
-        # only display every nth relative onion
+        self._serial = 0
+
+        self.characters = []                 # [Character]
+        self.ghostOpacity = {}               # ghost index (-2, -1, 1...) -> its opacity in %
+        self.pinnedFrames = {}               # frame -> opacity in %
+        self.absoluteBlendPasses = self.pinnedFrames     # (old name)
         self.relativeStep = 1
-        # store blend passes for absolute onion skin display
-        # a blend pass is stored with the key being its frame
-        # a blend pass is added for each absolute onion skin display the user registers
-        self.absoluteBlendPasses = {}
-        # buffer onion objects to make adding sets possible
-        self.onionObjectBuffer = om.MSelectionList()
-        # save all the objects to display in a list
-        self.onionObjectList = om.MSelectionList()
-        # store the render operations that combine onions in a list
-        self.renderOperations = []
-        # tint colors for different os types rgb 0-255
-        self.relativeFutureTint = [255,0,0]
-        self.relativePastTint = [0,255,0]
-        self.absoluteTint = [0,0,255]
-        # tint strengths, 1 is full tint
+        self.relativeKeyDisplay = True
+        self.mainKeysOnly = False
+        self._keysCache = {}
+
+        self.relativeFutureTint = [255, 130, 20]
+        self.relativePastTint = [40, 120, 255]
+        self.absoluteTint = [125, 0, 0]
         self.tintStrength = 1.0
         self.globalOpacity = 1.0
-        self.onionSkinDisplayType = 1
-        # outline width in pixels
+        self.onionSkinDisplayType = 0
         self.outlineWidth = 3
-        self.drawBehind = 0           # (noPyMEL copy) in front of the character, like Toon Boom Harmony
-
-        # range 0-2.
-        # 0 = default, 1 = relative random, 2 = static random
-        self.tintType = 0
-        # seed value set by user to get different random colors for tints
-        self.tintSeed = 0
-
-        # If this is True, we will show onion skins on the next keyticks
-        # e.g. if relativeBlendPasses has 1 and 3 in it, it will draw
-        # the next and the 3rd frame with a tick on the timeslider
-        self.relativeKeyDisplay = True
-        # (noPyMEL copy) the view the onion pictures were taken in: (camera, width, height) - when it changes, the
-        # old pictures are thrown away (they were taken from another camera / at another size)
-        self.lastView = None
-        # (noPyMEL copy) further ghosts fade: opacity x fade per step away (1 = no fading); breakdowns skipped
+        self.drawBehind = 0                  # in front of the character, like Toon Boom Harmony
         self.fade = 0.6
-        self.relativeBaseOpacity = {}
-        self.mainKeysOnly = False
-        # (noPyMEL copy) arcs: lines through where chosen points are, frames back and forward
-        self.arcs = arcs.Arcs()
-        # (noPyMEL copy) while playing: no ghosts drawn, no pictures taken - playback as fast as without
+
+        # light table: the characters you're not animating, see-through
+        self.lightTable = False
+        self.lightStrength = 0.5
+        self.activeKey = None
+        self.onlyActive = False
+        self.lightBackground = om.MSelectionList()
+
+        self.lastView = None
         self.hideWhilePlaying = True
         self.opsThisFrame = None
+        self.arcs = arcs.Arcs()
         self.animEditedCallbackId = None
-        # 
         self.timeCallbackId = 0
-        # 
         self.cameraMovedCallbackIds = []
-        # 
         self.autoClearBuffer = True
 
-        # Passes
+        # fixed passes
         self.clearPass = clearRender.viewRenderClearRender("clearPass")
         self.clearPass.setOverridesColors(False)
-        self.renderOperations.append(self.clearPass)
-
-        self.standardPass = sceneRender.OSSceneRender(
-            "standardPass",
-            omr.MClearOperation.kClearNone
-        )
-        self.renderOperations.append(self.standardPass)
-
-        # the onion skin pass buffers an image of the specified object on the current frame
-        self.onionSkinPass = sceneRender.OSSceneRender(
-            "onionSkinPass",
-            omr.MClearOperation.kClearAll
-        )
-        self.onionSkinPass.setSceneFilter(omr.MSceneRender.kRenderShadedItems)
-        self.onionSkinPass.setDrawSelectionFilter(True)
-        self.renderOperations.append(self.onionSkinPass)
-
+        self.standardPass = sceneRender.OSSceneRender("standardPass", omr.MClearOperation.kClearNone)
         self.HUDPass = hudRender.viewRenderHUDRender(self)
-        self.renderOperations.append(self.HUDPass)
-
         self.presentTarget = presentTarget.viewRenderPresentTarget("presentTarget")
-        self.renderOperations.append(self.presentTarget)
-        
-        # TARGETS
-        # standard target is what will be displayed. all but onion skins render to this target
+        self.bgClear = clearRender.viewRenderClearRender("lightTableClear")
+        self.bgClear.setOverridesColors(False)
+        self.bgPass = sceneRender.OSSceneRender("lightTableBackground", omr.MClearOperation.kClearNone)
+        self.bgPass.setDrawSelectionFilter(True)
+        self.renderOperations = [self.clearPass, self.standardPass, self.HUDPass, self.presentTarget]
+
+        # targets
         self.standardTargetDescr = omr.MRenderTargetDescription()
         self.standardTargetDescr.setName("standardTarget")
         self.standardTargetDescr.setRasterFormat(omr.MRenderer.kR8G8B8A8_UNORM)
-
-        self.depthTargetDescr = omr.MRenderTargetDescription()
-        self.depthTargetDescr.setName("depthTarget")
-        self.depthTargetDescr.setRasterFormat(omr.MRenderer.kD24S8)
-
-        # with this onion skins will be blended over standard target
         self.blendTargetDescr = omr.MRenderTargetDescription()
         self.blendTargetDescr.setName("onionTarget")
         self.blendTargetDescr.setRasterFormat(omr.MRenderer.kR8G8B8A8_UNORM)
+        self.bgTargetDescr = omr.MRenderTargetDescription()
+        self.bgTargetDescr.setName("lightTableTarget")
+        self.bgTargetDescr.setRasterFormat(omr.MRenderer.kR8G8B8A8_UNORM)
 
-        # Set the targets that don't change
         self.targetMgr = omr.MRenderer.getRenderTargetManager()
-        
         self.standardTarget = self.targetMgr.acquireRenderTarget(self.standardTargetDescr)
-        self.clearPass.setRenderTarget(self.standardTarget)
-        self.standardPass.setRenderTarget(self.standardTarget)
-        self.HUDPass.setRenderTarget(self.standardTarget)
-        self.presentTarget.setRenderTarget(self.standardTarget)
+        self.bgTarget = None
+        for p in (self.clearPass, self.standardPass, self.HUDPass, self.presentTarget):
+            p.setRenderTarget(self.standardTarget)
 
-    # destructor
     def __del__(self):
-        if DEBUG:
-            print ("Deleting ViewRenderOverride")
-        self.clearPass = None
-        self.standardPass = None
-        self.HUDPass = None
-        self.presentTarget = None
+        self.clearPass = self.standardPass = self.HUDPass = self.presentTarget = None
+        self.bgClear = self.bgPass = None
         self.renderOperations = None
-        # delete the targets, otherwise the target manager might
-        # return None when asked for a target that already exists
-        self.clearOnionSkinBuffer()
-        if self.standardTarget and self.targetMgr:
-            self.targetMgr.releaseRenderTarget(self.standardTarget)
+        self.characters = []
+        self.clearOnionSkinBuffer(False)
+        if self.targetMgr:
+            for t in (self.standardTarget, self.bgTarget):
+                if t:
+                    self.targetMgr.releaseRenderTarget(t)
+        self.standardTarget = self.bgTarget = None
         self.targetMgr = None
-        self.onionObjectList = None
-        
 
-
-    # -----------------
-    # RENDER FUNCTIONS
-
-    # specify that openGl and Directx11 are supported
+    # ------------------------------------------------------------------ drawing
     def supportedDrawAPIs(self):
         return omr.MRenderer.kAllDevices
 
-
-    # this is basically the render function
-    # it is called by maya every refresh of the screen and handles the passes
     def setup(self, destination):
-        if DEBUG:
-            print ("Starting setup")
-        # set the size of the target, so when the viewport scales,
-        # the targets remain a 1:1 pixel size
-        targetSize = omr.MRenderer.outputTargetSize()
-        self.standardTargetDescr.setWidth(targetSize[0])
-        self.standardTargetDescr.setHeight(targetSize[1])
-        self.blendTargetDescr.setWidth(targetSize[0])
-        self.blendTargetDescr.setHeight(targetSize[1])
-
-        # (noPyMEL copy) another camera or another viewport size: the old pictures don't fit any more
-        view = (onionCamera(), targetSize[0], targetSize[1])
+        w, h = omr.MRenderer.outputTargetSize()[:2]
+        for d in (self.standardTargetDescr, self.blendTargetDescr, self.bgTargetDescr):
+            d.setWidth(w)
+            d.setHeight(h)
+        # another camera or viewport size: the old pictures don't fit any more
+        view = (onionCamera(), w, h)
         if self.lastView is not None and view != self.lastView:
             self.clearOnionSkinBuffer(False)
         self.lastView = view
-
-        # update the standard target to the just set size
         self.standardTarget.updateDescription(self.standardTargetDescr)
+        self.currentFrame = now = oma.MAnimControl.currentTime().value
 
-        # (noPyMEL copy) playing with "hide ghosts while playing": only the normal view is drawn this frame
-        if self.hideWhilePlaying and oma.MAnimControl.isPlaying():
-            self.opsThisFrame = [op for op in self.renderOperations
-                                 if op is not self.onionSkinPass and op not in self.relativeBlendPasses.values()
-                                 and op not in self.absoluteBlendPasses.values()]
+        ops = [self.clearPass, self.standardPass]
+        playingHidden = self.hideWhilePlaying and oma.MAnimControl.isPlaying()
+        if playingHidden or not self.characters:
+            self.opsThisFrame = ops + [self.HUDPass, self.presentTarget]
             return
-        self.opsThisFrame = self.renderOperations
-        # update the onion target to a new name, because targetMgr will return None
-        # if the name already exists
-        self.currentFrame = oma.MAnimControl.currentTime().value
-        onionTargetName = "onionTarget%s" % self.currentFrame
-        self.blendTargetDescr.setName(onionTargetName)
-        
-        # if the onion is not buffered do so, otherwise update the buffered
-        if self.currentFrame not in self.onionSkinBuffer:
-            self.onionSkinBuffer[self.currentFrame] = self.targetMgr.acquireRenderTarget(self.blendTargetDescr)
-            self.onionSkinBufferQueue.append(self.currentFrame)
-            if len(self.onionSkinBufferQueue) > self.maxOnionSkinBufferSize: self.deleteOldestOnionSkinBuffer()
-        else:
-            self.onionSkinBuffer.get(self.currentFrame).updateDescription(self.blendTargetDescr)
-        # then set the render target to the appropriate os
-        self.onionSkinPass.setRenderTarget(self.onionSkinBuffer.get(self.currentFrame))
-        # set the filter list to the osr
-        self.onionSkinPass.setObjectFilterList(self.onionObjectList)
 
-        if DEBUG: print("setting render targets for relative frame targets")
-        # setting targets to relative blend passes
-        for blendPass in self.relativeBlendPasses.values():
-            targetFrame = 0
-            if self.relativeKeyDisplay:
-                targetFrame = blendPass.frame
+        # a picture of each character alone, on this frame
+        current = self._pictures(now)
+        for ch in self.characters:
+            ch.capture.setRenderTarget(current[ch.key][0])
+            ch.capture.setObjectFilterList(ch.objects)
+            ops.append(ch.capture)
+
+        # light table: the others see-through (blended towards the scene drawn without them)
+        if self.lightTableOn():
+            if self.bgTarget is None:
+                self.bgTarget = self.targetMgr.acquireRenderTarget(self.bgTargetDescr)
             else:
-                targetFrame = blendPass.frame * self.relativeStep + self.currentFrame
-            
+                self.bgTarget.updateDescription(self.bgTargetDescr)
+            self.bgClear.setRenderTarget(self.bgTarget)
+            self.bgPass.setRenderTarget(self.bgTarget)
+            self.bgPass.setObjectFilterList(self.lightBackground)
+            ops += [self.bgClear, self.bgPass]
+            for ch in self.characters:
+                if ch.key == self.activeKey:
+                    continue
+                if ch.wash is None:
+                    ch.wash = ch.quad("lightTable", 0)
+                    ch.wash.typeOverride = 3
+                    ch.wash.drawBehindOverride = 0
+                    ch.wash.useGlobalOpacity = False      # the ghosts' opacity isn't the light table's
+                ch.wash.setActive(True)
+                ch.wash.setRenderTarget(self.standardTarget)
+                ch.wash.setInputTargets(self.standardTarget, self.bgTarget)
+                ch.wash.setStencilTarget(current[ch.key][0])
+                ch.wash.setOpacity(self.lightStrength)
+                ch.wash.setTint((1.0, 1.0, 1.0, 1.0))
+                ops.append(ch.wash)
 
-            if targetFrame in self.onionSkinBuffer:
-                if not self.relativeKeyDisplay:
-                    blendPass.setActive(True)
-                blendPass.setInputTargets(self.standardTarget, self.onionSkinBuffer[targetFrame])
-                blendPass.setStencilTarget(self.onionSkinBuffer[self.currentFrame])
-
-                # Constant Color
-                if self.tintType == 0:
-                    # future tint
-                    if targetFrame > self.currentFrame:
-                        blendPass.setTint((
-                            self.relativeFutureTint[0]/255.0 / self.lerp(1.0, self.relativeFutureTint[0]/255.0, self.tintStrength),
-                            self.relativeFutureTint[1]/255.0 / self.lerp(1.0, self.relativeFutureTint[1]/255.0, self.tintStrength), 
-                            self.relativeFutureTint[2]/255.0 / self.lerp(1.0, self.relativeFutureTint[2]/255.0, self.tintStrength), 
-                            1.0))
-                    # past tint
-                    else:
-                        blendPass.setTint((
-                            self.relativePastTint[0]/255.0 / self.lerp(1.0, self.relativePastTint[0]/255.0, self.tintStrength),
-                            self.relativePastTint[1]/255.0 / self.lerp(1.0, self.relativePastTint[1]/255.0, self.tintStrength), 
-                            self.relativePastTint[2]/255.0 / self.lerp(1.0, self.relativePastTint[2]/255.0, self.tintStrength),  
-                            1.0))
-                # Relative Random
-                elif self.tintType == 1:
-                    random.seed(blendPass.frame + self.tintSeed + 1)
-                    blendPass.setTint((
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        1.0
-                    ))
-                # Static Random
+        # ghosts: pinned frames, then before / after
+        for ch in self.characters:
+            if not ch.showGhosts:
+                continue
+            stencil = current[ch.key][0]
+            for frame, q in sorted(ch.pinned.items()):
+                pic = self._picture(frame, ch.key)
+                if pic is None or frame == now:
+                    continue
+                self._ready(q, pic, stencil, self._tint(self.absoluteTint),
+                            self.pinnedFrames.get(frame, 50) / 100.0 * self._faint(ch))
+                ops.append(q)
+            for idx, q in sorted(ch.ghosts.items()):
+                if self.relativeKeyDisplay:
+                    if not q.hasKey:
+                        continue
+                    frame = q.frame
                 else:
-                    # using the frame as a random seed,
-                    # so each frame always has a static color
-                    random.seed(targetFrame + self.tintSeed)
-                    blendPass.setTint((
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        1.0
-                    ))
+                    frame = idx * self.relativeStep + now
+                pic = self._picture(frame, ch.key)
+                if pic is None:
+                    continue
+                tint = self.relativeFutureTint if frame > now else self.relativePastTint
+                self._ready(q, pic, stencil, self._tint(tint), self.ghostOpacityFor(ch, idx))
+                ops.append(q)
+        self.opsThisFrame = ops + [self.HUDPass, self.presentTarget]
+
+    def _ready(self, q, pic, stencil, tint, opacity):
+        q.setActive(True)
+        q.setRenderTarget(self.standardTarget)
+        q.setInputTargets(self.standardTarget, pic)
+        q.setStencilTarget(stencil)
+        q.setTint(tint)
+        q.setOpacity(opacity)
+
+    def _tint(self, rgb):
+        out = []
+        for c in rgb[:3]:
+            v = c / 255.0
+            out.append(v / self.lerp(1.0, v, self.tintStrength) if v > 0 else 0.0)
+        return (out[0], out[1], out[2], 1.0)
+
+    def _faint(self, ch):
+        if self.onlyActive and self.activeKey is not None and ch.key != self.activeKey:
+            return FAINT
+        return 1.0
+
+    def ghostOpacityFor(self, ch, idx):
+        base = self.ghostOpacity.get(idx, 50) / 100.0
+        return base * (self.fade ** max(abs(idx) - 1, 0)) * self._faint(ch)
+
+    def lightTableOn(self):
+        return (self.lightTable and len(self.characters) > 1 and
+                self.activeKey in [c.key for c in self.characters])
+
+    def _picture(self, frame, key):
+        got = self.onionSkinBuffer.get(frame, {}).get(key)
+        return got[0] if got else None
+
+    def _pictures(self, frame):
+        """This frame's picture of every character (made, or resized to the viewport)."""
+        entry = self.onionSkinBuffer.get(frame)
+        if entry is None:
+            entry = self.onionSkinBuffer[frame] = {}
+            self.onionSkinBufferQueue.append(frame)
+            while len(self.onionSkinBufferQueue) > max(self.maxOnionSkinBufferSize, 1):
+                self.deleteOldestOnionSkinBuffer()
+        for ch in self.characters:
+            got = entry.get(ch.key)
+            if got is None:
+                self._serial += 1
+                name = "onionTarget%d" % self._serial
+                self.blendTargetDescr.setName(name)
+                entry[ch.key] = [self.targetMgr.acquireRenderTarget(self.blendTargetDescr), name]
             else:
-                blendPass.setActive(False)
+                self.blendTargetDescr.setName(got[1])
+                got[0].updateDescription(self.blendTargetDescr)
+        return entry
 
-        if DEBUG: print("setting render targets for absolute frame targets")
-        # setting targets to absolute blend passes
-        for blendPass in self.absoluteBlendPasses.values():
-            if blendPass.frame in self.onionSkinBuffer:
-                blendPass.setActive(True)
-                blendPass.setInputTargets(self.standardTarget, self.onionSkinBuffer[blendPass.frame])
-                blendPass.setStencilTarget(self.onionSkinBuffer[self.currentFrame])
-                if self.tintType == 0:
-                    blendPass.setTint((
-                        self.absoluteTint[0]/255.0 / self.lerp(1.0, self.absoluteTint[0]/255.0, self.tintStrength),
-                        self.absoluteTint[1]/255.0 / self.lerp(1.0, self.absoluteTint[1]/255.0, self.tintStrength),
-                        self.absoluteTint[2]/255.0 / self.lerp(1.0, self.absoluteTint[2]/255.0, self.tintStrength)
-                    ))
-                else:
-                    random.seed(blendPass.frame + self.tintSeed)
-                    blendPass.setTint((
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        random.randrange(0,100)/100.0,
-                        1.0
-                    ))
-
-            else:
-                blendPass.setActive(False)
-
-        if DEBUG: print("finish setup")
-
-            
-
-    # called by maya to start iterating through passes
     def startOperationIterator(self):
-        if DEBUG: print("starting Render Operation")
         self.operation = 0
         return True
 
-    # called by maya to define which pass to calculate
-    # the order specified here defines the draw order
     def renderOperation(self):
-        if DEBUG: print("executing render operation: %s"%(self.renderOperations[self.operation]))
         return self._ops()[self.operation]
 
     def _ops(self):
         return self.opsThisFrame if self.opsThisFrame is not None else self.renderOperations
 
-    # advance to the next pass or return false if
-    # all are calculated
     def nextRenderOperation(self):
-        if DEBUG: print("advancing render operation")
-        self.operation = self.operation + 1
+        self.operation += 1
         return self.operation < len(self._ops())
 
-
-
-
-
-
-    # -----------------
-    # UTILITY FUNCTIONS
-
-    # reducing code duplicates by merging both add target frame functions
-    def addTargetFrame(self, frame, opacity, targetDict):
-        if frame not in targetDict:
-            targetDict[frame] = quadRender.OSQuadRender(
-                'blendPass%s' % frame,
-                omr.MClearOperation.kClearNone,
-                int(frame),
-                OSR_INSTANCE
-            )
-            targetDict[frame].setOpacity(opacity/100.0)
-            targetDict[frame].setRenderTarget(self.standardTarget)
-
-            # insert operation after onion pass
-            self.renderOperations.insert(
-                self.renderOperations.index(self.onionSkinPass) + 1,
-                targetDict[frame]
-            )
-
-
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    # called by absolute and relative remove
-    def removeTargetFrame(self, frame, targetDict):
-        if frame in targetDict:
-            renderPass = targetDict.pop(frame, None)
-            self.renderOperations.remove(renderPass)
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    # called by maya. Sets the name in the "Renderers" dropdown
     def uiName(self):
         return self.UIName
-    
-    #
-    def clearOnionSkinBuffer(self, refresh = True):
+
+    # ------------------------------------------------------------------ pictures
+    def clearOnionSkinBuffer(self, refresh=True):
         if self.targetMgr is not None:
-            for target in self.onionSkinBuffer:
-                self.targetMgr.releaseRenderTarget(self.onionSkinBuffer.get(target))
+            for entry in self.onionSkinBuffer.values():
+                for target, _name in entry.values():
+                    self.targetMgr.releaseRenderTarget(target)
         self.onionSkinBuffer.clear()
         self.onionSkinBufferQueue.clear()
-        if refresh: omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
+        if refresh:
+            self.refresh()
 
-    # 
     def deleteOldestOnionSkinBuffer(self):
         frame = self.onionSkinBufferQueue.popleft()
+        entry = self.onionSkinBuffer.pop(frame, {})
         if self.targetMgr is not None:
-            self.targetMgr.releaseRenderTarget(self.onionSkinBuffer[frame])
-        self.onionSkinBuffer.pop(frame)
+            for target, _name in entry.values():
+                self.targetMgr.releaseRenderTarget(target)
 
-    #
     def lerp(self, start, end, factor):
-        if factor < 1 and factor > 0:
-            return (factor * start) + ((1-factor) * end)
-        else:
-            return start
+        if 0 < factor < 1:
+            return (factor * start) + ((1 - factor) * end)
+        return start
 
-    # (noPyMEL copy) the frames whose pictures the onion skins need right now (the Fill button visits them)
     def neededFrames(self):
-        current = oma.MAnimControl.currentTime().value
+        """The frames whose pictures the ghosts need right now (Fill / auto fill visit them)."""
+        now = oma.MAnimControl.currentTime().value
         frames = set()
-        for blendPass in self.relativeBlendPasses.values():
-            if self.relativeKeyDisplay:
-                frames.add(blendPass.frame)
-            else:
-                frames.add(blendPass.frame * self.relativeStep + current)
-        frames.update(self.absoluteBlendPasses.keys())
-        frames.discard(current)
-        return sorted(f for f in frames if f is not None)
+        for ch in self.characters:
+            if not ch.showGhosts:
+                continue
+            for idx, q in ch.ghosts.items():
+                if self.relativeKeyDisplay:
+                    if q.hasKey:
+                        frames.add(q.frame)
+                else:
+                    frames.add(idx * self.relativeStep + now)
+            frames.update(ch.pinned.keys())
+        frames.discard(now)
+        return sorted(frames)
 
-    # change the frame display to the right keys relative to timeslider position
+    def countGhosts(self):
+        """(ghosts showing, frames still waiting for their picture)."""
+        now = oma.MAnimControl.currentTime().value
+        showing = 0
+        for ch in self.characters:
+            if not ch.showGhosts:
+                continue
+            for idx, q in ch.ghosts.items():
+                if self.relativeKeyDisplay and not q.hasKey:
+                    continue
+                frame = q.frame if self.relativeKeyDisplay else idx * self.relativeStep + now
+                if self._picture(frame, ch.key) is not None:
+                    showing += 1
+            showing += len([f for f in ch.pinned if self._picture(f, ch.key) is not None])
+        waiting = len([f for f in self.neededFrames() if f not in self.onionSkinBuffer or
+                       any(c.key not in self.onionSkinBuffer[f] for c in self.characters)])
+        return showing, waiting
+
+    # ------------------------------------------------------------------ characters and ghosts
+    def setCharacters(self, characters):
+        """[(key, mesh names, show ghosts)] - each character gets its own pictures, keys and ghosts."""
+        self.characters = []
+        for key, names, ghosts in characters:
+            self._serial += 1
+            self.characters.append(Character(self, key, names, ghosts, self._serial))
+        self._keysCache.clear()
+        self.clearOnionSkinBuffer(False)
+        self._rebuildGhosts()
+        self.setRelativeFrames(None)
+        self.refresh()
+
+    def setGhostSlots(self, opacities):
+        """{ghost index: opacity %} - the ghosts each character shows (indices with 0 % are left out)."""
+        self.ghostOpacity = dict((int(i), float(v)) for i, v in opacities.items() if v > 0)
+        self._rebuildGhosts()
+        self.setRelativeFrames(None)
+        self.refresh()
+
+    def setPinned(self, opacities):
+        """{frame: opacity %} - frames whose ghosts stay wherever you go."""
+        self.pinnedFrames.clear()
+        self.pinnedFrames.update(dict((int(f), float(v)) for f, v in opacities.items()))
+        self._rebuildGhosts()
+        self.refresh()
+
+    def _rebuildGhosts(self):
+        for ch in self.characters:
+            for idx in list(ch.ghosts):
+                if idx not in self.ghostOpacity:
+                    ch.ghosts.pop(idx)
+            for idx in self.ghostOpacity:
+                if idx not in ch.ghosts:
+                    ch.ghosts[idx] = ch.quad("ghost", idx)
+                    ch.ghosts[idx].hasKey = not self.relativeKeyDisplay
+            for f in list(ch.pinned):
+                if f not in self.pinnedFrames:
+                    ch.pinned.pop(f)
+            for f in self.pinnedFrames:
+                if f not in ch.pinned:
+                    ch.pinned[f] = ch.quad("pinned", f)
+
+    def _keys(self, ch):
+        k = (ch.key, bool(self.mainKeysOnly))
+        if k not in self._keysCache:
+            try:
+                self._keysCache[k] = extras.character_keys(ch.names, self.mainKeysOnly)
+            except Exception:
+                self._keysCache[k] = []
+        return self._keysCache[k]
+
     def setRelativeFrames(self, value):
+        """Keys mode: each character's ghosts on its own past / next keys."""
         if not self.relativeKeyDisplay:
             return
-        
-        nextKeys = []
-        pastKeys = []
-
-        # (noPyMEL copy) the keys of the onion characters' own animation - no selection needed
-        try:
-            names = [self.onionObjectList.getDagPath(i).fullPathName() for i in range(self.onionObjectList.length())]
-        except Exception:
-            names = []
-        keys = extras.character_keys(names, self.mainKeysOnly) if names else []
-        if keys:
-            pastKeys, nextKeys = extras.around(keys, cmds.currentTime(query=True))
-            self.applyRelativeKeys(pastKeys, nextKeys)
-            return
-
-        nextKey = pm.findKeyframe(ts=True, w="next")
-        pastKey = pm.findKeyframe(ts=True, w="previous")
-
-        # add next keys to list
-        bufferKey = pm.getCurrentTime()
-        for i in range(4):
-            if nextKey <= bufferKey:
-                break
-            nextKeys.append(nextKey)
-            bufferKey = nextKey
-            nextKey = pm.findKeyframe(t=bufferKey, ts=True, w="next")
-
-        # add prev keys to list
-        bufferKey = pm.getCurrentTime()
-        for i in range(4):
-            if pastKey >= bufferKey:
-                break
-            pastKeys.append(pastKey)
-            bufferKey = pastKey
-            pastKey = pm.findKeyframe(t=bufferKey, ts=True, w="previous")
-
-
-        pastKeys = list(reversed(pastKeys))
-        self.applyRelativeKeys(pastKeys, nextKeys)
-
-    # (noPyMEL copy) the past / next key ghosts set from key lists (past: nearest last, next: nearest first)
-    def applyRelativeKeys(self, pastKeys, nextKeys):
-        for frameIndex in self.relativeBlendPasses:
-            blendPass = self.relativeBlendPasses[frameIndex]
-            if frameIndex < 0:
-                # past
-                if pastKeys and len(pastKeys) >= frameIndex*-1:
-                    blendPass.setActive(True)
-                    blendPass.setFrame(pastKeys[frameIndex])
+        if self.hideWhilePlaying and oma.MAnimControl.isPlaying():
+            return                                    # nothing to show while playing: no work either
+        now = oma.MAnimControl.currentTime().value
+        for ch in self.characters:
+            past, nxt = extras.around(self._keys(ch), now, MAX_GHOSTS)
+            for idx, q in ch.ghosts.items():
+                seq = past if idx < 0 else nxt
+                n = abs(idx)
+                if n <= len(seq):
+                    q.hasKey = True
+                    q.setFrame(seq[-n] if idx < 0 else seq[n - 1])
                 else:
-                    blendPass.setActive(False)
-            else: 
-                # future
-                if nextKeys and len(nextKeys) >= frameIndex:
-                    blendPass.setActive(True)
-                    blendPass.setFrame(nextKeys[frameIndex-1])
-                else:
-                    blendPass.setActive(False)
-    
-    # 
+                    q.hasKey = False
+
+    def setRelativeDisplayMode(self, value):
+        self.relativeKeyDisplay = bool(value)
+        for ch in self.characters:
+            for idx, q in ch.ghosts.items():
+                q.setFrame(idx)
+                q.hasKey = not self.relativeKeyDisplay
+        if self.relativeKeyDisplay:
+            self.setRelativeFrames(None)
+        self.refresh()
+
+    def setLightTable(self, on, strength, activeKey, onlyActive, background):
+        """The light table: on / off, how see-through (0-1), the character you animate (the others fade), its
+        ghosts only (the others' very faint), and the scene without the faded characters (mesh names)."""
+        self.lightTable = bool(on)
+        self.lightStrength = max(0.0, min(1.0, float(strength)))
+        self.activeKey = activeKey
+        self.onlyActive = bool(onlyActive)
+        sel = om.MSelectionList()
+        for n in background or []:
+            try:
+                sel.add(n)
+            except Exception:
+                pass
+        self.lightBackground = self.flattenSelectionList(sel)
+        self.refresh()
+
+    def animationChanged(self, *args):
+        """A key or curve changed: the characters' keys are read again, the arcs recorded again."""
+        self._keysCache.clear()
+        self.arcs.animationChanged(*args)
+
     def flattenSelectionList(self, selList):
         flatList = om.MSelectionList()
         selIter = om.MItSelectionList(selList)
         while not selIter.isDone():
             obj = selIter.getDependNode()
-            # if its a DAG node
             if selIter.itemType() == 0:
                 if selIter.hasComponents():
                     flatList.add(selIter.getComponent())
-                # just add it to the list if it's a dag object
                 elif obj.hasFn(om.MFn.kDagNode):
                     flatList.add(selIter.getDagPath())
-            # if its a set recursive call with set contents
             elif obj.hasFn(om.MFn.kSet):
                 flatList.merge(self.flattenSelectionList(om.MFnSet(obj).getMembers(False)))
-
             selIter.next()
         return flatList
 
-    # attached to all cameras found on plugin launch, removes onions when the camera moves
-    # but only on user input. animated cameras are not affected
+    # ------------------------------------------------------------------ callbacks
     def cameraMovedCB(self, msg, plug1, plug2, payload):
-        if (msg == 2056 
-            and self.autoClearBuffer
-            and (self.isPlugInteresting(plug1, 'translate') 
-            or self.isPlugInteresting(plug1, 'rotate'))):
+        """You moved the camera by hand: the pictures no longer line up (animated cameras aren't affected)."""
+        if (msg == 2056 and self.autoClearBuffer and
+                (self.isPlugInteresting(plug1, 'translate') or self.isPlugInteresting(plug1, 'rotate'))):
             self.clearOnionSkinBuffer(False)
 
-    # checks if the plug matches the given string
     def isPlugInteresting(self, plug, targetPlug):
         mfn_dep = om.MFnDependencyNode(plug.node())
         return plug == mfn_dep.findPlug(targetPlug, True)
 
-    #
     def refresh(self):
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
+        try:
+            omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
+        except Exception:
+            pass
 
-        
-
-
-
-
-
-    # ----------------
-    # INTERFACE FUNCTIONS
-
-    # add a frame to display relative to current time slider position
-    def addRelativeTargetFrame(self, frame, opacity):
-        self.addTargetFrame(int(frame), opacity, self.relativeBlendPasses)
-        self.relativeBaseOpacity[int(frame)] = opacity / 100.0
-        self.applyFade()
-
-    # (noPyMEL copy) each relative ghost: its own opacity x fade for every step further from now
-    def applyFade(self):
-        for frame, blendPass in self.relativeBlendPasses.items():
-            base = self.relativeBaseOpacity.get(frame, 1.0)
-            blendPass.setOpacity(base * (self.fade ** max(abs(frame) - 1, 0)))
-
-    def setFade(self, value):
-        self.fade = max(0.0, min(1.0, float(value)))
-        self.applyFade()
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    #
-    def removeRelativeTargetFrame(self, frame):
-        self.removeTargetFrame(int(frame), self.relativeBlendPasses)
-
-    def setRelativeDisplayMode(self, value):
-        self.relativeKeyDisplay = value
-        if value:
-            self.setRelativeFrames(1)
-        else:
-            for frameIndex in self.relativeBlendPasses:
-                blendPass = self.relativeBlendPasses[frameIndex]
-                blendPass.setFrame(frameIndex)
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-    
-    # add a frame that is always displayed on the same position
-    def addAbsoluteTargetFrame(self, frame, opacity):
-        self.addTargetFrame(int(frame), opacity, self.absoluteBlendPasses)
-    
-    #
-    def removeAbsoluteTargetFrame(self, frame):
-        self.removeTargetFrame(int(frame), self.absoluteBlendPasses)
-
-    #
-    def clearAbsoluteTargetFrames(self):
-        for onion in self.absoluteBlendPasses:
-            self.renderOperations.remove(self.absoluteBlendPasses[onion])
-        self.absoluteBlendPasses.clear()
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    #
-    def absoluteTargetFrameExists(self, frame):
-        return frame in self.absoluteBlendPasses
-
-    #
-    def getOpacityOfAbsoluteFrame(self, frame):
-        if frame in self.absoluteBlendPasses:
-            return self.absoluteBlendPasses[frame].opacity * 100
-        
-        return 50
-
-    # 
-    def setTint(self, rgba, target):
-        if target == 'relative_futureTint_btn':
-            self.relativeFutureTint = rgba
-        elif target == 'relative_pastTint_btn':
-            self.relativePastTint = rgba
-        elif target == 'absolute_tint_btn':
-            self.absoluteTint = rgba
-
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-    
-    #
-    def setTintStrength(self, strength):
-        self.tintStrength = strength / 100.0
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-
-    #
-    def setOpacityForRelativeTargetFrame(self, frame, opacity):
-        if int(frame) in self.relativeBlendPasses:
-            self.relativeBaseOpacity[int(frame)] = opacity / 100.0
-            self.applyFade()
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    def setGlobalOpacity(self, opacity):
-        self.globalOpacity = opacity/100.0
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    #
-    def setOpacityForAbsoluteTargetFrame(self, frame, opacity):
-        if frame in self.absoluteBlendPasses:
-            self.absoluteBlendPasses[frame].setOpacity(opacity/100.0)
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-
-    # adding objects to the selectionList
-    # works recursively if a set is found
-    def addSelectedTargetObject(self):
-        selList = om.MGlobal.getActiveSelectionList()
-        if not selList.isEmpty():
-            self.onionObjectBuffer.merge(selList)
-        self.onionObjectList = self.flattenSelectionList(self.onionObjectBuffer)
-        self.clearOnionSkinBuffer()
-
-    #
-    def removeSelectedTargetObject(self):
-        selList = om.MGlobal.getActiveSelectionList()
-        if not selList.isEmpty():
-            self.onionObjectBuffer.merge(selList, om.MSelectionList.kRemoveFromList)
-        self.onionObjectList = self.flattenSelectionList(self.onionObjectBuffer)
-        self.clearOnionSkinBuffer()
-
-    #
-    def removeTargetObject(self, dagPath):
-        tmpList = om.MSelectionList()
-        tmpList.add(dagPath)
-        self.onionObjectBuffer.merge(tmpList, om.MSelectionList.kRemoveFromList)
-        self.onionObjectList = self.flattenSelectionList(self.onionObjectBuffer)
-        self.clearOnionSkinBuffer()
-
-    # (noPyMEL copy) the onion objects set from names (the window's character list, hidden characters left out)
-    def setTargetObjects(self, names):
-        sel = om.MSelectionList()
-        for n in names or []:
-            try:
-                sel.add(n)
-            except Exception:
-                pass
-        self.onionObjectBuffer = sel
-        self.onionObjectList = self.flattenSelectionList(sel)
-        self.clearOnionSkinBuffer()
-
-    #
-    def clearTargetObjects(self):
-        self.onionObjectList = om.MSelectionList()
-        self.onionObjectBuffer = om.MSelectionList()
-        self.clearOnionSkinBuffer()
-
-    # adding callbacks to the scene
     def createCallbacks(self):
-        # frame changed callback
-        # needed for changing the relative keyframe display
         self.timeCallbackId = om.MEventMessage.addEventCallback('timeChanged', self.setRelativeFrames)
-        # iterate over all cameras add the callback
         dgIter = om.MItDependencyNodes(om.MFn.kCamera)
         while not dgIter.isDone():
             shape = om.MFnDagNode(dgIter.thisNode())
@@ -797,17 +631,15 @@ class ViewRenderOverride(omr.MRenderOverride):
                 self.cameraMovedCallbackIds.append(
                     om.MNodeMessage.addAttributeChangedCallback(transform, self.cameraMovedCB))
             dgIter.next()
-        # (noPyMEL copy) a key or curve changed: the arcs are recorded again
         try:
-            self.animEditedCallbackId = oma.MAnimMessage.addAnimCurveEditedCallback(self.arcs.animationChanged)
+            self.animEditedCallbackId = oma.MAnimMessage.addAnimCurveEditedCallback(self.animationChanged)
         except Exception:
             self.animEditedCallbackId = None
 
-    # removing them when the ui is closed
     def deleteCallbacks(self):
         om.MEventMessage.removeCallback(self.timeCallbackId)
-        for id in self.cameraMovedCallbackIds:
-            om.MMessage.removeCallback(id)
+        for cb in self.cameraMovedCallbackIds:
+            om.MMessage.removeCallback(cb)
         self.cameraMovedCallbackIds = []
         if self.animEditedCallbackId is not None:
             try:
@@ -816,60 +648,58 @@ class ViewRenderOverride(omr.MRenderOverride):
                 pass
             self.animEditedCallbackId = None
 
-    # define if the buffer should be cleared when the camera moves
+    # ------------------------------------------------------------------ settings
     def setAutoClearBuffer(self, value):
         self.autoClearBuffer = value
 
-    # 
     def setMaxBuffer(self, value):
-        self.maxOnionSkinBufferSize = value
-        while len(self.onionSkinBufferQueue) > self.maxOnionSkinBufferSize:
+        self.maxOnionSkinBufferSize = int(value)
+        while len(self.onionSkinBufferQueue) > max(self.maxOnionSkinBufferSize, 1):
             self.deleteOldestOnionSkinBuffer()
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
-        
-    # 
+        self.refresh()
+
     def getMaxBuffer(self):
         return self.maxOnionSkinBufferSize
 
-    # 
     def setRelativeStep(self, value):
-        self.relativeStep = value
-        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
+        self.relativeStep = int(value)
+        self.refresh()
 
-    # 
     def setOnionSkinDisplayMode(self, onionSkinDisplayType):
-        self.onionSkinDisplayType = onionSkinDisplayType
-        self.refresh()
-    
-    # 
-    def setOutlineWidth(self, width):
-        self.outlineWidth = width
+        self.onionSkinDisplayType = int(onionSkinDisplayType)
         self.refresh()
 
-    # 
+    def setOutlineWidth(self, width):
+        self.outlineWidth = int(width)
+        self.refresh()
+
     def getOutlineWidth(self):
         return self.outlineWidth
-        
-    #
+
     def setDrawBehind(self, value):
         self.drawBehind = int(value)
         self.refresh()
 
-    #
     def getDrawBehind(self):
         return self.drawBehind
 
-    #
-    def setTintType(self, tintType):
-        self.tintType = tintType
+    def setTint(self, rgba, target):
+        if target == 'relative_futureTint_btn':
+            self.relativeFutureTint = list(rgba)
+        elif target == 'relative_pastTint_btn':
+            self.relativePastTint = list(rgba)
+        elif target == 'absolute_tint_btn':
+            self.absoluteTint = list(rgba)
         self.refresh()
 
-    #
-    def setTintSeed(self, seed):
-        self.tintSeed = seed
+    def setTintStrength(self, strength):
+        self.tintStrength = strength / 100.0
         self.refresh()
 
-    #
-    def getTintSeed(self):
-        return self.tintSeed
+    def setGlobalOpacity(self, opacity):
+        self.globalOpacity = max(0.0, min(1.0, opacity / 100.0))
+        self.refresh()
 
+    def setFade(self, value):
+        self.fade = max(0.0, min(1.0, float(value)))
+        self.refresh()
