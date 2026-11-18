@@ -1,0 +1,24 @@
+Onion skin (your first script, made to work on Maya 2024 without PyMEL) - ghosts drawn IN FRONT of the
+character, like Toon Boom Harmony. Based on onionSkinRenderer by Viele (MIT licence, see LICENSE).
+
+INSTALL OR UPDATE (every new version the same way)
+1. Unzip anywhere (for example Downloads).
+2. Drag drag_to_maya.mel into Maya's viewport. It installs (or updates) the onion skin, puts one "Onion" button
+   on the shelf you have open and opens the window. From then on: click Onion. Your settings are kept.
+
+USE
+1. Select a control of each character (or their meshes, or a group) and press + in Target Objects.
+   A control adds its whole character's meshes. Two characters: one control of each.
+2. Click once in the viewport of your camera, then Toggle Renderer.
+3. Past / next keys (on by default, 1 past + 1 next): each character's own keys - nothing needs to stay
+   selected. Turn more on in the list (the eye icons) if you want.
+4. Fill onion skins: shows them straight away. After changing keys, press Fill again.
+5. Draw behind is OFF: ghosts in front of the character. Tick it to put them behind.
+Colours: past blue, next orange (change them in the window).
+
+What changed from the original script:
+- no PyMEL needed (onionSkinRenderer/mayacompat.py);
+- + adds a control's whole character; key ghosts use the characters' own keys (onionSkinRenderer/extras.py);
+- in front by default; Toggle works in the viewport you last clicked; old pictures cleared when the camera
+  changes, the viewport is resized or you toggle; Fill button; a warning when the camera moves;
+- drag_to_maya.mel installer with a shelf button.

@@ -1,0 +1,16 @@
+// Onion skin installer: drag this file into Maya's viewport.
+// It installs (or updates) the onion skin from the "onionSkinRenderer" folder next to this file, adds the Onion
+// shelf button and opens the window.
+
+global proc onionSkinRendererInstallerLocator() {}
+
+{
+    string $where = `whatIs "onionSkinRendererInstallerLocator"`;
+    string $file = `substitute "Mel procedure found in: " $where ""`;
+    string $dir = dirname($file);
+    $dir = substituteAllString($dir, "\\", "/");
+    python("import importlib.util as _osr_u");
+    python("_osr_s = _osr_u.spec_from_file_location('onion_skin_renderer_install', r'" + $dir + "/onionSkinRenderer/install.py')");
+    python("_osr_m = _osr_u.module_from_spec(_osr_s); _osr_s.loader.exec_module(_osr_m)");
+    python("_osr_m.install(r'" + $dir + "')");
+}
