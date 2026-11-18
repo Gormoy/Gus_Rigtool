@@ -100,8 +100,21 @@ def _curves_for(scopes):
     return _CACHE["curves"]
 
 
-def character_keys(object_names):
-    """Every key time of the characters these objects belong to, sorted ([] when none)."""
+def _main_key_times(curve):
+    """A curve's key times without its breakdown keys."""
+    times = cmds.keyframe(curve, query=True, timeChange=True) or []
+    try:
+        flags = cmds.keyframe(curve, query=True, breakdown=True) or []
+    except (RuntimeError, TypeError):
+        return times
+    if len(flags) == len(times) and all(isinstance(f, (bool, int)) or f in (0.0, 1.0) for f in flags):
+        return [t for t, b in zip(times, flags) if not b]
+    return [t for t in times if t not in set(flags)]          # some versions answer with the breakdown times
+
+
+def character_keys(object_names, main_only=False):
+    """Every key time of the characters these objects belong to, sorted ([] when none). main_only: a frame counts
+    only where some curve has a main key there (breakdowns skipped - check your extremes like a 2D key pass)."""
     scopes = []
     for n in object_names or []:
         ln = _long(n) or n
@@ -113,6 +126,11 @@ def character_keys(object_names):
     curves = [c for c in _curves_for(scopes) if cmds.objExists(c)]
     if not curves:
         return []
+    if main_only:
+        times = set()
+        for c in curves:
+            times.update(_main_key_times(c))
+        return sorted(times)
     return sorted(set(cmds.keyframe(curves, query=True, timeChange=True) or []))
 
 

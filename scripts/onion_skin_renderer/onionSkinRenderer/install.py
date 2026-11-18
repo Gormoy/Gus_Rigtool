@@ -99,6 +99,28 @@ def _shelf_button():
     return current
 
 
+HOTKEYS = (("OnionSkin_Toggle", "Onion skin on / off in the viewport you clicked", "hk_toggle"),
+           ("OnionSkin_Fill", "Onion skin: fill the ghosts now", "hk_fill"),
+           ("OnionSkin_NextKey", "Onion skin: go to the next key of the onion characters", "hk_next_key"),
+           ("OnionSkin_PreviousKey", "Onion skin: go to the previous key of the onion characters", "hk_previous_key"))
+
+
+def _hotkey_commands():
+    """Runtime commands to put on keys (Hotkey Editor > Custom Scripts). Made again on every install."""
+    made = []
+    for name, note, fn in HOTKEYS:
+        code = "import onionSkinRenderer.controller as _osr_c\n_osr_c.%s()" % fn
+        try:
+            if cmds.runTimeCommand(name, exists=True):
+                cmds.runTimeCommand(name, edit=True, delete=True)
+            cmds.runTimeCommand(name, annotation=note, category="Custom Scripts", commandLanguage="python",
+                                command=code)
+            made.append(name)
+        except RuntimeError:
+            pass
+    return made
+
+
 def install(source_dir):
     src = os.path.join(source_dir, PACKAGE)
     if not os.path.isfile(os.path.join(src, "__init__.py")):
@@ -128,10 +150,11 @@ def install(source_dir):
     for name in [m for m in sys.modules if m == PACKAGE or m.startswith(PACKAGE + ".")]:
         del sys.modules[name]
     shelf = _shelf_button()
+    keys = _hotkey_commands()
     import onionSkinRenderer.controller as ctl
     ctl.show()
-    msg = "Onion skin installed in %s - Onion button on the '%s' shelf%s." % (
-        dest, shelf, " (your settings kept)" if kept else "")
+    msg = "Onion skin installed in %s - Onion button on the '%s' shelf%s; %d hotkey command(s) ready." % (
+        dest, shelf, " (your settings kept)" if kept else "", len(keys))
     print(msg)
     try:
         cmds.inViewMessage(amg=msg, pos="topCenter", fade=True)

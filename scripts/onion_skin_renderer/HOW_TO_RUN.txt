@@ -16,6 +16,19 @@ USE
 5. Draw behind is OFF: ghosts in front of the character. Tick it to put them behind.
 Colours: past blue, next orange (change them in the window).
 
+EXTRAS (the box under Toggle Renderer)
+- Onion Skin Type, with Harmony's names: Original colours (shaded) / Coloured (flat) / Coloured outline.
+- Fade further away: each ghost further from now gets lighter (100 = no fading).
+- Main keys only: key ghosts only on your key poses, skipping breakdowns (keys set with Key > Breakdown) -
+  check your extremes like a 2D key pass.
+- Auto fill: stop on a frame and the missing ghosts fill by themselves (never during playback).
+- Playblast with onion skins: a pencil test of the playback range with the ghosts in it.
+
+HOTKEYS (put them on keys you like)
+Windows > Settings/Preferences > Hotkey Editor > Custom Scripts: OnionSkin_Toggle, OnionSkin_Fill,
+OnionSkin_NextKey, OnionSkin_PreviousKey (next / previous key of the onion characters - flip through your keys
+like paper). Pick one, then type the key you want in the Hotkey Editor.
+
 What changed from the original script:
 - no PyMEL needed (onionSkinRenderer/mayacompat.py);
 - + adds a control's whole character; key ghosts use the characters' own keys (onionSkinRenderer/extras.py);

@@ -48,6 +48,41 @@ def getMayaMainWindow():
 # global variable holding the instance of the window
 OSR_WINDOW = None
 
+# (noPyMEL copy) for hotkeys - Windows > Settings/Preferences > Hotkey Editor > Runtime Command Editor:
+# the installer adds OnionSkin_Toggle, OnionSkin_Fill, OnionSkin_NextKey, OnionSkin_PreviousKey
+def _window():
+    if OSR_WINDOW is None:
+        show()
+    return OSR_WINDOW
+
+
+def hk_toggle():
+    _window().toggleRenderer()
+
+
+def hk_fill():
+    _window().fill()
+
+
+def _keys_of_onion():
+    w = _window()
+    return extras.character_keys(w.onionObjectNames(), core.OSR_INSTANCE.mainKeysOnly)
+
+
+def hk_next_key():
+    now = cmds.currentTime(query=True)
+    nxt = [k for k in _keys_of_onion() if k > now + 1e-6]
+    if nxt:
+        cmds.currentTime(nxt[0])                       # auto fill brings the ghosts
+
+
+def hk_previous_key():
+    now = cmds.currentTime(query=True)
+    prev = [k for k in _keys_of_onion() if k < now - 1e-6]
+    if prev:
+        cmds.currentTime(prev[-1])
+
+
 # convenient function to open the osr ui
 def show(develop = False, dockable = False):
     global OSR_WINDOW
@@ -114,21 +149,136 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         # load settings from the settings file
         self.loadSettings()
 
-    # (noPyMEL copy) a Fill button and a moving-camera warning under the Toggle button
+    # (noPyMEL copy) under the Toggle button: Fill, the moving-camera warning and Gus's extras
     def addExtras(self):
         layout = self.toggleRenderer_btn.parentWidget().layout()
+        index = layout.indexOf(self.toggleRenderer_btn)
         self.fill_btn = QtWidgets.QPushButton("Fill onion skins (visit the frames once)")
         self.fill_btn.setMinimumSize(QtCore.QSize(40, 26))
-        self.fill_btn.setToolTip("Steps through the frames the onion skins need, then back to your frame - "
-                                 "so they show without scrubbing.")
+        self.fill_btn.setToolTip("Steps through the frames the onion skins need, then back to your frame.")
         self.fill_btn.clicked.connect(self.fillLater)
         self.cameraWarning_lbl = QtWidgets.QLabel("")
         self.cameraWarning_lbl.setWordWrap(True)
         self.cameraWarning_lbl.setStyleSheet("color: rgb(255, 170, 60);")
         self.cameraWarning_lbl.hide()
-        index = layout.indexOf(self.toggleRenderer_btn)
+
+        box = QtWidgets.QGroupBox("Extras")
+        form = QtWidgets.QFormLayout(box)
+        self.fade_sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.fade_sld.setRange(10, 100)
+        self.fade_sld.setToolTip("Each ghost further from now is this much lighter (100 = no fading).")
+        self.fade_sld.valueChanged.connect(lambda v: core.OSR_INSTANCE.setFade(v / 100.0))
+        self.mainKeys_chk = QtWidgets.QCheckBox("Main keys only (skip breakdowns)")
+        self.mainKeys_chk.setToolTip("Key ghosts only on your key poses - like a 2D key pass. Breakdowns are keys "
+                                     "you set as breakdowns (Key > Breakdown).")
+        self.mainKeys_chk.toggled.connect(self.setMainKeysOnly)
+        self.autoFill_chk = QtWidgets.QCheckBox("Auto fill when you stop on a frame")
+        self.autoFill_chk.setToolTip("The ghosts you need are filled by themselves (never during playback).")
+        self.playblast_btn = QtWidgets.QPushButton("Playblast with onion skins")
+        self.playblast_btn.setToolTip("A pencil-test playblast of the playback range with the ghosts in it.")
+        self.playblast_btn.clicked.connect(lambda *_: cmds.evalDeferred(self.playblastWithOnions,
+                                                                        lowestPriority=True))
+        form.addRow("Fade further away", self.fade_sld)
+        form.addRow(self.mainKeys_chk)
+        form.addRow(self.autoFill_chk)
+        form.addRow(self.playblast_btn)
+
         layout.insertWidget(index + 1, self.fill_btn)
         layout.insertWidget(index + 2, self.cameraWarning_lbl)
+        layout.insertWidget(index + 3, box)
+
+        # Harmony's names for the three looks
+        for i, label in enumerate(("Original colours (shaded)", "Coloured (flat)", "Coloured outline")):
+            if i < self.onionType_cBox.count():
+                self.onionType_cBox.setItemText(i, label)
+        self.onionType_cBox.setToolTip("Like Toon Boom Harmony: original colours, coloured, or coloured outline.")
+
+        self._filling = False
+        self._autoFillPending = False
+        self.autoFillJob = cmds.scriptJob(event=["timeChanged", self.scheduleAutoFill])
+
+    def applyExtrasPrefs(self):
+        self.fade_sld.setValue(int(round(float(self.preferences.setdefault('fade', 0.6)) * 100)))
+        core.OSR_INSTANCE.setFade(self.fade_sld.value() / 100.0)
+        self.mainKeys_chk.setChecked(bool(self.preferences.setdefault('mainKeysOnly', False)))
+        self.autoFill_chk.setChecked(bool(self.preferences.setdefault('autoFill', True)))
+
+    def setMainKeysOnly(self, value):
+        core.OSR_INSTANCE.mainKeysOnly = bool(value)
+        try:
+            core.OSR_INSTANCE.setRelativeFrames(None)
+        except Exception as e:
+            print(e)
+        core.OSR_INSTANCE.refresh()
+
+    # auto fill: once Maya is idle after a frame change, the ghosts still missing are filled (not during playback)
+    def scheduleAutoFill(self, *_):
+        if self._filling or self._autoFillPending or not self.autoFill_chk.isChecked():
+            return
+        self._autoFillPending = True
+        cmds.evalDeferred(self.autoFill, lowestPriority=True)
+
+    def autoFill(self):
+        self._autoFillPending = False
+        try:
+            if cmds.play(query=True, state=True) or not core.onionPanel():
+                return
+            core.OSR_INSTANCE.setRelativeFrames(None)
+            missing = [f for f in core.OSR_INSTANCE.neededFrames() if f not in core.OSR_INSTANCE.onionSkinBuffer]
+        except Exception:
+            return
+        if missing:
+            self.visit(missing)
+
+    def visit(self, frames):
+        """Visit frames (the onion skin takes their picture), then back - the time always comes back."""
+        self._filling = True
+        now = cmds.currentTime(query=True)
+        try:
+            for f in frames:
+                cmds.currentTime(f, update=True)
+                cmds.refresh(force=True)
+        finally:
+            cmds.currentTime(now, update=True)
+            cmds.refresh(force=True)
+            self._filling = False
+
+    def onionObjectNames(self):
+        lst = core.OSR_INSTANCE.onionObjectList
+        try:
+            return [lst.getDagPath(i).fullPathName() for i in range(lst.length())]
+        except Exception:
+            return []
+
+    # a pencil test: the playback range played into a movie with the ghosts in it
+    def playblastWithOnions(self):
+        panel = core.onionPanel()
+        if not panel:
+            print("onionSkinRenderer: Toggle the onion skins on in your camera's viewport first")
+            return
+        start = cmds.playbackOptions(query=True, minTime=True)
+        end = cmds.playbackOptions(query=True, maxTime=True)
+        frames = [start + i for i in range(int(end - start) + 1)]
+        if core.OSR_INSTANCE.getMaxBuffer() < len(frames) + 10:
+            core.OSR_INSTANCE.setMaxBuffer(len(frames) + 10)
+        print("onionSkinRenderer: taking the pictures of %d frames first..." % len(frames))
+        self.visit(frames)
+        try:
+            cmds.setFocus(panel)
+        except RuntimeError:
+            pass
+        was = self._filling
+        self._filling = True                              # no auto fill while the playblast plays
+        try:
+            try:
+                got = cmds.playblast(startTime=start, endTime=end, viewer=True, percent=100, showOrnaments=True,
+                                     forceOverwrite=True, editorPanelName=panel)
+            except TypeError:
+                got = cmds.playblast(startTime=start, endTime=end, viewer=True, percent=100, showOrnaments=True,
+                                     forceOverwrite=True)
+        finally:
+            self._filling = was
+        print("onionSkinRenderer: playblast with onion skins: %s" % got)
 
     # the camera moves in the shot: its pictures can't line up - say so (Maya's Ghosting works in 3D)
     def checkCamera(self):
@@ -157,18 +307,17 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         if not frames:
             print("onionSkinRenderer: no onion frames to fill - turn some on (past / next keys, or frames)")
             return
-        now = cmds.currentTime(query=True)
-        try:
-            for f in frames:
-                cmds.currentTime(f, update=True)
-                cmds.refresh(force=True)
-        finally:
-            cmds.currentTime(now, update=True)          # always back to your frame
-            cmds.refresh(force=True)
+        self.visit(frames)
         print("onionSkinRenderer: filled %d frame(s): %s" % (len(frames), ", ".join("%g" % f for f in frames)))
 
     #
     def closeEvent(self, event):
+        # (noPyMEL copy) the auto fill stops with the window
+        try:
+            if cmds.scriptJob(exists=self.autoFillJob):
+                cmds.scriptJob(kill=self.autoFillJob, force=True)
+        except Exception:
+            pass
         # when the UI is closed, deactivate the override
         if DEBUG_ALL: print('close event start')
         self.saveSettings()
@@ -558,6 +707,7 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
 
             core.OSR_INSTANCE.setMaxBuffer(self.preferences.setdefault('maxBufferSize', 200))
             core.OSR_INSTANCE.setOutlineWidth(self.preferences.setdefault('outlineWidth',3))
+            self.applyExtrasPrefs()
 
     
     # save values into a json file
@@ -578,6 +728,11 @@ class OSRController(QtWidgets.QMainWindow, ui_window.Ui_onionSkinRenderer):
         data['onionType'] = self.onionType_cBox.currentIndex()
         data['drawBehind'] = self.drawBehind_chkBx.isChecked()
         data['activeRelativeFrames'] = self.getActiveRelativeFrameIndices()
+        # (noPyMEL copy) the version mark (so an update keeps these) and the new options
+        data['settingsVersion'] = 2
+        data['fade'] = core.OSR_INSTANCE.fade
+        data['mainKeysOnly'] = core.OSR_INSTANCE.mainKeysOnly
+        data['autoFill'] = self.autoFill_chk.isChecked() if hasattr(self, 'autoFill_chk') else True
 
         with open(os.path.join(self.toolPath,'settings.txt'), 'w') as outfile:  
             json.dump(data, outfile)

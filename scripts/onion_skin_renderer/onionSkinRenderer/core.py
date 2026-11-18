@@ -215,6 +215,10 @@ class ViewRenderOverride(omr.MRenderOverride):
         # (noPyMEL copy) the view the onion pictures were taken in: (camera, width, height) - when it changes, the
         # old pictures are thrown away (they were taken from another camera / at another size)
         self.lastView = None
+        # (noPyMEL copy) further ghosts fade: opacity x fade per step away (1 = no fading); breakdowns skipped
+        self.fade = 0.6
+        self.relativeBaseOpacity = {}
+        self.mainKeysOnly = False
         # 
         self.timeCallbackId = 0
         # 
@@ -530,7 +534,7 @@ class ViewRenderOverride(omr.MRenderOverride):
             names = [self.onionObjectList.getDagPath(i).fullPathName() for i in range(self.onionObjectList.length())]
         except Exception:
             names = []
-        keys = extras.character_keys(names) if names else []
+        keys = extras.character_keys(names, self.mainKeysOnly) if names else []
         if keys:
             pastKeys, nextKeys = extras.around(keys, cmds.currentTime(query=True))
             self.applyRelativeKeys(pastKeys, nextKeys)
@@ -630,6 +634,19 @@ class ViewRenderOverride(omr.MRenderOverride):
     # add a frame to display relative to current time slider position
     def addRelativeTargetFrame(self, frame, opacity):
         self.addTargetFrame(int(frame), opacity, self.relativeBlendPasses)
+        self.relativeBaseOpacity[int(frame)] = opacity / 100.0
+        self.applyFade()
+
+    # (noPyMEL copy) each relative ghost: its own opacity x fade for every step further from now
+    def applyFade(self):
+        for frame, blendPass in self.relativeBlendPasses.items():
+            base = self.relativeBaseOpacity.get(frame, 1.0)
+            blendPass.setOpacity(base * (self.fade ** max(abs(frame) - 1, 0)))
+
+    def setFade(self, value):
+        self.fade = max(0.0, min(1.0, float(value)))
+        self.applyFade()
+        omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
 
     #
     def removeRelativeTargetFrame(self, frame):
@@ -691,7 +708,8 @@ class ViewRenderOverride(omr.MRenderOverride):
     #
     def setOpacityForRelativeTargetFrame(self, frame, opacity):
         if int(frame) in self.relativeBlendPasses:
-            self.relativeBlendPasses[int(frame)].setOpacity(opacity/100.0)
+            self.relativeBaseOpacity[int(frame)] = opacity / 100.0
+            self.applyFade()
         omui.M3dView.refresh(omui.M3dView.active3dView(), all=True)
 
     def setGlobalOpacity(self, opacity):
