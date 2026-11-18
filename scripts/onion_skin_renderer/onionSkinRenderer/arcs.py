@@ -23,6 +23,7 @@ class Arcs(object):
         self.after = 24
         self.dotEvery = 1         # a dot every N frames (the line always goes through every frame)
         self.show = True
+        self.hidden = set()       # points whose line isn't drawn (still recorded - turning one back on is instant)
         self.onDirty = None       # the controller's "record again soon" (set by the window)
 
     # -- the points
@@ -30,6 +31,23 @@ class Arcs(object):
         self.points = list(points)[:MAX_POINTS]
         self.cache = {}
         self.stale = False
+        self.hidden = set(p for p in self.hidden if p in self.points)
+
+    def removePoint(self, point):
+        """Forget one point; the others keep what they recorded."""
+        if point not in self.points:
+            return
+        i = self.points.index(point)
+        self.points.pop(i)
+        self.hidden.discard(point)
+        for f, pos in list(self.cache.items()):
+            self.cache[f] = pos[:i] + pos[i + 1:]
+
+    def setVisible(self, point, visible):
+        if visible:
+            self.hidden.discard(point)
+        elif point in self.points:
+            self.hidden.add(point)
 
     def clear(self):
         self.setPoints([])
@@ -83,6 +101,9 @@ class Arcs(object):
         win = self.window(now)
         for i in range(len(self.points)):
             line = []
+            if self.points[i] in self.hidden:
+                out.append(line)
+                continue
             for f in win:
                 pos = self.cache.get(f)
                 if pos and i < len(pos) and pos[i] is not None:

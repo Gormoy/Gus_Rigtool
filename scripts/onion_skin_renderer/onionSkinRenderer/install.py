@@ -1,6 +1,6 @@
 """
 (noPyMEL copy) Installer - run by drag_to_maya.mel (drag that file into Maya's viewport). It:
-  - closes the onion skin window if it's open;
+  - closes the onion skin window and mini bar if they're open, and turns the running copy off;
   - copies onionSkinRenderer into the shared Maya scripts folder (every Maya version uses it):
         Windows  Documents/maya/scripts/onionSkinRenderer
         Mac      ~/Library/Preferences/Autodesk/maya/scripts/onionSkinRenderer
@@ -40,7 +40,15 @@ def _norm(p):
 
 
 def _close_window():
-    try:
+    """Everything of the running copy off before it's replaced: the windows, the mini bar and the onion skin."""
+    for name, fn in (("window", "close"), ("minibar", "close"), ("session", "shutdown")):
+        mod = sys.modules.get(PACKAGE + "." + name)
+        try:
+            if mod is not None:
+                getattr(mod, fn)()
+        except Exception:
+            pass
+    try:                                                     # a copy from before the new window
         mod = sys.modules.get(PACKAGE + ".controller")
         if mod and getattr(mod, "OSR_WINDOW", None) is not None:
             mod.OSR_WINDOW.close()
@@ -103,7 +111,8 @@ HOTKEYS = (("OnionSkin_Toggle", "Onion skin on / off in the viewport you clicked
            ("OnionSkin_Fill", "Onion skin: fill the ghosts now", "hk_fill"),
            ("OnionSkin_NextKey", "Onion skin: go to the next key of the onion characters", "hk_next_key"),
            ("OnionSkin_PreviousKey", "Onion skin: go to the previous key of the onion characters", "hk_previous_key"),
-           ("OnionSkin_ToggleArcs", "Onion skin: show / hide the arcs", "hk_toggle_arcs"))
+           ("OnionSkin_ToggleArcs", "Onion skin: show / hide the arcs", "hk_toggle_arcs"),
+           ("OnionSkin_MiniBar", "Onion skin: show / hide the mini bar", "hk_mini_bar"))
 
 
 def _hotkey_commands():

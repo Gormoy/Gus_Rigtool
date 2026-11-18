@@ -222,6 +222,9 @@ class ViewRenderOverride(omr.MRenderOverride):
         self.mainKeysOnly = False
         # (noPyMEL copy) arcs: lines through where chosen points are, frames back and forward
         self.arcs = arcs.Arcs()
+        # (noPyMEL copy) while playing: no ghosts drawn, no pictures taken - playback as fast as without
+        self.hideWhilePlaying = True
+        self.opsThisFrame = None
         self.animEditedCallbackId = None
         # 
         self.timeCallbackId = 0
@@ -328,6 +331,14 @@ class ViewRenderOverride(omr.MRenderOverride):
 
         # update the standard target to the just set size
         self.standardTarget.updateDescription(self.standardTargetDescr)
+
+        # (noPyMEL copy) playing with "hide ghosts while playing": only the normal view is drawn this frame
+        if self.hideWhilePlaying and oma.MAnimControl.isPlaying():
+            self.opsThisFrame = [op for op in self.renderOperations
+                                 if op is not self.onionSkinPass and op not in self.relativeBlendPasses.values()
+                                 and op not in self.absoluteBlendPasses.values()]
+            return
+        self.opsThisFrame = self.renderOperations
         # update the onion target to a new name, because targetMgr will return None
         # if the name already exists
         self.currentFrame = oma.MAnimControl.currentTime().value
@@ -440,14 +451,17 @@ class ViewRenderOverride(omr.MRenderOverride):
     # the order specified here defines the draw order
     def renderOperation(self):
         if DEBUG: print("executing render operation: %s"%(self.renderOperations[self.operation]))
-        return self.renderOperations[self.operation]
+        return self._ops()[self.operation]
+
+    def _ops(self):
+        return self.opsThisFrame if self.opsThisFrame is not None else self.renderOperations
 
     # advance to the next pass or return false if
     # all are calculated
     def nextRenderOperation(self):
         if DEBUG: print("advancing render operation")
         self.operation = self.operation + 1
-        return self.operation < len(self.renderOperations)
+        return self.operation < len(self._ops())
 
 
 
@@ -749,6 +763,18 @@ class ViewRenderOverride(omr.MRenderOverride):
         tmpList.add(dagPath)
         self.onionObjectBuffer.merge(tmpList, om.MSelectionList.kRemoveFromList)
         self.onionObjectList = self.flattenSelectionList(self.onionObjectBuffer)
+        self.clearOnionSkinBuffer()
+
+    # (noPyMEL copy) the onion objects set from names (the window's character list, hidden characters left out)
+    def setTargetObjects(self, names):
+        sel = om.MSelectionList()
+        for n in names or []:
+            try:
+                sel.add(n)
+            except Exception:
+                pass
+        self.onionObjectBuffer = sel
+        self.onionObjectList = self.flattenSelectionList(sel)
         self.clearOnionSkinBuffer()
 
     #

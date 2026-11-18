@@ -1,46 +1,63 @@
 Onion skin (your first script, made to work on Maya 2024 without PyMEL) - ghosts drawn IN FRONT of the
-character, like Toon Boom Harmony. Based on onionSkinRenderer by Viele (MIT licence, see LICENSE).
+character, like Toon Boom Harmony, plus arcs. Based on onionSkinRenderer by Viele (MIT licence, see LICENSE).
 
 INSTALL OR UPDATE (every new version the same way)
 1. Unzip anywhere (for example Downloads).
 2. Drag drag_to_maya.mel into Maya's viewport. It installs (or updates) the onion skin, puts one "Onion" button
    on the shelf you have open and opens the window. From then on: click Onion. Your settings are kept.
 
-USE
-1. Select a control of each character (or their meshes, or a group) and press + in Target Objects.
-   A control adds its whole character's meshes. Two characters: one control of each.
-2. Click once in the viewport of your camera, then Toggle Renderer.
-3. Past / next keys (on by default, 1 past + 1 next): each character's own keys - nothing needs to stay
-   selected. Turn more on in the list (the eye icons) if you want.
-4. Fill onion skins: shows them straight away. After changing keys, press Fill again.
-5. Draw behind is OFF: ghosts in front of the character. Tick it to put them behind.
-Colours: past blue, next orange (change them in the window).
+START
+1. Click once in your camera view, then the big button at the top: "Onion skin ON in this view" (green).
+   Click it again to turn it off. Closing the window does NOT turn the onion skin off.
+2. Ghosts tab > Characters: select any control of a character, press + Add selected character.
+   Two characters: one control of each. The eye hides that character's ghosts (it stays in the list).
+3. The line under the ON button says what is happening: how many ghosts show, how many are waiting.
 
-EXTRAS (the box under Toggle Renderer)
-- Onion Skin Type, with Harmony's names: Original colours (shaded) / Coloured (flat) / Coloured outline.
-- Fade further away: each ghost further from now gets lighter (100 = no fading).
-- Main keys only: key ghosts only on your key poses, skipping breakdowns (keys set with Key > Breakdown) -
-  check your extremes like a 2D key pass.
-- Auto fill: stop on a frame and the missing ghosts fill by themselves (never during playback).
-- Playblast with onion skins: a pencil test of the playback range with the ghosts in it.
+GHOSTS TAB
+- Ghosts on: Keys (the characters' own keys) / Main keys (breakdowns skipped - keys set with Key > Breakdown)
+  / Frames (every N frames).
+- Before / After: how many ghosts each side (- / + buttons, up to 12). Every: for Frames (4 = a ghost every
+  4 frames).
+- Fade further: each ghost further away is lighter (100 = no fading).
+- Look: Shaded / Flat colour / Outline (Harmony's three looks).
+- Colours: Blue / Orange, Red / Green (Harmony's), or Mine... (pick past, then next).
+- Advanced: one bar per ghost - drag it up or down for that ghost's opacity; all the way down = that ghost off.
 
-ARCS (the Arcs box) - track arcs like on paper
-1. Select vertices (nose tip, ear tips, a hand) or controls, then press + Add selected points (up to 12).
+PRESETS (the buttons above the tabs)
+- Blocking (keys): 2 key ghosts each side.  Spacing: a ghost every frame, 3 each side.
+- Arcs +-24: a ghost every 4 frames, 6 each side (24 frames), and the arcs on.
+- + Save mine keeps what you have now under a name. Right-click one of yours to delete it.
+
+ARCS TAB - track arcs like on paper
+1. Select vertices (nose tip, ear tips, a hand) or controls, then + Add selected points (up to 12).
 2. Stop on a frame: a line shows where each point is, 24 frames back (past colour) and 24 forward (next
-   colour), with a dot on each frame - dots close together = slow, far apart = fast. Keys get a bigger dot,
-   your frame a white one.
-3. Frames before / Frames after: how far it reaches. A dot every: 1 = every frame, 2 = every 2nd...
-4. Change a key: the line is recorded again by itself a moment later. Nothing is added to your scene; the
-   points are forgotten when you open another scene. Playblast with onion skins shows them too.
+   colour), with dots - close together = slow, far apart = fast. Keys get a bigger dot, your frame a white one.
+3. Before / After: how far it reaches. A dot every 1 / 2 / 3 / 4 frames. Each point has its own eye and x.
+4. Change a key: the line is recorded again by itself a moment later. Nothing is added to your scene; points
+   are forgotten when you open another scene.
+
+SETTINGS TAB
+- Hide ghosts while playing (on): playback as fast as without the onion skin; ghosts come back when you stop.
+- Auto fill: stop on a frame and the missing ghosts fill by themselves (never during playback).
+- Draw behind the character (off = in front, like Harmony).
+- Pinned frames: + This frame keeps that frame's ghost wherever you go.
+- Pictures kept / Forget pictures, Outline width, Playblast with onion skins (a pencil test with the ghosts and
+  arcs), Show the mini bar.
+Fill (top): takes all the pictures now. With many frames a progress bar shows - Esc stops it.
+
+MINI BAR
+A small bar over Maya: ON, Before - / +, After - / +, Keys / Main / Frames, Fill, Arcs, and the gear (opens the
+window). Drag it by its left edge; it remembers where it was and comes back next time. x closes it.
 
 HOTKEYS (put them on keys you like)
 Windows > Settings/Preferences > Hotkey Editor > Custom Scripts: OnionSkin_Toggle, OnionSkin_Fill,
-OnionSkin_NextKey, OnionSkin_PreviousKey, OnionSkin_ToggleArcs (next / previous key of the onion characters - flip through your keys
-like paper). Pick one, then type the key you want in the Hotkey Editor.
+OnionSkin_NextKey, OnionSkin_PreviousKey (flip through your keys like paper), OnionSkin_ToggleArcs,
+OnionSkin_MiniBar. Pick one, then type the key you want in the Hotkey Editor.
 
 What changed from the original script:
 - no PyMEL needed (onionSkinRenderer/mayacompat.py);
-- + adds a control's whole character; key ghosts use the characters' own keys (onionSkinRenderer/extras.py);
-- in front by default; Toggle works in the viewport you last clicked; old pictures cleared when the camera
-  changes, the viewport is resized or you toggle; Fill button; a warning when the camera moves;
-- drag_to_maya.mel installer with a shelf button.
+- a control adds its whole character; key ghosts use the characters' own keys (extras.py);
+- in front by default; old pictures cleared when the camera changes, the viewport is resized or you toggle;
+- arcs (arcs.py); a new window and mini bar (window.py, minibar.py, widgets.py) over one shared state
+  (session.py); hide ghosts while playing (core.py);
+- drag_to_maya.mel installer with a shelf button and hotkey commands.

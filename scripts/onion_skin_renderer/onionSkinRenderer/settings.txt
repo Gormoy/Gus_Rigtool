@@ -1,1 +1,39 @@
-{"autoClearBuffer": true, "displayKeyframes": true, "rFutureTint": [255, 130, 20], "rPastTint": [40, 120, 255], "aTint": [125, 0, 0], "tintSeed": 0, "tintType": 0, "relativeFrameAmount": 8, "relativeStep": 1, "maxBufferSize": 200, "outlineWidth": 3, "onionType": 0, "drawBehind": false, "activeRelativeFrames": [-1, 1], "settingsVersion": 2, "fade": 0.6, "mainKeysOnly": false, "autoFill": true, "arcsBefore": 24, "arcsAfter": 24, "arcsDotEvery": 1, "arcsShow": true}
+{
+ "after": 1,
+ "arcsAfter": 24,
+ "arcsBefore": 24,
+ "arcsDotEvery": 1,
+ "arcsShow": true,
+ "autoClearBuffer": true,
+ "autoFill": true,
+ "before": 1,
+ "drawBehind": false,
+ "every": 1,
+ "fade": 0.6,
+ "futureTint": [
+  255,
+  130,
+  20
+ ],
+ "hideWhilePlaying": true,
+ "look": 0,
+ "maxBuffer": 200,
+ "miniBar": false,
+ "miniBarPos": null,
+ "mode": "keys",
+ "opacities": {},
+ "outlineWidth": 3,
+ "pastTint": [
+  40,
+  120,
+  255
+ ],
+ "pinnedTint": [
+  125,
+  0,
+  0
+ ],
+ "preset": "",
+ "presets": {},
+ "settingsVersion": 3
+}
