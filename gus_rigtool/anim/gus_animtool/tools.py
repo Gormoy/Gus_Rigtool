@@ -7,7 +7,7 @@ Everyday animator tools (toolbar / shelf / Keys tab):
   time scale   : the selection's keys spread out / squeezed around the current frame (snapped to whole frames)
   smooth/noise : the selected Graph Editor keys smoothed towards their neighbours / given a little noise
   playblast    : the frame range from the viewport you look through, into your movies folder
-  arcs         : a motion trail per selected control over the range (arc tracker); clear them
+  arcs         : a motion trail per selected control (arc tracker, styled by arctrail.py); clear them
   viewport     : hide / show the controls, isolate the selection
 """
 
@@ -477,26 +477,18 @@ def arcs(nodes=None):
 
 
 def _style_trail(node):
-    """Frame markers (spacing shows), keys bigger, a clear colour - on a motion trail."""
-    shapes = cmds.listRelatives(node, shapes=True, fullPath=True) or [node]
-    for sh in shapes:
-        for attr, value in (("showFrameMarkers", True), ("frameMarkerSize", 6.0), ("keyframeSize", 9.0),
-                            ("trailThickness", 2.0), ("showFrames", False)):
-            try:
-                cmds.setAttr("%s.%s" % (sh, attr), value)
-            except (RuntimeError, ValueError, TypeError):
-                pass
-        try:
-            cmds.setAttr(sh + ".trailColor", 1.0, 0.55, 0.15, type="double3")
-        except (RuntimeError, ValueError, TypeError):
-            pass
+    """The onion skin look on a motion trail (arctrail.style): past / future colours, a window around your frame,
+    a dot on every frame, bigger keys; the bezier handles on the selected key."""
+    from gus_animtool import arctrail
+    return arctrail.style(node)
 
 
 def clear_arcs(*_):
     grp = cmds.ls(ARCS, long=True)
     if not grp:
         raise RuntimeError("no arcs to clear.")
-    cmds.delete(grp)
+    from gus_animtool import arctrail
+    arctrail.clear()
     return True
 
 

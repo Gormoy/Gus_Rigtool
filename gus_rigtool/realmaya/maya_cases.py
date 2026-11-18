@@ -522,8 +522,67 @@ def hare(rep, path):
     rep.add(INFO, "closed without saving", path)
 
 
+# --- h: the Animtool's arcs (5.6.40) -----------------------------------------------------------------------------
+def arcs(rep):
+    """h. Arcs: Maya's editable trail dressed like the onion skin's (its settings read back), rotation-only
+    controls told apart, no arc nodes left for a save, weighted tangents only when asked."""
+    _animtool()
+    from gus_animtool import arctrail
+    rep.start("h. Arcs (Animtool): the trail's look, editable or not, saving")
+    cmds.playbackOptions(minTime=1, maxTime=48)
+    hand = _ctrl("L_hand_ik_ctrl")
+    for f, x in ((1, 0.0), (12, 4.0), (24, 6.0), (48, 0.0)):
+        cmds.setKeyframe(hand, attribute="translateX", time=f, value=x)
+        cmds.setKeyframe(hand, attribute="translateY", time=f, value=x * 0.5)
+    wrist = _ctrl("L_wrist_fk_ctrl", parent=cmds.group(empty=True, name="L_elbow_fk"))
+    for f, r in ((1, 0.0), (24, 60.0), (48, 0.0)):
+        cmds.setKeyframe(wrist, attribute="rotateZ", time=f, value=r)
+    rep.expect("the IK hand's arc can be edited (its translate is animated)", arctrail.moves(hand))
+    rep.expect("the FK wrist only rotates: shown, not editable", not arctrail.moves(wrist))
+    cmds.currentTime(24)
+    made = rep.step("make the hand's arc", arctrail.make, [hand]) or []
+    rep.add(INFO, "nodes made", ", ".join(m.split("|")[-1] for m in made))
+    shapes = [sh for m in made for sh in (cmds.listRelatives(m, shapes=True, fullPath=True) or [m])]
+    done = []
+    for sh in shapes:
+        done += arctrail.style(sh if cmds.objExists(sh) else made[0])
+        rep.add(INFO, "%s (%s): its settings" % (sh.split("|")[-1], cmds.nodeType(sh)),
+                ", ".join(sorted(a for a in (cmds.listAttr(sh) or []) if any(
+                    w in a.lower() for w in ("frame", "trail", "color", "tangent", "fade", "bead", "mode")))))
+        if "trailDrawMode" in (cmds.listAttr(sh) or []):
+            rep.add(INFO, "trailDrawMode's choices", str(cmds.attributeQuery("trailDrawMode", node=sh, listEnum=True)))
+    rep.add(INFO, "settings the Animtool set", ", ".join(sorted(set(done))) or "none")
+    rep.expect("the window around your frame is set (preFrame / postFrame 24)", "preFrame" in done and "postFrame" in done,
+               bad=NOTE)
+    rep.expect("past / future colours (trailDrawMode 'Past/Future')", "trailDrawMode" in done, bad=NOTE)
+    rep.expect("the bezier handles show on the selected key", any("angent" in d for d in done), bad=NOTE)
+    had = len(arctrail._trails_of(hand))
+    edit, view, unseen = arctrail.show([hand, wrist])
+    rep.expect("show(): the hand editable, the wrist view-only", edit == [hand] and view == [wrist])
+    rep.add(INFO, "the wrist", "shown by the onion skin" if wrist not in unseen else "the onion skin isn't installed here")
+    rep.expect("the hand's arc isn't made twice", had >= 1 and len(arctrail._trails_of(hand)) == had)
+    arctrail._state["followed"] = [hand]
+    arctrail._before_save()
+    rep.expect("before a save: no arc nodes left in the scene", not cmds.ls(arctrail.GROUP) and
+               not cmds.ls(type="motionTrail"), str(cmds.ls(type="motionTrail")))
+    rep.expect("... and it remembers to put them back", arctrail._state["saved"] == [hand])
+    arctrail.show(arctrail._state["saved"] or [])
+    rep.expect("after the save: the hand's arc is back", bool(arctrail._trails_of(hand)))
+    curves = cmds.listConnections(hand + ".translateX", source=True, destination=False, type="animCurve")
+    before = cmds.keyTangent(curves, query=True, weightedTangents=True)
+    n = rep.step("timing beads: make the hand's curves weighted (no question here)", arctrail.make_weighted, [hand],
+                 ask=False)
+    rep.expect("the hand's curves are weighted now (were not)", before == [False] and n == 2 and
+               cmds.keyTangent(curves, query=True, weightedTangents=True) == [True])
+    cmds.undo()
+    rep.expect("Ctrl+Z: not weighted again", cmds.keyTangent(curves, query=True, weightedTangents=True) == [False],
+               bad=NOTE)
+    arctrail.clear()
+    rep.expect("Clear: the arcs are gone", not cmds.ls(arctrail.GROUP))
+
+
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
-         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest)]
+         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

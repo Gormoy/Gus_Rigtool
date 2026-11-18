@@ -1,3 +1,39 @@
+Gus_Rigtool 5.6.40 - Animtool arcs: like the onion skin's, still editable; follow selection, pin, no arcs in saved files
+
+Animtool > Arcs (same button) now uses Maya's editable motion trail dressed like the onion skin's arcs:
+- only 24 frames before and after your frame (it moves with the time and fades at the ends), the past in blue and
+  the future in orange, a dot on every frame (the spacing), bigger dots on keys, a thin line;
+- still editable: drag a key dot (Move tool); select a key on the arc and its bezier handles show (Maya's Show
+  Tangents, on the selected key only - cleaner);
+- the button turns "follow selection" on / off: the arcs show on what you select (up to 4 controls) and move to
+  what you select next. Selecting a key dot on an arc to drag it doesn't count as a new selection.
+Right-click on Arcs:
+- Pin the selection's arcs: they stay when you select something else.
+- Range: 12 / 24 / 48 frames before and after, or the whole frame range (remembered).
+- Timing beads: make the selection's curves weighted - asks first (the beads need weighted tangents; the curves
+  keep their shape; Ctrl+Z undoes it). Nothing ever changes your curves without that question.
+- Clear the arcs.
+Controls that only rotate (FK wrist, ears): their arc can't be dragged (a drag keys translate). They're shown by
+the onion skin's arcs when it's installed (Gus's onion skin tool), and the message says "shown, not editable".
+Saving: the trails are taken out before a save and put back after - no arc nodes in your files, Check this scene
+or a published rig. Another scene opened: the arcs are forgotten.
+
+Real-Maya test h (new): an IK hand and an FK wrist animated; the trail made and its settings read back (their
+names in Maya 2024 go into the results), editable vs view-only, no arc nodes before a save, weighted tangents
+and Ctrl+Z.
+
+Decisions I made:
+- Follow selection shows arcs on the first 4 selected controls (each trail recalculates the whole range when you
+  edit; more gets slow on a heavy rig).
+- "Can be edited" = a translate channel that's keyed (and not locked).
+- The trail's settings are found by name and a missing one is skipped (the arc still shows): Maya renamed some
+  between versions. The fade covers a third of the range.
+- Showing or clearing arcs isn't an undo step (Ctrl+Z keeps undoing your animation); Make weighted is one.
+- The Animtool's own arc nodes stay in gusAnimtool_arcs_grp, as before (Clear removes it).
+
+Tested against the fake Maya only (tests/test_5640.py, the full suite). Real-Maya test h needs your run; the
+trail's look and the drag need your eyes in Maya.
+
 Gus_Rigtool 5.6.39 - real-Maya tests: the mirror read before Maya updates; pupils and other scale controls,
 left against right
 

@@ -78,7 +78,8 @@ ACTIONS = [
     ("attach", "Attach", "Select what follows, then what it holds on to: from this frame it follows, no jump", "space"),
     ("release", "Release", "The selected attached thing stays where it is from this frame (right-click: bake / "
      "remove)", "space"),
-    ("arcs", "Arcs", "A motion trail per selected control (right-click: clear)", "view"),
+    ("arcs", "Arcs", "Arcs follow your selection: drag a key dot to edit; rotation-only controls shown by the onion "
+     "skin (right-click: pin, range, timing beads, clear)", "view"),
     ("hide_ctrls", "Controls", "Hide / show the controls in the viewport", "view"),
     ("isolate", "Isolate", "Isolate the selection in the viewport (again: everything)", "view"),
     ("hider", "Body parts", "Show every body part (right-click: hide / isolate a part)", "view"),
@@ -103,7 +104,11 @@ MENUS = {
                     ("Keep the current timing as the original", "offset_keep")],
     "time_scale": [("x0.5 (twice as fast)", "ts_0.5"), ("x0.75", "ts_0.75"), ("x1.5", "ts_1.5"),
                    ("x2 (twice as slow)", "ts_2")],
-    "arcs": [("Clear the arcs", "arcs_clear")],
+    "arcs": [("Pin the selection's arcs (they stay)", "arcs_pin"),
+             ("Range: 12 frames before / after", "arcs_r12"), ("Range: 24 frames before / after", "arcs_r24"),
+             ("Range: 48 frames before / after", "arcs_r48"), ("Range: the whole frame range", "arcs_r0"),
+             ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted"),
+             ("Clear the arcs", "arcs_clear")],
     "ghosts": [("Clear the ghosts", "ghosts_clear")],
     "release": [("Bake the attached motion to keys", "attach_bake"), ("Remove the attach (no bake)", "attach_remove")],
     "mirror_cycle": [("Mirror without looping the curves", "mirror_cycle_noloop")],
@@ -337,9 +342,27 @@ def _call(key):
     if key == "bake_back":
         return "baked back %d control(s)" % TS.bake_back()
     if key == "arcs":
-        return "%d arc(s)" % len(tools.arcs())
+        from gus_animtool import arctrail
+        if arctrail.follow():
+            sel = arctrail.controls(cmds.ls(selection=True, long=True) or [])
+            if not sel:
+                return "arcs on: they follow what you select"
+            return "arcs follow your selection: " + arctrail.describe(*arctrail.show(sel[:arctrail.FOLLOW_MAX]))
+        return "arcs stop following the selection (pinned ones stay)"
+    if key == "arcs_pin":
+        from gus_animtool import arctrail
+        return "pinned: " + arctrail.describe(*arctrail.pin(tools._nodes()))
+    if key.startswith("arcs_r") and key[6:].isdigit():
+        from gus_animtool import arctrail
+        n = arctrail.set_range(int(key[6:]))
+        return "arcs: %s" % ("the whole frame range" if n == 0 else "%d frames before / after" % n)
+    if key == "arcs_weighted":
+        from gus_animtool import arctrail
+        n = arctrail.make_weighted(tools._nodes())
+        return ("%d curve(s) now weighted: the timing beads show on their arcs" % n) if n else "nothing changed"
     if key == "arcs_clear":
-        tools.clear_arcs()
+        from gus_animtool import arctrail
+        arctrail.clear()
         return "arcs cleared"
     if key == "hide_ctrls":
         return "controls %s" % ("shown" if tools.toggle_controls() else "hidden")

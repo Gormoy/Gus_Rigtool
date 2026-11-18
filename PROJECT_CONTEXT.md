@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.39). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.39`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.40). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.40`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.39, about 159 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.40, about 160 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -227,6 +227,17 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   the left pupil didn't scale - its weights were on 62 stray vertices above the eye. Gus fixed it in the scene with a
   script (selected pupil ring -> L_Pupil_jnt 1, rest -> L_Eyeball_jnt), then did the same on the right so both match.
   The eyes' Orig shapes don't read reliably with xform (vertex matching by shape failed) - use selection-based fixes.
+
+- **5.6.40**: Animtool arcs = Maya's editable motion trail styled like the onion skin's arcs (window of 24 frames,
+  past blue / future orange, dots, handles on the selected key), follow selection + pin, rotation-only controls shown
+  by the onion skin, trails out of saved files, timing beads via "make weighted" (asks). Real-Maya test h.
+- **Onion skin (standalone, branch `onion-skin-tool`, `scripts/onion_skin_renderer/`)**: Gus's first script
+  (onionSkinRenderer, MIT) made to run on Maya 2024 without PyMEL, installed by drag_to_maya.mel; ghosts in front
+  (Harmony style), per-character pictures and keys, light table (others see-through), arcs on vertices / controls,
+  new window (Ghosts / Arcs / Settings) and mini bar. Tested with a fake render API and real Qt offscreen; Gus
+  confirmed it works in Maya.
+- **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
+  edit the hand's trail, bake back to FK. To make it pleasant: bake only on the FK keys' frames, not every frame.
 
 ## 5. Open items and the roadmap
 

@@ -76,7 +76,9 @@ src = open(os.path.join(HERE, "maya_cases.py")).read()
 f = src[src.index("def ikfk_mirror"):src.index("def rig_selftest")]
 check("test f takes the wrist's IK control, never the pole vector, and lets Maya catch up before measuring",
       '"wrist" in c.lower()' in f and '"pv" not in' in f and f.count("_settle()") >= 3)
-check("the self-test's rig checks run too (g, after f)", [n for n, _f in MC.CASES][-1] == "g. rig self-test")
+names = [n for n, _f in MC.CASES]
+check("the self-test's rig checks run too (g, after f)", names.index("g. rig self-test") ==
+      names.index("f. IK/FK and mirror") + 1)
 check("your scene: the model loaded from this computer, then the eye dry run, then closed without saving",
       "loadReferenceDepth=\"none\"" in src and "_load_references(rep, project)" in src and
       src.index("eye_dry_run, rep") < src.index("closed without saving\", path"))

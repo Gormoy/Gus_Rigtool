@@ -1,0 +1,34 @@
+PASS the IK hand's arc can be edited (translate animated)
+PASS the FK wrist only rotates: view only
+PASS a locked translate: view only
+PASS the arcs' own nodes and key components never count as a selection (dragging a key keeps the arcs)
+PASS 24 frames before and after your frame, fading over the last 8
+PASS Past/Future found by its name (the 3rd choice), past blue, future orange
+PASS a dot on every frame, bigger keys, a thin line, no frame numbers
+PASS the bezier handles: on (Maya shows them on the key you select)
+PASS 'extraTrailColor' isn't mistaken for past / future
+PASS the whole range: the window covers frames 1-100; settings Maya doesn't have are skipped, no error
+PASS the hand gets an editable trail, the wrist goes to the onion skin's arcs (and its arcs are turned on)
+PASS the message says which can be dragged and which can't
+PASS no onion skin installed: the wrist is said to have no arc to drag
+PASS Arcs on: they follow the selection (the hand)
+PASS select the other hand: the first hand's arc goes, the new one shows
+PASS nothing selected: the arc stays
+PASS pinned: the hand's arc stays
+PASS select the wrist: the pinned hand stays, the followed other hand goes, the wrist to the onion skin
+PASS from the wrist to something else: its onion arc is taken away again
+PASS Arcs off: the followed ones go, the pinned stay
+PASS before a save: the arcs' group is deleted, the controls remembered
+PASS after the save: they come back (once Maya is idle)
+PASS timing beads, you press Cancel: nothing changes
+PASS you press Make weighted: the hand's curve weighted, in one undo
+PASS the question says what changes and that Ctrl+Z undoes it
+PASS already weighted: it says so (the beads already show)
+PASS right-click on Arcs: pin, 12 / 24 / 48 / whole range, timing beads, clear
+PASS Range 48: kept, and the arcs restyled
+PASS Range whole
+PASS the Arcs button: follow on, and what it shows
+PASS again: follow off
+PASS Clear: the trails, the selection job and only the onion arcs the Animtool added go
+PASS another scene opened: nothing left to follow or pin
+33/33 passed

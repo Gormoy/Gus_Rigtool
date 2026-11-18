@@ -29,7 +29,7 @@ tail limb: 17
 characters: ['']
 written: ['gus_animtool', 'gus_anim.py', 'drag_to_maya_animtool.mel', 'README_animators.txt']
 defaults.json: {'pairs': [['L_', 'R_']], 'axis': 0, 'center': [0.0, 0.0, 0.0], 'suffix': '_ctrl'}
-package files: ['__init__.py', 'actions.py', 'anim.py', 'animlib.py', 'attach.py', 'backup.py', 'cycle.py', 'hider.py', 'hotkeys.py', 'keys.py', 'motion.py', 'pickerqt.py', 'pickmodel.py', 'pickmore.py', 'pickshapes.py', 'selsets.py', 'tempspace.py', 'timeslider.py', 'toolbar.py', 'tools.py', 'tween.py', 'ui.py', 'updater.py'] compile: True
+package files: ['__init__.py', 'actions.py', 'anim.py', 'animlib.py', 'arctrail.py', 'attach.py', 'backup.py', 'cycle.py', 'hider.py', 'hotkeys.py', 'keys.py', 'motion.py', 'pickerqt.py', 'pickmodel.py', 'pickmore.py', 'pickshapes.py', 'selsets.py', 'tempspace.py', 'timeslider.py', 'toolbar.py', 'tools.py', 'tween.py', 'ui.py', 'updater.py'] compile: True
 Gus Animtool: switched 1 limb(s) to FK.
 namespaced switch: 0 | characters: ['hero:']
 Gus Animtool: selected 17 control(s).
