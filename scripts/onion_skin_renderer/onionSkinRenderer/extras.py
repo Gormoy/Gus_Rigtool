@@ -34,6 +34,8 @@ def in_scope(node, scope):
 
 def _visible_mesh_transforms(shapes):
     out = []
+    if not shapes:                    # ls([]) lists EVERYTHING in Maya - an empty list must stay empty
+        return out
     for s in cmds.ls(shapes, long=True, noIntermediate=True, visible=True) or []:
         if cmds.nodeType(s) != "mesh":
             continue
@@ -57,16 +59,58 @@ def meshes_for(nodes):
         if own or under:
             found = _visible_mesh_transforms(own or under)
         else:                                               # a control: its character
-            sc = scope_of(t)
-            if sc[0] == "ns":
-                shapes = cmds.ls(sc[1] + ":*", type="mesh", long=True, recursive=True) or []
-            else:
-                shapes = cmds.listRelatives(sc[1], allDescendents=True, type="mesh", fullPath=True) or []
-            found = _visible_mesh_transforms(shapes)
+            found = scope_meshes(scope_of(t))
+            if not found:                                   # meshes in another group (a rig not referenced):
+                found = skinned_meshes(scope_of(t))         # the ones its joints deform
         for m in found:
             if m not in out:
                 out.append(m)
     return out
+
+
+def scope_meshes(sc):
+    if sc[0] == "ns":
+        shapes = cmds.ls(sc[1] + ":*", type="mesh", long=True, recursive=True) or []
+    else:
+        shapes = cmds.listRelatives(sc[1], allDescendents=True, type="mesh", fullPath=True) or []
+    return _visible_mesh_transforms(shapes)
+
+
+def skinned_meshes(sc):
+    """The visible meshes skinned to joints of this character (when the model sits in another group than the rig,
+    as in a rigging scene)."""
+    shapes = []
+    for skin in cmds.ls(type="skinCluster") or []:
+        try:
+            joints = cmds.skinCluster(skin, query=True, influence=True) or []
+        except (RuntimeError, ValueError):
+            continue
+        if any(in_scope(_long(j) or j, sc) for j in joints):
+            shapes += cmds.skinCluster(skin, query=True, geometry=True) or []
+    return _visible_mesh_transforms(cmds.ls(shapes, long=True) or []) if shapes else []
+
+
+def rig_scope_of(node):
+    """The character a node belongs to, seen from its rig: a mesh skinned to a rig in another group gets that rig's
+    group (its keys are there)."""
+    ln = _long(node) or node
+    sc = scope_of(ln)
+    if sc[0] == "ns":
+        return sc
+    shapes = [ln] if cmds.nodeType(ln) == "mesh" else cmds.listRelatives(ln, shapes=True, type="mesh",
+                                                                         fullPath=True) or []
+    try:
+        for sh in shapes:
+            history = cmds.listHistory(sh, pruneDagObjects=True) or []
+            if not history:               # careful: ls([], type=...) would list EVERY skinCluster in the scene
+                continue
+            for skin in cmds.ls(history, type="skinCluster") or []:
+                joints = cmds.skinCluster(skin, query=True, influence=True) or []
+                if joints:
+                    return scope_of(_long(joints[0]) or joints[0])
+    except Exception:
+        pass                                     # no skin to follow: the mesh's own group
+    return sc
 
 
 def _driven(curve, depth=3):
@@ -115,15 +159,9 @@ def _main_key_times(curve):
     return [t for t in times if t not in set(flags)]          # some versions answer with the breakdown times
 
 
-def character_keys(object_names, main_only=False):
-    """Every key time of the characters these objects belong to, sorted ([] when none). main_only: a frame counts
-    only where some curve has a main key there (breakdowns skipped - check your extremes like a 2D key pass)."""
-    scopes = []
-    for n in object_names or []:
-        ln = _long(n) or n
-        sc = scope_of(ln)
-        if sc not in scopes:
-            scopes.append(sc)
+def scope_keys(scopes, main_only=False):
+    """Every key time of these characters (scopes from scope_of / rig_scope_of), sorted."""
+    scopes = [tuple(s) for s in scopes or []]
     if not scopes:
         return []
     curves = [c for c in _curves_for(scopes) if cmds.objExists(c)]
@@ -135,6 +173,18 @@ def character_keys(object_names, main_only=False):
             times.update(_main_key_times(c))
         return sorted(times)
     return sorted(set(cmds.keyframe(curves, query=True, timeChange=True) or []))
+
+
+def character_keys(object_names, main_only=False):
+    """Every key time of the characters these objects belong to, sorted ([] when none). A mesh counts for the rig
+    that deforms it (its keys are on the rig's controls). main_only: a frame counts only where some curve has a
+    main key there (breakdowns skipped - check your extremes like a 2D key pass)."""
+    scopes = []
+    for n in object_names or []:
+        sc = rig_scope_of(n)
+        if sc not in scopes:
+            scopes.append(sc)
+    return scope_keys(scopes, main_only)
 
 
 def around(keys, now, count=4):

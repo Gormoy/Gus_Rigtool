@@ -4,12 +4,15 @@ character, like Toon Boom Harmony, plus arcs. Based on onionSkinRenderer by Viel
 INSTALL OR UPDATE (every new version the same way)
 1. Unzip anywhere (for example Downloads).
 2. Drag drag_to_maya.mel into Maya's viewport. It installs (or updates) the onion skin, puts one "Onion" button
-   on the shelf you have open and opens the window. From then on: click Onion. Your settings are kept.
+   on the shelf you have open (the onion icon) and opens the window. From then on: click Onion. Your settings are kept.
 
 START
 1. Click once in your camera view, then the big button at the top: "Onion skin ON in this view" (green).
    Click it again to turn it off. Closing the window does NOT turn the onion skin off.
-2. Ghosts tab > Characters: select any control of a character, press + Add selected character.
+2. Ghosts tab > Characters: select any control of a character, press + Add selected character. A rig that
+   isn't referenced (your rigging scene, the model in another group) works too: its meshes are found through
+   the skin. The Script Editor says what was found ("Hare: 12 meshes, keys on 34 frames"); a character with no
+   keys says "no keys" in the list - use Ghosts on: Frames for it.
    Two characters: one control of each. The eye hides that character's ghosts (it stays in the list).
 3. The line under the ON button says what is happening: how many ghosts show, how many are waiting.
 
@@ -51,7 +54,7 @@ SETTINGS TAB
   arcs), Show the mini bar.
 Fill (top): takes all the pictures now. With many frames a progress bar shows - Esc stops it.
 
-MINI BAR
+MINI BAR (Settings tab > Show the mini bar, or the OnionSkin_MiniBar hotkey)
 A small bar over Maya: ON, Before - / +, After - / +, Keys / Main / Frames, Opacity, Hide (while playing), Fill,
 Arcs, Light (light table), and the gear (opens the window). Drag it by its left edge; it remembers where it was and comes back next time. x closes it.
 

@@ -3,6 +3,8 @@ The onion skin's window: ON / Fill / what's showing at the top, presets, then th
 Settings. Everything it shows lives in session.py, so the mini bar and this window always agree, and closing
 the window leaves the onion skin on.
 """
+import sys
+
 from onionSkinRenderer.qt import QtCore, QtWidgets, maya_main_window
 import onionSkinRenderer.session as session
 import onionSkinRenderer.arcs as arcs
@@ -50,7 +52,11 @@ class OnionWindow(QtWidgets.QWidget):
     def __init__(self, s, parent=None):
         super(OnionWindow, self).__init__(parent or maya_main_window())
         self.s = s
-        self.setWindowFlags(QtCore.Qt.Window)
+        # the Mac: a tool window stays in front of Maya (a plain window went behind it when Maya was clicked)
+        self.setWindowFlags(QtCore.Qt.Tool if sys.platform == "darwin" else QtCore.Qt.Window)
+        _keep_shown = getattr(QtCore.Qt, "WA_MacAlwaysShowToolWindow", None)
+        if _keep_shown is not None:
+            self.setAttribute(_keep_shown, True)
         self.setObjectName("onionSkinWindow")
         self.setWindowTitle("Onion Skin")
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -429,7 +435,9 @@ class OnionWindow(QtWidgets.QWidget):
                             dict((i, s.opacity(i)) for i in range(-session.MAX_GHOSTS, session.MAX_GHOSTS + 1) if i),
                             p["pastTint"], p["futureTint"])
         self._fill_rows(self.chars_lay, [
-            (c["name"], "%d mesh%s" % (len(c["meshes"]), "" if len(c["meshes"]) == 1 else "es"), c["visible"],
+            (c["name"], "%d mesh%s%s" % (len(c["meshes"]), "" if len(c["meshes"]) == 1 else "es",
+                                         "" if s.o.characterHasKeys("%s:%s" % c["scope"]) else " - no keys"),
+             c["visible"],
              (lambda on, i=i: self.s.setCharacterVisible(i, on)), (lambda i=i: self.s.removeCharacter(i)))
             for i, c in enumerate(s.characters)], "No characters yet.")
 

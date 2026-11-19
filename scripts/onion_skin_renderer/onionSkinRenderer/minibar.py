@@ -44,6 +44,9 @@ class MiniBar(QtWidgets.QWidget):
         super(MiniBar, self).__init__(parent or maya_main_window())
         self.s = s
         self.setWindowFlags(QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint)
+        _keep_shown = getattr(QtCore.Qt, "WA_MacAlwaysShowToolWindow", None)
+        if _keep_shown is not None:
+            self.setAttribute(_keep_shown, True)
         self.setObjectName("onionSkinMiniBar")
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setStyleSheet(STYLE + "QWidget#onionSkinMiniBar { border:1px solid #222; }")

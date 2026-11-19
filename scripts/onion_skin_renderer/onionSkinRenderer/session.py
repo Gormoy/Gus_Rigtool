@@ -73,12 +73,14 @@ def _key(scope):
     return "%s:%s" % scope
 
 
-def _scene_meshes(exclude=()):
-    """The visible meshes of the scene, without those of these characters (the light table's background)."""
+def _scene_meshes(exclude=(), exclude_meshes=()):
+    """The visible meshes of the scene, without those of these characters (the light table's background): their
+    group, and their own meshes (in a rigging scene the model can sit in another group than the rig)."""
     out = []
+    skip = set(exclude_meshes)
     for shape in cmds.ls(type=("mesh", "nurbsSurface"), long=True, noIntermediate=True) or []:
         t = (cmds.listRelatives(shape, parent=True, fullPath=True) or [None])[0]
-        if t and t not in out and not any(extras.in_scope(t, sc) for sc in exclude):
+        if t and t not in out and t not in skip and not any(extras.in_scope(t, sc) for sc in exclude):
             out.append(t)
     return out
 
@@ -238,6 +240,10 @@ class Session(object):
             showing, waiting = o.countGhosts()
         except Exception:
             showing, waiting = 0, 0
+        if self.prefs["mode"] != "frames":
+            nokeys = [c["name"] for c in self.characters if c["visible"] and not o.characterHasKeys(_key(c["scope"]))]
+            if nokeys and not showing:
+                return "%s: no keys found, so no key ghosts. Use Frames (Ghosts on: Frames)." % ", ".join(nokeys)
         text = "%d ghost%s showing" % (showing, "" if showing == 1 else "s")
         if waiting:
             text += " · %d waiting (%s)" % (waiting, "they fill when you stop" if self.prefs["autoFill"]
@@ -391,8 +397,9 @@ class Session(object):
             print("onionSkinRenderer: select a control (or a mesh) of a character first")
             return 0
         added = 0
+        touched = []
         for m in meshes:
-            scope = extras.scope_of(m)
+            scope = extras.rig_scope_of(m)       # the rig that deforms it (its keys are there), not its own group
             char = next((c for c in self.characters if c["scope"] == scope), None)
             if char is None:
                 char = {"scope": scope, "name": character_name(scope), "meshes": [], "visible": True}
@@ -400,10 +407,22 @@ class Session(object):
                 added += 1
             if m not in char["meshes"]:
                 char["meshes"].append(m)
+            if char not in touched:
+                touched.append(char)
         self._apply_characters()
+        for c in touched:
+            n = len(self.keysOf(c))
+            print("onionSkinRenderer: %s: %d mesh(es), %s" % (c["name"], len(c["meshes"]), (
+                "keys on %d frame(s)" % n) if n else "NO keys found - the key ghosts can't show (use Frames)"))
         self.changed()
         self.scheduleAutoFill()
         return added
+
+    def keysOf(self, char):
+        try:
+            return extras.character_keys(char["meshes"], self.o.mainKeysOnly)
+        except Exception:
+            return []
 
     def setCharacterVisible(self, index, visible):
         if 0 <= index < len(self.characters):
@@ -441,7 +460,10 @@ class Session(object):
         if not self.characters:
             return
         for n in cmds.ls(selection=True, long=True) or []:
-            sc = extras.scope_of(n.split(".")[0])
+            try:
+                sc = extras.rig_scope_of(n.split(".")[0])
+            except Exception:
+                sc = extras.scope_of(n.split(".")[0])
             if any(c["scope"] == sc for c in self.characters):
                 if _key(sc) != self.active:
                     self.active = _key(sc)
@@ -458,9 +480,10 @@ class Session(object):
     def _apply_light(self):
         p = self.prefs
         background = []
-        faded = [c["scope"] for c in self.characters if _key(c["scope"]) != self.active]
+        faded = [c for c in self.characters if _key(c["scope"]) != self.active]
         if p["lightTable"] and len(self.characters) > 1:
-            background = _scene_meshes(exclude=faded)
+            background = _scene_meshes(exclude=[c["scope"] for c in faded],
+                                       exclude_meshes=[m for c in faded for m in c["meshes"]])
         self.o.setLightTable(p["lightTable"], float(p["lightStrength"]), self.active, p["ghostsOf"] == "active",
                              background)
 

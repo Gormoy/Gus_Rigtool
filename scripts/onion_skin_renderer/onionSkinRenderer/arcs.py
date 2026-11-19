@@ -145,7 +145,8 @@ def from_selection():
     comps = [s for s in sel if "." in s]
     objs = [s for s in sel if "." not in s]
     if comps:
-        verts = cmds.ls(cmds.polyListComponentConversion(comps, toVertex=True) or [], flatten=True, long=True) or []
+        conv = cmds.polyListComponentConversion(comps, toVertex=True) or []
+        verts = cmds.ls(conv, flatten=True, long=True) or [] if conv else []      # ls([]) = everything
         for v in verts:
             node, _dot, rest = v.partition(".vtx[")
             if not rest:

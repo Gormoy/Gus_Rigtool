@@ -540,6 +540,10 @@ class ViewRenderOverride(omr.MRenderOverride):
                 self._keysCache[k] = []
         return self._keysCache[k]
 
+    def characterHasKeys(self, key):
+        ch = next((c for c in self.characters if c.key == key), None)
+        return bool(ch and self._keys(ch))
+
     def setRelativeFrames(self, value):
         """Keys mode: each character's ghosts on its own past / next keys."""
         if not self.relativeKeyDisplay:

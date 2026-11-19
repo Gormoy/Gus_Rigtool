@@ -83,7 +83,13 @@ def _ensure_user_setup(version_scripts, shared):
     return True
 
 
-def _shelf_button():
+def _icon(dest):
+    """The onion icon (a small onion with its layers, the past and next ghosts behind it)."""
+    path = os.path.join(dest, "onion_icon.png")
+    return path.replace("\\", "/") if os.path.isfile(path) else "pythonFamily.png"
+
+
+def _shelf_button(icon="pythonFamily.png"):
     top = mel.eval("$osrShelfTmp = $gShelfTopLevel")
     for shelf in cmds.tabLayout(top, query=True, childArray=True) or []:
         for b in cmds.shelfLayout(shelf, query=True, childArray=True) or []:
@@ -98,7 +104,8 @@ def _shelf_button():
                 pass
     current = cmds.tabLayout(top, query=True, selectTab=True)
     cmds.shelfButton(BUTTON, parent=current, label="Onion", annotation="Onion skin (in front, past / next keys)",
-                     image="pythonFamily.png", imageOverlayLabel="Onion", sourceType="python",
+                     image=icon, imageOverlayLabel="" if icon.endswith("onion_icon.png") else "Onion",
+                     sourceType="python",
                      command=BUTTON_COMMAND)
     try:
         mel.eval("saveAllShelves $gShelfTopLevel")
@@ -159,7 +166,7 @@ def install(source_dir):
 
     for name in [m for m in sys.modules if m == PACKAGE or m.startswith(PACKAGE + ".")]:
         del sys.modules[name]
-    shelf = _shelf_button()
+    shelf = _shelf_button(_icon(dest))
     keys = _hotkey_commands()
     import onionSkinRenderer.controller as ctl
     ctl.show()
