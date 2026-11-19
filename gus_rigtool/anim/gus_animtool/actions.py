@@ -79,8 +79,8 @@ ACTIONS = [
      "(right-click: hand-over, both hands, where it holds, the Attach window)", "space"),
     ("release", "Release", "The selected attached thing stays where it is from this frame (right-click: bake / "
      "remove)", "space"),
-    ("arcs", "Arcs", "Arcs follow your selection: drag a key dot to edit; rotation-only controls shown by the onion "
-     "skin (right-click: pin, range, timing beads, clear)", "view"),
+    ("arcs", "Arcs", "An arc on each selected control: drag a key dot to change it (right-click: clear, range, "
+     "handles, timing beads)", "view"),
     ("hide_ctrls", "Controls", "Hide / show the controls in the viewport", "view"),
     ("isolate", "Isolate", "Isolate the selection in the viewport (again: everything)", "view"),
     ("hider", "Body parts", "Show every body part (right-click: hide / isolate a part)", "view"),
@@ -105,11 +105,10 @@ MENUS = {
                     ("Keep the current timing as the original", "offset_keep")],
     "time_scale": [("x0.5 (twice as fast)", "ts_0.5"), ("x0.75", "ts_0.75"), ("x1.5", "ts_1.5"),
                    ("x2 (twice as slow)", "ts_2")],
-    "arcs": [("Pin the selection's arcs (they stay)", "arcs_pin"),
-             ("Range: 12 frames before / after", "arcs_r12"), ("Range: 24 frames before / after", "arcs_r24"),
-             ("Range: 48 frames before / after", "arcs_r48"), ("Range: the whole frame range", "arcs_r0"),
-             ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted"),
-             ("Clear the arcs", "arcs_clear")],
+    "arcs": [("Clear the arcs", "arcs_clear"), ("Range: the whole shot", "arcs_shot"),
+             ("Range: around my frame (24 before / after)", "arcs_around"),
+             ("Show handles on the selected key (on / off)", "arcs_handles"),
+             ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted")],
     "ghosts": [("Clear the ghosts", "ghosts_clear")],
     "attach": [("Hand-over to the second one (4 frames)", "attach_handover"),
                ("Both hands: held by both (50 / 50)", "attach_both"),
@@ -380,19 +379,15 @@ def _call(key):
         return "baked back %d control(s)" % TS.bake_back()
     if key == "arcs":
         from gus_animtool import arctrail
-        if arctrail.follow():
-            sel = arctrail.controls(cmds.ls(selection=True, long=True) or [])
-            if not sel:
-                return "arcs on: they follow what you select"
-            return "arcs follow your selection: " + arctrail.describe(*arctrail.show(sel[:arctrail.FOLLOW_MAX]))
-        return "arcs stop following the selection (pinned ones stay)"
-    if key == "arcs_pin":
+        return arctrail.show(tools._nodes())
+    if key in ("arcs_shot", "arcs_around"):
         from gus_animtool import arctrail
-        return "pinned: " + arctrail.describe(*arctrail.pin(tools._nodes()))
-    if key.startswith("arcs_r") and key[6:].isdigit():
+        arctrail.set_option("arcs_around", key == "arcs_around")
+        return "arcs: %s" % ("24 frames around your frame" if key == "arcs_around" else "the whole shot")
+    if key == "arcs_handles":
         from gus_animtool import arctrail
-        n = arctrail.set_range(int(key[6:]))
-        return "arcs: %s" % ("the whole frame range" if n == 0 else "%d frames before / after" % n)
+        on = arctrail.set_option("arcs_handles", not bool(A.opt("arcs_handles", False)))
+        return "arcs: handles on the selected key %s" % ("on" if on else "off")
     if key == "arcs_weighted":
         from gus_animtool import arctrail
         n = arctrail.make_weighted(tools._nodes())

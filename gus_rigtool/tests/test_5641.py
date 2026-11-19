@@ -197,7 +197,7 @@ check("right-click on Attach: hand-over, both hands, where it holds, previous / 
 # --- 10. arcs
 k = ctrl("L_hand_ctrl")
 check("arcs: a control with free translate but no keys can be edited now (5.6.40 sent it away)", T.moves(k)
-      and not T.has_translate_keys(k) and "set a key to edit it" in T.describe([k], [], []))
+      and not T.has_translate_keys(k) and "set a key to edit" in T.describe([k]))
 cmds.setAttr(k + ".translateX", lock=True); cmds.setAttr(k + ".translateY", lock=True); cmds.setAttr(k + ".translateZ", lock=True)
 check("translate locked (an FK control): view only", not T.moves(k))
 cons = cmds.createNode("pointConstraint", name="k_pc")

@@ -3,6 +3,8 @@ The Attach window (5.6.41): what's attached in the scene; for the one you pick, 
 strip - click it to go there) and its changes (Go / Frame... / Delete); and the actions. The values themselves live
 on the follower's Hold channels (Channel Box) - this window shows them over time and doesn't repeat them.
 """
+import sys
+
 import maya.cmds as cmds
 
 try:
@@ -124,7 +126,11 @@ class Strip(QtWidgets.QWidget):
 class AttachWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(AttachWindow, self).__init__(parent or _maya_window())
-        self.setWindowFlags(QtCore.Qt.Window)
+        # the Mac: a tool window stays in front of Maya (a plain window goes behind it when Maya is clicked)
+        self.setWindowFlags(QtCore.Qt.Tool if sys.platform == "darwin" else QtCore.Qt.Window)
+        _keep_shown = getattr(QtCore.Qt, "WA_MacAlwaysShowToolWindow", None)
+        if _keep_shown is not None:
+            self.setAttribute(_keep_shown, True)
         self.setWindowTitle("Attach")
         self.setObjectName("gusAnimtoolAttachWindow")
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)

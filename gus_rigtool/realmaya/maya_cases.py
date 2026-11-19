@@ -524,11 +524,13 @@ def hare(rep, path):
 
 # --- h: the Animtool's arcs (5.6.40) -----------------------------------------------------------------------------
 def arcs(rep):
-    """h. Arcs: Maya's editable trail dressed like the onion skin's (its settings read back), rotation-only
-    controls told apart, no arc nodes left for a save, weighted tangents only when asked."""
+    """h. Arcs (5.6.42, the plain arc again): Maya's trail on an IK hand, an FK wrist and a control moved by its
+    parent - one orange line, its settings read back, the options (around my frame, handles), no arc nodes left for
+    a save, your selection kept, weighted tangents only when asked."""
     _animtool()
     from gus_animtool import arctrail
-    rep.start("h. Arcs (Animtool): the trail's look, editable or not, saving")
+    from gus_animtool import anim as A
+    rep.start("h. Arcs (Animtool): the plain arc, its options, saving")
     cmds.playbackOptions(minTime=1, maxTime=48)
     hand = _ctrl("L_hand_ik_ctrl")
     for f, x in ((1, 0.0), (12, 4.0), (24, 6.0), (48, 0.0)):
@@ -537,44 +539,50 @@ def arcs(rep):
     wrist = _ctrl("L_wrist_fk_ctrl", parent=cmds.group(empty=True, name="L_elbow_fk"))
     for f, r in ((1, 0.0), (24, 60.0), (48, 0.0)):
         cmds.setKeyframe(wrist, attribute="rotateZ", time=f, value=r)
-    _lock(wrist, ["translate"])                                  # an FK control: translate locked
+    _lock(wrist, ["translate"])
     mover = cmds.group(empty=True, name="prop_space")
     for f, x in ((1, 0.0), (48, 10.0)):
         cmds.setKeyframe(mover, attribute="translateZ", time=f, value=x)
-    led = _ctrl("L_prop_ctrl", parent=mover)                      # no keys: moved by its parent (5.6.40 gave no arc)
-    rep.expect("the IK hand's arc can be edited (its translate is animated)", arctrail.moves(hand))
-    rep.expect("the FK wrist (translate locked): shown, not editable", not arctrail.moves(wrist))
-    rep.expect("5.6.41: a control with no translate keys, moved by its parent, gets an editable arc",
-               arctrail.moves(led) and not arctrail.has_translate_keys(led))
+    led = _ctrl("L_prop_ctrl", parent=mover)
     cmds.currentTime(24)
-    made = rep.step("make the hand's arc", arctrail.make, [hand]) or []
-    rep.add(INFO, "nodes made", ", ".join(m.split("|")[-1] for m in made))
+    cmds.select(hand, replace=True)
+    said = rep.step("Arcs on the hand, the wrist and the prop control", arctrail.show, [hand, wrist, led])
+    rep.add(INFO, "the message", str(said))
+    rep.expect("your selection is still yours (not a new arc)",
+               cmds.ls(selection=True, long=True) == [cmds.ls(hand, long=True)[0]], str(cmds.ls(selection=True)))
+    rep.expect("an arc for each of the three", all(arctrail._trails_of(n) for n in (hand, wrist, led)),
+               str(arctrail.trails()))
+    made = arctrail._trails_of(hand)
     shapes = [sh for m in made for sh in (cmds.listRelatives(m, shapes=True, fullPath=True) or [m])]
-    done = []
     for sh in shapes:
-        done += arctrail.style(sh if cmds.objExists(sh) else made[0])
         rep.add(INFO, "%s (%s): its settings" % (sh.split("|")[-1], cmds.nodeType(sh)),
                 ", ".join(sorted(a for a in (cmds.listAttr(sh) or []) if any(
                     w in a.lower() for w in ("frame", "trail", "color", "tangent", "fade", "bead", "mode")))))
-        if "trailDrawMode" in (cmds.listAttr(sh) or []):
-            rep.add(INFO, "trailDrawMode's choices", str(cmds.attributeQuery("trailDrawMode", node=sh, listEnum=True)))
+    done = []
+    for sh in shapes:
+        done += arctrail.style(sh)
     rep.add(INFO, "settings the Animtool set", ", ".join(sorted(set(done))) or "none")
-    rep.expect("the window around your frame is set (preFrame / postFrame 24)", "preFrame" in done and "postFrame" in done,
-               bad=NOTE)
-    rep.expect("past / future colours (trailDrawMode 'Past/Future')", "trailDrawMode" in done, bad=NOTE)
-    rep.expect("the bezier handles show on the selected key", any("angent" in d for d in done), bad=NOTE)
-    had = len(arctrail._trails_of(hand))
-    edit, view, unseen = arctrail.show([hand, wrist])
-    rep.expect("show(): the hand editable, the wrist view-only", edit == [hand] and view == [wrist])
-    rep.add(INFO, "the wrist", "shown by the onion skin" if wrist not in unseen else "the onion skin isn't installed here")
-    rep.expect("the hand's arc isn't made twice", had >= 1 and len(arctrail._trails_of(hand)) == had)
-    arctrail._state["followed"] = [hand]
+    rep.expect("the orange line and the dots are set", "trailColor" in done and "showFrameMarkers" in done, bad=NOTE)
+    A.set_opt("arcs_around", True)
+    A.set_opt("arcs_handles", True)
+    arctrail.restyle()
+    vals = {}
+    for sh in shapes:
+        for a in ("preFrame", "postFrame", "showInTangent"):
+            if cmds.attributeQuery(a, node=sh, exists=True):
+                vals[a] = cmds.getAttr(sh + "." + a)
+    rep.add(INFO, "around my frame + handles on", str(vals))
+    rep.expect("Range around my frame: 24 before / after", vals.get("preFrame") == 24, bad=NOTE)
+    A.set_opt("arcs_around", False)
+    A.set_opt("arcs_handles", False)
+    arctrail.restyle()
     arctrail._before_save()
     rep.expect("before a save: no arc nodes left in the scene", not cmds.ls(arctrail.GROUP) and
                not cmds.ls(type="motionTrail"), str(cmds.ls(type="motionTrail")))
-    rep.expect("... and it remembers to put them back", arctrail._state["saved"] == [hand])
-    arctrail.show(arctrail._state["saved"] or [])
-    rep.expect("after the save: the hand's arc is back", bool(arctrail._trails_of(hand)))
+    rep.expect("... and it remembers to put them back", len(arctrail._state["saved"] or []) == 3)
+    arctrail._remake(arctrail._state["saved"] or [])
+    arctrail._state["saved"] = None
+    rep.expect("after the save: the arcs are back", bool(arctrail._trails_of(hand)))
     curves = cmds.listConnections(hand + ".translateX", source=True, destination=False, type="animCurve")
     before = cmds.keyTangent(curves, query=True, weightedTangents=True)
     n = rep.step("timing beads: make the hand's curves weighted (no question here)", arctrail.make_weighted, [hand],
@@ -586,18 +594,6 @@ def arcs(rep):
                bad=NOTE)
     arctrail.clear()
     rep.expect("Clear: the arcs are gone", not cmds.ls(arctrail.GROUP))
-    # follow selection for real: making a trail must not count as a new selection (5.6.40: nothing showed)
-    cmds.select(led, replace=True)
-    arctrail.follow(True)
-    arctrail._selection_changed()
-    rep.expect("follow selection: the arc of what you selected shows", bool(arctrail._trails_of(led)))
-    rep.expect("... and your selection is still yours (not the new trail)",
-               cmds.ls(selection=True, long=True) == [cmds.ls(led, long=True)[0]], str(cmds.ls(selection=True)))
-    trail = arctrail._trails_of(led)[0]
-    cmds.select(trail, replace=True)
-    arctrail._selection_changed()
-    rep.expect("selecting the trail (to drag a key) keeps the arc", bool(arctrail._trails_of(led)))
-    arctrail.clear()
 
 
 # --- i: Attach (5.6.41) ---------------------------------------------------------------------------------------------
