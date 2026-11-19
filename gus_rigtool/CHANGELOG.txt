@@ -1,3 +1,43 @@
+Gus_Rigtool 5.6.42 - Arcs: the plain arc again, and the Arcs panel; Attach and Arcs windows stay in front on the Mac
+
+Gus found 5.6.40's arcs "too much" (past / future colours, a fading window, follow selection) and the Attach window
+went behind Maya on the Mac.
+
+Arcs (Animtool > Arcs):
+- Back to the plain arc of before 5.6.40: an arc on each selected control over the shot, one line, small dots for
+  the spacing, bigger dots on keys; it stays until you clear it. Follow selection, pin, the colours and the onion
+  skin hand-off are gone.
+- Kept from 5.6.40 / 5.6.41: any control (keyed or not; an FK one shows its arc, the message says don't drag it),
+  no arc nodes in your files, your selection kept, an arc never taken for a control.
+- Right-click: the Arcs panel, Clear, Range (the whole shot / around my frame), Show handles on the selected key
+  (off by default), Timing beads (make weighted - asks first).
+- The Arcs panel: every arc in the scene - show / hide (kept), its own colour (click the square), remove, click
+  the name to select the control; + Arc on the selection, Clear all; Range (the whole shot or around my frame,
+  with how many frames); Look for all arcs (line thickness, frame dots, key dots, frame dots on / off, frame
+  numbers); Editing (handles on the selected key, timing beads); Speed (a point every 1 / 2 / 4 frames - heavy
+  rigs). Everything is kept for next time and shows straight away.
+- Each arc its own colour: a left control (L_...) starts blue, the others orange; a colour you pick is kept by the
+  control's name.
+
+The Mac: the Attach window and the Arcs panel are tool windows there, so they stay in front of Maya.
+
+Real-Maya test h: rewritten for the plain arc - the message, your selection kept, an arc for an IK hand, an FK
+wrist and a control moved by its parent, its settings read back, around my frame + handles, an arc's own colour,
+hide one, a point every 2 frames, no arc nodes before a save, weighted tangents and Ctrl+Z.
+
+Decisions I made:
+- Default arc colours: left controls (L_, _L_, Left) blue - like the onion skin's past - the others orange (the
+  old arc colour). Picked colours are kept by the control's short name, so they come back in other scenes.
+- 'A point every' makes the arcs again (Maya samples an arc when it's made); hidden arcs stay hidden.
+- The whole shot uses Maya's own defaults for the trail's range (as before 5.6.40); around my frame: 24 frames by
+  default, any number in the panel.
+- tests: test_5640 keeps what 5.6.42 keeps (which controls, no arcs in files, timing beads, clear / another scene);
+  its look / follow / pin / onion parts went (they're gone from the tool); test_5641's arc message call updated.
+
+Tested against the fake Maya (tests/test_5642.py, the full suite) and the Arcs panel with real Qt (offscreen,
+outside the suite). Not tested in real Maya: run real-Maya test h; the look of the arcs and the Mac windows need
+your eyes.
+
 Gus_Rigtool 5.6.41 - Attach without the stutter, with hold channels, hand-over, both hands and an Attach window;
 arcs that work on any control
 

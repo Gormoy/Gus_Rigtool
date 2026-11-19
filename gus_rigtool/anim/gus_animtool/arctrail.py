@@ -13,16 +13,55 @@ Timing beads (make weighted - asks first).
 
 Untested in real Maya: the trail's settings are found by name; a setting Maya doesn't have is skipped.
 """
+import json
+
 import maya.cmds as cmds
 
 from gus_animtool import anim as A
 
 GROUP = "gusAnimtool_arcs_grp"
 COLOUR = (1.0, 0.55, 0.15)        # the arc's orange (as before 5.6.40)
-AROUND = 24                       # Range: around my frame (frames before / after)
+LEFT = (0.29, 0.64, 1.0)          # a left control's arc starts blue (like the onion skin's past)
+AROUND = 24                       # Range: around my frame (frames before / after), the default
+# the Arcs panel's settings (kept for next time): name -> default
+OPTS = {"arcs_around": False, "arcs_frames": AROUND, "arcs_handles": False, "arcs_thick": 2.0, "arcs_dot": 6.0,
+        "arcs_key": 9.0, "arcs_dots": True, "arcs_numbers": False, "arcs_step": 1}
 FREE_SOURCES = ("animCurve", "pairBlend", "animBlendNodeBase")    # keys, also through a blend or anim layers
 
-_state = {"nodes": [], "callbacks": [], "jobs": [], "saved": None, "busy": False}
+_state = {"nodes": [], "hidden": [], "callbacks": [], "jobs": [], "saved": None, "busy": False}
+
+
+def opt(key):
+    return type(OPTS[key])(A.opt(key, OPTS[key]))
+
+
+# --------------------------------------------------------------------------- each arc's colour
+def _colours():
+    try:
+        return json.loads(A.opt("arcs_colours", "{}") or "{}")
+    except (TypeError, ValueError):
+        return {}
+
+
+def colour_of(node):
+    """This control's arc colour: the one you picked (kept by its name), else left blue, the others orange."""
+    short = _short(node)
+    got = _colours().get(short)
+    if got:
+        return tuple(got[:3])
+    low = short.lower()
+    if low.startswith("l_") or "_l_" in low or low.startswith("left"):
+        return LEFT
+    return COLOUR
+
+
+def set_colour(node, rgb):
+    c = _colours()
+    c[_short(node)] = [round(float(x), 4) for x in rgb[:3]]
+    A.set_opt("arcs_colours", json.dumps(c))
+    for t in _trails_of(node):
+        style(t, colour=tuple(rgb[:3]))
+    return tuple(rgb[:3])
 
 
 # --------------------------------------------------------------------------- what kind of control
@@ -109,7 +148,7 @@ def make(nodes):
         for n in nodes:
             if _trails_of(n):
                 continue
-            got = cmds.snapshot(n, motionTrail=True, increment=1, startTime=s, endTime=e,
+            got = cmds.snapshot(n, motionTrail=True, increment=max(1, opt("arcs_step")), startTime=s, endTime=e,
                                 name=_short(n) + "_arc") or []
             for g in got:
                 if cmds.nodeType(g) == "transform":
@@ -118,7 +157,7 @@ def make(nodes):
                     except RuntimeError:
                         pass
                 made.append(g)
-                style(g)
+                style(g, colour=colour_of(n))
             ln = (cmds.ls(n, long=True) or [n])[0]
             if ln not in _state["nodes"]:
                 _state["nodes"].append(ln)
@@ -184,12 +223,13 @@ def _default(node, attr):
         return 0
 
 
-def style(node, around=None, handles=None):
-    """The plain look: one orange line, dots on the frames, bigger dots on keys, no frame numbers. Range: the shot
-    (Maya's own default) or AROUND frames before / after your frame. Handles: on the selected key, or off.
-    Returns what was set."""
-    around = bool(A.opt("arcs_around", False)) if around is None else around
-    handles = bool(A.opt("arcs_handles", False)) if handles is None else handles
+def style(node, around=None, handles=None, colour=None):
+    """The plain look (the Arcs panel's settings): the line, dots on the frames, bigger dots on keys, frame numbers
+    or not, its colour. Range: the shot (Maya's own default) or some frames before / after your frame. Handles: on
+    the selected key, or off. Returns what was set."""
+    around = opt("arcs_around") if around is None else around
+    handles = opt("arcs_handles") if handles is None else handles
+    colour = colour or COLOUR
     done = []
     for sh in cmds.listRelatives(node, shapes=True, fullPath=True) or [node]:
         have = _attrs(sh)
@@ -197,15 +237,15 @@ def style(node, around=None, handles=None):
         def put(attr, *value, **kw):
             if attr in have and _set(sh, attr, *value, **kw):
                 done.append(attr)
-        put("showFrameMarkers", True)
-        put("frameMarkerSize", 6.0)
-        put("keyframeSize", 9.0)
-        put("trailThickness", 2.0)
-        put("showFrames", False)
-        put("trailColor", *COLOUR, type="double3")
+        put("showFrameMarkers", opt("arcs_dots"))
+        put("frameMarkerSize", opt("arcs_dot"))
+        put("keyframeSize", opt("arcs_key"))
+        put("trailThickness", opt("arcs_thick"))
+        put("showFrames", opt("arcs_numbers"))
+        put("trailColor", *colour, type="double3")
         for a in ("preFrame", "postFrame"):
             if a in have:
-                put(a, AROUND if around else _default(sh, a))
+                put(a, opt("arcs_frames") if around else _default(sh, a))
         if "fadeInoutFrames" in have:
             put("fadeInoutFrames", _default(sh, "fadeInoutFrames"))
         for a in have:
@@ -215,16 +255,80 @@ def style(node, around=None, handles=None):
     return done
 
 
+def control_of(trail):
+    short = trail.split("|")[-1]
+    for n in _state["nodes"]:
+        if short.startswith(_short(n) + "_arc"):
+            return n
+    return None
+
+
 def restyle():
     for t in trails():
-        style(t)
+        n = control_of(t)
+        style(t, colour=colour_of(n) if n else None)
 
 
 def set_option(key, value):
-    """arcs_around / arcs_handles - kept, and the arcs restyled."""
+    """An Arcs panel setting - kept for next time, the arcs changed straight away (a new 'point every' remakes
+    them: Maya samples the arc when it's made)."""
     A.set_opt(key, value)
-    restyle()
+    if key == "arcs_step":
+        nodes = [n for n in _state["nodes"] if cmds.objExists(n)]
+        hidden = list(_state["hidden"])
+        clear()
+        with A.NoUndo():
+            make(nodes)
+        for n in hidden:
+            set_visible(n, False)
+    else:
+        restyle()
     return value
+
+
+# --------------------------------------------------------------------------- one arc at a time (the panel)
+def arcs():
+    """[(control, its trails)] - the arcs in the scene, in the order they were made."""
+    return [(n, _trails_of(n)) for n in _state["nodes"] if cmds.objExists(n) and _trails_of(n)]
+
+
+def set_visible(node, visible):
+    for t in _trails_of(node):
+        try:
+            cmds.setAttr(t + ".visibility", bool(visible))
+        except RuntimeError:
+            pass
+    if visible and node in _state["hidden"]:
+        _state["hidden"].remove(node)
+    elif not visible and node not in _state["hidden"]:
+        _state["hidden"].append(node)
+    return bool(visible)
+
+
+def remove(node):
+    with A.NoUndo():
+        for t in _trails_of(node):
+            if cmds.objExists(t):
+                cmds.delete(t)
+    for lst in (_state["nodes"], _state["hidden"]):
+        if node in lst:
+            lst.remove(node)
+    return True
+
+
+def key_count(node):
+    curves = []
+    for ax in "XYZ":
+        curves += cmds.listConnections("%s.translate%s" % (node, ax), source=True, destination=False,
+                                       type="animCurve") or []
+    return len(set(cmds.keyframe(curves, query=True, timeChange=True) or [])) if curves else 0
+
+
+def note_of(node):
+    if not moves(node):
+        return "only rotates"
+    n = key_count(node)
+    return "keys on %d frame%s" % (n, "" if n == 1 else "s") if n else "no translate keys yet"
 
 
 def clear():
@@ -233,7 +337,7 @@ def clear():
     if grp:
         with A.NoUndo():
             cmds.delete(grp)
-    _state["nodes"] = []
+    _state["nodes"], _state["hidden"] = [], []
     _unwatch()
     return True
 
@@ -326,10 +430,12 @@ def _after_save(*_):
 def _remake(nodes):
     with A.NoUndo():
         make(nodes)
+        for n in list(_state["hidden"]):
+            set_visible(n, False)                 # a hidden arc stays hidden after a save
 
 
 def _scene_gone(*_):
-    _state["nodes"] = []
+    _state["nodes"], _state["hidden"] = [], []
     _unwatch()
 
 

@@ -1,0 +1,22 @@
+PASS the plain arc: one orange line, dots on the frames, bigger keys, no frame numbers (as before 5.6.40)
+PASS no past / future colours, no draw mode change (5.6.40's look gone)
+PASS the whole shot: Maya's own range (its defaults), no fade
+PASS handles off by default
+PASS Range around my frame: 24 before / after; Show handles: on (Maya shows them on the selected key)
+PASS Arcs: an arc on each selected control (not on an arc itself)
+PASS the message: no translate keys yet -> set a key; the FK one only rotates -> don't drag it
+PASS nothing selected: 'select the controls first'
+PASS right-click on Arcs: the Arcs panel, clear, the whole shot, around my frame, handles, timing beads
+PASS around my frame: kept, the arcs restyled
+PASS the whole shot again
+PASS handles: on, then off
+PASS no follow selection / pin any more
+PASS each arc its own colour: a left control starts blue, the others orange
+PASS pick a colour: kept by the control's name (for next time) and put on its arc
+PASS the eye: the arc hidden (kept, remembered as hidden)
+PASS x: that arc removed, the others kept
+PASS a look setting: kept, every arc restyled at once
+PASS a point every 2 frames: the arcs made again (Maya samples when it makes them), hidden ones stay hidden
+PASS the Arcs panel: a tool window on the Mac too
+PASS the Attach window: a tool window on the Mac (stays in front of Maya), shown even when Maya isn't active
+21/21 passed

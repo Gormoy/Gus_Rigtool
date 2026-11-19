@@ -79,8 +79,8 @@ ACTIONS = [
      "(right-click: hand-over, both hands, where it holds, the Attach window)", "space"),
     ("release", "Release", "The selected attached thing stays where it is from this frame (right-click: bake / "
      "remove)", "space"),
-    ("arcs", "Arcs", "An arc on each selected control: drag a key dot to change it (right-click: clear, range, "
-     "handles, timing beads)", "view"),
+    ("arcs", "Arcs", "An arc on each selected control: drag a key dot to change it (right-click: the Arcs panel, "
+     "clear, range, handles, timing beads)", "view"),
     ("hide_ctrls", "Controls", "Hide / show the controls in the viewport", "view"),
     ("isolate", "Isolate", "Isolate the selection in the viewport (again: everything)", "view"),
     ("hider", "Body parts", "Show every body part (right-click: hide / isolate a part)", "view"),
@@ -105,7 +105,7 @@ MENUS = {
                     ("Keep the current timing as the original", "offset_keep")],
     "time_scale": [("x0.5 (twice as fast)", "ts_0.5"), ("x0.75", "ts_0.75"), ("x1.5", "ts_1.5"),
                    ("x2 (twice as slow)", "ts_2")],
-    "arcs": [("Clear the arcs", "arcs_clear"), ("Range: the whole shot", "arcs_shot"),
+    "arcs": [("Arcs panel (every arc, its colour, range, look)", "arcs_panel"), ("Clear the arcs", "arcs_clear"), ("Range: the whole shot", "arcs_shot"),
              ("Range: around my frame (24 before / after)", "arcs_around"),
              ("Show handles on the selected key (on / off)", "arcs_handles"),
              ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted")],
@@ -380,6 +380,13 @@ def _call(key):
     if key == "arcs":
         from gus_animtool import arctrail
         return arctrail.show(tools._nodes())
+    if key == "arcs_panel":
+        try:
+            from gus_animtool import arcswin
+        except ImportError as e:
+            raise RuntimeError("the Arcs panel couldn't open (Qt: %s)." % e)
+        arcswin.show()
+        return None
     if key in ("arcs_shot", "arcs_around"):
         from gus_animtool import arctrail
         arctrail.set_option("arcs_around", key == "arcs_around")

@@ -576,6 +576,21 @@ def arcs(rep):
     A.set_opt("arcs_around", False)
     A.set_opt("arcs_handles", False)
     arctrail.restyle()
+    # the Arcs panel: each arc its own colour, hide one, a point every 2 frames (the arcs made again)
+    arctrail.set_colour(led, (0.2, 0.9, 0.3))
+    col = [cmds.getAttr(sh + ".trailColor")[0] for t in arctrail._trails_of(led)
+           for sh in (cmds.listRelatives(t, shapes=True, fullPath=True) or [])
+           if cmds.attributeQuery("trailColor", node=sh, exists=True)]
+    rep.expect("the prop control's arc in its own colour (green)", bool(col) and abs(col[0][1] - 0.9) < 1e-3,
+               str(col), bad=NOTE)
+    arctrail.set_visible(wrist, False)
+    rep.expect("the wrist's arc hidden (kept)", all(not cmds.getAttr(t + ".visibility")
+                                                    for t in arctrail._trails_of(wrist)))
+    arctrail.set_option("arcs_step", 2)
+    rep.expect("a point every 2 frames: the three arcs made again, the wrist's still hidden",
+               all(arctrail._trails_of(n) for n in (hand, wrist, led)) and
+               all(not cmds.getAttr(t + ".visibility") for t in arctrail._trails_of(wrist)))
+    arctrail.set_option("arcs_step", 1)
     arctrail._before_save()
     rep.expect("before a save: no arc nodes left in the scene", not cmds.ls(arctrail.GROUP) and
                not cmds.ls(type="motionTrail"), str(cmds.ls(type="motionTrail")))

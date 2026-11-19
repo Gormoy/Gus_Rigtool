@@ -61,8 +61,8 @@ except RuntimeError as e:
 check("nothing selected: 'select the controls first'", "select the controls" in msg)
 
 # --- right-click
-check("right-click on Arcs: clear, the whole shot, around my frame, handles, timing beads",
-      [c for _l, c in AC.MENUS["arcs"]] == ["arcs_clear", "arcs_shot", "arcs_around", "arcs_handles", "arcs_weighted"])
+check("right-click on Arcs: the Arcs panel, clear, the whole shot, around my frame, handles, timing beads",
+      [c for _l, c in AC.MENUS["arcs"]] == ["arcs_panel", "arcs_clear", "arcs_shot", "arcs_around", "arcs_handles", "arcs_weighted"])
 restyled = []
 T.restyle = lambda: restyled.append(1)
 check("around my frame: kept, the arcs restyled", "24 frames around" in AC._call("arcs_around") and
@@ -71,6 +71,45 @@ check("the whole shot again", "whole shot" in AC._call("arcs_shot") and _opts["a
 check("handles: on, then off", "on" in AC._call("arcs_handles") and _opts["arcs_handles"] is True and
       "off" in AC._call("arcs_handles"))
 check("no follow selection / pin any more", not hasattr(T, "follow") and not hasattr(T, "pin"))
+
+# --- the Arcs panel's arc functions: each arc its own colour, hide, remove, the settings
+import importlib
+T = importlib.reload(T)
+T.restyle = T.restyle
+right = cmds.ls(createNode("transform", name="R_hand_ik_ctrl"), long=True)[0]
+check("each arc its own colour: a left control starts blue, the others orange",
+      T.colour_of(hand) == T.LEFT and T.colour_of(right) == T.COLOUR)
+styled_with = []
+T.style = lambda t, colour=None, **k: styled_with.append((t, colour)) or []
+T._trails_of = lambda n: ["|gusAnimtool_arcs_grp|%s_arcHandle" % T._short(n)]
+T.set_colour(right, (0.2, 0.9, 0.3))
+check("pick a colour: kept by the control's name (for next time) and put on its arc",
+      T.colour_of(right) == (0.2, 0.9, 0.3) and styled_with[-1] == ("|gusAnimtool_arcs_grp|R_hand_ik_ctrl_arcHandle",
+                                                                    (0.2, 0.9, 0.3)))
+vis = []
+with mock.patch.object(cmds, "setAttr", lambda plug, v, **k: vis.append((plug, v))):
+    T.set_visible(right, False)
+check("the eye: the arc hidden (kept, remembered as hidden)", vis == [("|gusAnimtool_arcs_grp|R_hand_ik_ctrl_arcHandle"
+                                                                       ".visibility", False)] and right in T._state["hidden"])
+T._state["nodes"] = [hand, right]
+gone = []
+with mock.patch.object(cmds, "delete", lambda *a, **k: gone.extend(a)), mock.patch.object(cmds, "objExists", lambda n: True):
+    T.remove(right)
+check("x: that arc removed, the others kept", gone == ["|gusAnimtool_arcs_grp|R_hand_ik_ctrl_arcHandle"] and
+      T._state["nodes"] == [hand] and right not in T._state["hidden"])
+T.restyle = lambda: styled_with.append("all")
+T.set_option("arcs_thick", 4.0)
+check("a look setting: kept, every arc restyled at once", _opts["arcs_thick"] == 4.0 and styled_with[-1] == "all")
+remade = []
+T.make = lambda nodes: remade.append(list(nodes)) or []
+T.clear = lambda: T._state.update(nodes=[], hidden=[])
+T._state.update(nodes=[hand], hidden=[hand])
+with mock.patch.object(cmds, "objExists", lambda n: True), mock.patch.object(cmds, "setAttr", lambda *a, **k: None):
+    T.set_option("arcs_step", 2)
+check("a point every 2 frames: the arcs made again (Maya samples when it makes them), hidden ones stay hidden",
+      remade == [[hand]] and _opts["arcs_step"] == 2 and hand in T._state["hidden"])
+src = open(os.path.join(os.getcwd(), "..", "anim", "gus_animtool", "arcswin.py")).read()
+check("the Arcs panel: a tool window on the Mac too", 'QtCore.Qt.Tool if sys.platform == "darwin"' in src)
 
 # --- the Attach window on the Mac
 src = open(os.path.join(os.getcwd(), "..", "anim", "gus_animtool", "attachwin.py")).read()
