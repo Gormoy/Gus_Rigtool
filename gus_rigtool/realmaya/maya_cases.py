@@ -698,6 +698,71 @@ def attach_case(rep):
                _diff(_pos(box), at40) < 1e-2, "%.5f" % _diff(_pos(box), at40))
 
 
+def attach_quiet(rep):
+    """j. Attach (5.6.43): Gus's shot - the IK wrist, no keys of its own, attached to a prop at frame 30. No
+    'divide by zero' warnings (5.6.41-42 printed one every frame where nothing held it), the wrist where it is
+    before frame 30 and following the prop after; an old attach (floor 0.000001) repaired."""
+    _animtool()
+    from gus_animtool import attach as AT
+    rep.start("j. Attach without 'divide by zero' (the IK wrist on a prop, from frame 30)")
+    cmds.playbackOptions(minTime=1, maxTime=60)
+    rig = cmds.group(empty=True, name="rig_grp")
+    arm = cmds.group(empty=True, name="L_wrist_IK_offset", parent=rig)
+    cmds.setAttr(arm + ".translate", 3, 4, 0)
+    wrist = _ctrl("L_wrist_IK_ctrl", parent=arm)
+    axe = _ctrl("Axe_CTRL_01")
+    for f, x, y, z, ry in ((1, 0, 0, 5, 0), (60, 10, 3, 5, 120)):
+        for a, v in (("translateX", x), ("translateY", y), ("translateZ", z), ("rotateY", ry)):
+            cmds.setKeyframe(axe, attribute=a, time=f, value=v)
+    warnings = []
+    cb = None
+    try:
+        import maya.OpenMaya as om1
+        def _out(msg, kind, *_):
+            if "divide by zero" in msg:
+                warnings.append(msg)
+        cb = om1.MCommandMessage.addCommandOutputCallback(_out)
+    except Exception as e:
+        rep.add(INFO, "warnings can't be counted here", str(e))
+    try:
+        cmds.currentTime(10)
+        free10 = _pos(wrist)
+        cmds.currentTime(30)
+        AT.attach(wrist, axe)
+        for f in range(1, 61):
+            cmds.currentTime(f)
+            cmds.getAttr(wrist + ".worldMatrix[0]")
+        cmds.currentTime(10)
+        rep.expect("before frame 30 the wrist stays where it was (not 'unpredictable')",
+                   _diff(_pos(wrist), free10) < TOL, "%.5f" % _diff(_pos(wrist), free10))
+        cmds.currentTime(30)
+        rel = A_rel(wrist, axe)
+        worst = 0.0
+        for f in range(30, 61):
+            cmds.currentTime(f)
+            worst = max(worst, _diff(A_rel(wrist, axe), rel))
+        rep.expect("from frame 30 the wrist follows the axe exactly", worst < TOL, "%.5f" % worst)
+        d = AT.read(wrist)
+        floors = [cmds.getAttr(n + ".minR") for n in d["norm"] if cmds.nodeType(n) == "clamp"]
+        rep.expect("every divider's floor 0.001", floors and min(floors) >= 0.001 - 1e-9, str(floors))
+        for n in d["norm"]:
+            if cmds.nodeType(n) == "clamp":
+                cmds.setAttr(n + ".minR", 1e-6)                     # as 5.6.41-42 made it
+        rep.expect("Repair fixes a 5.6.41-42 attach", AT.repair() >= 2)
+        del warnings[:]
+        for f in range(1, 61):
+            cmds.currentTime(f)
+            cmds.getAttr(wrist + ".worldMatrix[0]")
+        if cb is not None:
+            rep.expect("no 'divide by zero' warnings over the whole shot", not warnings, "%d warning(s)" % len(warnings))
+    finally:
+        if cb is not None:
+            try:
+                om1.MMessage.removeCallback(cb)
+            except Exception:
+                pass
+
+
 def A_rel(n, holder):
     """n's world position in holder's space (what 'follows exactly' keeps)."""
     import maya.api.OpenMaya as om
@@ -708,6 +773,6 @@ def A_rel(n, holder):
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
-         ("i. attach", attach_case)]
+         ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

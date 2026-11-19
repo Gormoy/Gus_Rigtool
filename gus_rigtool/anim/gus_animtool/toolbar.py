@@ -42,7 +42,7 @@ def make_shelf(*_):
                 pass
     else:
         mel.eval('addNewShelfTab "%s"' % SHELF)
-    n = 0
+    n, failed = 0, []
     for i, group in enumerate(_groups([k for k, _l, _t, _g in AC.ACTIONS])):
         if i:
             try:
@@ -53,8 +53,18 @@ def make_shelf(*_):
             _k, label, tip, _g = AC.info(k)
             menu = AC.menu_items(k)
             flags = {"menuItem": menu, "menuItemPython": list(range(len(menu)))} if menu else {}
-            cmds.shelfButton(parent=SHELF, label=label, annotation=tip + (" (right-click for more)" if menu else ""),
-                             image=AC.icon(k), command=AC.command(k), sourceType="python", **flags)
+            try:
+                cmds.shelfButton(parent=SHELF, label=label, annotation=tip + (" (right-click for more)" if menu
+                                                                              else ""),
+                                 image=AC.icon(k), command=AC.command(k), sourceType="python", **flags)
+            except (RuntimeError, TypeError, ValueError) as e:
+                try:                                       # its right-click menu the problem? the button without it
+                    cmds.shelfButton(parent=SHELF, label=label, annotation=tip, image=AC.icon(k),
+                                     command=AC.command(k), sourceType="python")
+                    failed.append("%s (made without its right-click menu: %s)" % (label, e))
+                except (RuntimeError, TypeError, ValueError) as e2:
+                    failed.append("%s (%s)" % (label, e2))
+                    continue
             n += 1
     cmds.shelfButton(parent=SHELF, label="Update", annotation="Install a newer Gus Animtool zip", image=AC.icon("update"),
                      command="import gus_animtool.updater as _u; _u.install_dialog()", sourceType="python")
@@ -62,6 +72,8 @@ def make_shelf(*_):
         mel.eval("saveAllShelves $gShelfTopLevel")
     except RuntimeError:
         pass
+    if failed:                                              # 5.6.43: a button never vanishes without a word
+        A.message("shelf: %s - please send this line." % "; ".join(failed), "warn")
     return n + 1
 
 

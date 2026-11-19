@@ -181,7 +181,7 @@ class AttachWindow(QtWidgets.QWidget):
                    ("Both hands", "Held by what holds it now and the second one, 50 / 50", self.both, False),
                    ("Release", "From this frame it stays where it is", self.release, False),
                    ("Bake", "Plain keys every frame of the range; the attach goes", self.bake, False),
-                   ("Repair", "Attaches from 5.6.40: stop their stutter (nothing moves)", self.repair, False)]
+                   ("Repair", "Older attaches: stop their stutter and the divide-by-zero warnings (nothing moves)", self.repair, False)]
         for n, (label, tip, fn, main) in enumerate(actions):
             b = QtWidgets.QPushButton(label)
             b.setToolTip(tip)
@@ -337,7 +337,7 @@ class AttachWindow(QtWidgets.QWidget):
     def repair(self):
         got = _do(AT.repair)
         if got is not None:
-            A.message("repaired %d attach link(s): no more stutter." % got)
+            A.message("repaired %d attach part(s): no more stutter or divide-by-zero warnings." % got)
         return self._after(got)
 
     def move(self, n, frame):

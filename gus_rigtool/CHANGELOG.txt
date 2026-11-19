@@ -1,3 +1,49 @@
+Gus_Rigtool 5.6.43 - Attach without 'divide by zero', the floating Animtool bar, the shelf's Attach, the Face kit tab
+
+Gus's log: thousands of "basicExpression has encountered a divide by zero" warnings after Attach, the IK wrist in
+the wrong place, the Attach window and Arcs panel hard to find, Attach gone from the Gus_Animtool shelf, and the
+Face kit tab crashing on a deleted ribbon.
+
+Attach (Animtool):
+- The cause: each hold is divided by the holds added up, with a floor so it's never 0. The floor was 0.000001 and
+  Maya counts anything under 0.00001 as zero - so on every frame where nothing held it yet (before the first
+  attach frame) Maya warned, slowed down, and called the result 'unpredictable'. The floor is 0.001 now: before
+  the attach frame the thing stays where it is, from it it follows, no warnings.
+- Attaches made with 5.6.41 / 5.6.42: right-click Attach > Repair (or Repair in the Attach window) fixes them,
+  nothing moves; attaching the same control again fixes it too.
+
+The Animtool bar (new):
+- Every Animtool tool in a small strip that floats over Maya and stays in front (the Mac too): the same icons and
+  right-click menus as the toolbar, the Tween slider, and the Attach window and the Arcs panel right after Attach /
+  Release and Arcs.
+- A row (2 lines of icons) to start; the arrows button turns it into a column (3 icons wide). Drag it by its
+  handle (::); it opens where you left it, as you left it.
+- It opens with the Animtool window; its menu (=) has "Open the bar with the Animtool window" to stop that, and x
+  closes it. A Bar button on the shelf and the toolbar opens it any time.
+
+The shelf: a Gus_Animtool shelf button that Maya refuses is made without its right-click menu instead of being
+lost, and a warning says which one and why (Animtool > Update shelf). Your Attach button should come back; if the
+warning shows, please send it.
+
+Face kit tab: a ribbon deleted since it was made (your Cape_Ribbon) is skipped - the tab opens again.
+
+Real-Maya test j (new): your shot - the IK wrist with no keys of its own attached to an axe at frame 30: where it
+is before 30, follows the axe exactly after, the floors at 0.001, Repair on a 5.6.42-style attach, and no 'divide
+by zero' warnings over the whole shot.
+
+Decisions I made:
+- The floor 0.001 (not smaller): well above Maya's 0.00001; the holds are 0 or 1 (or in between during a
+  hand-over, where they add up to 1), so the floor never changes a weight that matters.
+- The bar shows every tool, not just the toolbar's chosen ones (you asked for 'every tool together'); the
+  Attach window and Arcs panel are buttons on the bar only (their own icons: the tool's icon with a small window).
+- A column is 3 icons wide (2 made it taller than a laptop screen).
+- The bar is frameless like the onion skin's mini bar; it opens with the Animtool window by default (you asked),
+  and the docked toolbar under the Time Slider stays as it was.
+
+Tested against the fake Maya (tests/test_5643.py, the full suite) and the bar with real Qt (offscreen, outside the
+suite: every tool, the windows' buttons, clicks and right-click menus, row / column, where it was). Not tested in
+real Maya: run real-Maya tests i and j; the bar on your Mac (does it stay in front?) and the shelf need your eyes.
+
 Gus_Rigtool 5.6.42 - Arcs: the plain arc again, and the Arcs panel; Attach and Arcs windows stay in front on the Mac
 
 Gus found 5.6.40's arcs "too much" (past / future colours, a fading window, follow selection) and the Attach window

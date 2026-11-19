@@ -183,9 +183,9 @@ def part_of(srf):
     import json
     srf = _long(srf) or srf
     try:
-        if srf and cmds.attributeQuery(PART_ATTR, node=srf, exists=True):
+        if srf and cmds.objExists(srf) and cmds.attributeQuery(PART_ATTR, node=srf, exists=True):
             return json.loads(cmds.getAttr(srf + "." + PART_ATTR) or "{}") or None
-    except (RuntimeError, ValueError):
+    except (RuntimeError, ValueError, TypeError):    # a ribbon deleted since (5.6.43: the Face kit tab crashed)
         pass
     return None
 

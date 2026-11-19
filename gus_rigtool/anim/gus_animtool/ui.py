@@ -1129,6 +1129,12 @@ def show():
     if A.opt("toolbar", 0):
         from gus_animtool import toolbar
         toolbar.show()
+    if A.opt("bar_auto", 1):                                  # 5.6.43: the floating bar opens with the window
+        try:
+            from gus_animtool import bar
+            bar.show()
+        except Exception:
+            pass
     try:
         from gus_animtool import backup, timeslider
         timeslider.install()

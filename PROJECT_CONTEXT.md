@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.42). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.42`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.43). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.43`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.42, about 162 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.43, about 163 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -241,6 +241,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   the follower's own parentInverseMatrix); arcs on any control with free translate. Real-Maya tests h and i.
 - **5.6.42**: arcs back to the plain arc (Gus: 5.6.40's look was "too much") + the Arcs panel (per-arc colour /
   hide / remove, range, look, handles, beads, sampling); Attach / Arcs windows are Qt.Tool on the Mac (stay in front).
+- **5.6.43**: Attach's divider floor 0.001 (0.000001 is 'zero' to Maya: a divide-by-zero warning every frame where
+  nothing held it, and the wrong place there); Repair fixes 5.6.41-42 attaches. The floating Animtool bar
+  (`bar.py`: every tool, the Attach window / Arcs panel, row or column, opens with the window). Shelf buttons never
+  vanish silently. Face kit tab: deleted ribbons skipped. Real-Maya test j.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

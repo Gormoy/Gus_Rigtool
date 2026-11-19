@@ -1,0 +1,17 @@
+PASS the floor is 0.001 (above Maya's 0.00001 'zero')
+PASS a new attach: every divider's floor at 0.001 (no warning when nothing holds it)
+PASS an attach from 5.6.41-42: fixed (2 floors raised)
+PASS fixed already: nothing to do the second time
+PASS Repair: fixes them too (and says so)
+PASS attaching it again fixes it on the way
+PASS no 1e-6 floor left in the attach
+PASS the Bar button: on the shelf and the toolbar, with its icon
+PASS its icon: attach_window
+PASS its icon: arcs_panel
+PASS no Qt: the Bar button says so (no error box)
+PASS the bar opens with the Animtool window (unless turned off)
+PASS the bar: a tool window (in front of Maya, on the Mac too)
+PASS shelf: Attach made without its right-click menu, not lost
+PASS ...and the Script Editor says which one and why
+PASS Face kit: a ribbon that's gone is skipped (no crash)
+16/16 passed

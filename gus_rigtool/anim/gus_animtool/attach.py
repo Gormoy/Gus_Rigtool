@@ -37,6 +37,7 @@ FREE = "free"
 SEP = "attachHold"
 IDENTITY = [1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0]
 HANDOVER_FRAMES = 4
+SAFE = 0.001          # the divider's floor: Maya counts anything under 0.00001 as zero (5.6.43)
 
 
 def _short(n):
@@ -152,6 +153,7 @@ def _setup(f):
         raise RuntimeError("%s has an attach from before 5.6.41: Bake it (or Remove it), then Attach again - or "
                            "Repair to just stop its stutter." % _short(f))
     if data and cmds.objExists(data["blend"]):
+        _fix_safe(data)
         return data
     src = cmds.listConnections(f + ".offsetParentMatrix", source=True, destination=False)
     if src:
@@ -225,7 +227,7 @@ def _wire(f, data):
         for j in range(i + 1):
             cmds.connectAttr("%s.%s" % (f, data["holders"][j]["attr"]), "%s.input1D[%d]" % (total, j))
         safe = cmds.createNode("clamp", name="%s_attach_safe%d" % (name, i))
-        cmds.setAttr(safe + ".minR", 1e-6)
+        cmds.setAttr(safe + ".minR", SAFE)
         cmds.setAttr(safe + ".maxR", 1e9)
         cmds.connectAttr(total + ".output1D", safe + ".inputR")
         div = cmds.createNode("multiplyDivide", name="%s_attach_w%d" % (name, i))
@@ -234,6 +236,21 @@ def _wire(f, data):
         cmds.connectAttr(safe + ".outputR", div + ".input2X")
         cmds.connectAttr(div + ".outputX", "%s.target[%d].weight" % (bm, i), force=True)
         data["norm"] += [total, safe, div]
+
+
+def _fix_safe(data):
+    """5.6.41-42 attaches: the divider's floor was 0.000001 - Maya counts anything under 0.00001 as zero, so it
+    warned 'divide by zero' on every frame where nothing holds it (and its weight there was 'unpredictable').
+    Raised to SAFE. Returns how many were fixed."""
+    fixed = 0
+    for n in data.get("norm", []):
+        try:
+            if cmds.objExists(n) and cmds.nodeType(n) == "clamp" and cmds.getAttr(n + ".minR") < SAFE * 0.5:
+                cmds.setAttr(n + ".minR", SAFE)
+                fixed += 1
+        except (RuntimeError, ValueError, TypeError):
+            pass
+    return fixed
 
 
 def _set_matrix(node, m):
@@ -557,7 +574,8 @@ def attached():
 # --------------------------------------------------------------------------- repair / bake / remove
 def repair(follower=None):
     """5.6.40's attaches: the follower's own parentInverseMatrix taken out of its setup (Maya saw a loop: the
-    follower lagged and stuttered) - the parent's inverse instead, the same value. Returns how many were fixed."""
+    follower lagged and stuttered) - the parent's inverse instead, the same value. 5.6.41-42's: the divide-by-zero
+    floor raised (_fix_safe). Returns how many were fixed."""
     nodes = [follower] if follower else attached()
     fixed = 0
     for f in nodes:
@@ -566,6 +584,8 @@ def repair(follower=None):
             continue
         mms = [t.get("node") for t in data.get("targets", [])] if is_old(data) else \
             [h.get("mm") for h in data.get("holders", [])]
+        if not is_old(data):
+            fixed += _fix_safe(data)
         parent = _parent(f)
         for mm in [m for m in mms if m and cmds.objExists(m)]:
             src = cmds.listConnections(mm + ".matrixIn[2]", source=True, destination=False, plugs=True) or []

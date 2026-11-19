@@ -21,6 +21,8 @@ ACTIONS = [
     ("picker", "Picker", "The picker: a button per control (edit it with Edit)", "open"),
     ("poses", "Poses", "The pose library", "open"),
     ("clips", "Clips", "The animation library: save a clip, apply it here (mirrored, insert...)", "open"),
+    ("bar", "Bar", "The Animtool bar: every tool in a small strip that floats over Maya, anywhere you like "
+     "(it opens with the Animtool window)", "open"),
     ("tween_prev", "Tween <", "A third towards the previous key's pose (Alt+Shift+,)", "tween"),
     ("tween_next", "Tween >", "A third towards the next key's pose (Alt+Shift+.)", "tween"),
     ("nudge_left", "Nudge <", "Keys one step earlier (Alt+,)", "keys"),
@@ -114,7 +116,7 @@ MENUS = {
                ("Both hands: held by both (50 / 50)", "attach_both"),
                ("Show where it holds", "attach_show"), ("Go to the previous change", "attach_prev"),
                ("Go to the next change", "attach_next"), ("Open the Attach window", "attach_window"),
-               ("Repair attaches in this scene (stutter)", "attach_repair")],
+               ("Repair attaches in this scene (stutter, divide-by-zero warnings)", "attach_repair")],
     "release": [("Bake the attached motion to keys", "attach_bake"), ("Remove the attach (no bake)", "attach_remove"),
                 ("Show where it holds", "attach_show"), ("Open the Attach window", "attach_window")],
     "mirror_cycle": [("Mirror without looping the curves", "mirror_cycle_noloop")],
@@ -145,7 +147,7 @@ TOOLBAR_DEFAULT = ["picker", "poses", "tween_prev", "tween_next", "nudge_left", 
                    "copy_keys", "paste_keys", "inbetween_remove", "inbetween_add", "offset_minus", "offset_plus",
                    "offset_back", "pull", "push", "negate", "smooth", "temp_world",
                    "temp_pivot", "bake_back", "attach", "release", "arcs", "ghosts", "hider", "hide_ctrls", "isolate",
-                   "playblast", "clips", "main"]
+                   "playblast", "clips", "main", "bar"]
 
 
 def icon(key):
@@ -183,6 +185,13 @@ def _call(key):
     if key == "clips":
         from gus_animtool import animlib
         return animlib.show()
+    if key == "bar":
+        try:
+            from gus_animtool import bar
+        except ImportError as e:
+            raise RuntimeError("the Animtool bar couldn't open (Qt: %s)." % e)
+        bar.show()
+        return None
     if key in ("mirror_cycle", "mirror_cycle_noloop"):
         from gus_animtool import cycle
         n = cycle.mirror(loop=False if key == "mirror_cycle_noloop" else None)
@@ -230,7 +239,7 @@ def _call(key):
         return None
     if key == "attach_repair":
         from gus_animtool import attach as AT
-        return "repaired %d attach link(s): no more stutter" % AT.repair()
+        return "repaired %d attach part(s): no more stutter or divide-by-zero warnings" % AT.repair()
     if key == "release":
         from gus_animtool import attach as AT
         AT.release()
