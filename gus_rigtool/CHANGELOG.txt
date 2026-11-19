@@ -1,3 +1,54 @@
+Gus_Rigtool 5.6.41 - Attach without the stutter, with hold channels, hand-over, both hands and an Attach window;
+arcs that work on any control
+
+After 5.6.40 in Gus's scene: Attach stuttered (Maya: "Cycle on L_wrist_IK_ctrl_attach_blend.outputMatrix") and
+Arcs showed nothing on an IK wrist moved by an attach (no translate keys).
+
+Attach (Animtool > Attach; right-click for more; the Attach window):
+- No more stutter: the setup read the follower's own parentInverseMatrix, and Maya's evaluation saw a loop (the
+  follower lagged a step). It reads the PARENT's inverse now - the same value. Repair (right-click on Attach, or
+  the window) fixes the attaches made with 5.6.40 without moving anything.
+- Hold channels on the follower, in the Channel Box: Hold Free and one Hold <holder> per holder (0-1, keyable;
+  the Graph Editor and tween tools work on them). Its own Translate / Rotate still work on top: you can still
+  move it while it's held. Works both ways: a prop follows a hand, or a hand follows a prop.
+- Hand-over (asks how many frames, 4 suggested): from what holds it to the next holder, eased; both carry it in
+  between. Both hands: held by two at once, 50 / 50. Release: stays where it is. Nothing jumps at a change.
+- The Attach window: what's attached in the scene and what holds it now; the picked one over time - a coloured
+  strip (click to go there) and its changes with Go / Frame... (move it, taken again there) / Delete; the
+  buttons Attach, Hand-over..., Both hands, Release, Bake, Repair. No values repeated: they live on the channels.
+- Show where it holds (the frames of each stretch; also in the Script Editor), Go to the previous / next change.
+- The coloured stretches on the Time Slider work now (Maya's bookmark plugin is loaded first - 5.6.40 didn't, so
+  "Unknown object type: timeSliderBookmark" and no stretches).
+- Loops refused with what to do: "the box can't hold the hand that holds it" - even released, the box's setup
+  still listens to the hand: Bake the box first, then attach the hand to it.
+- An attached IK control: the window says only the IK follows (attach in IK, or Bake before switching to FK).
+
+Arcs:
+- Any control whose translate is free gets an editable arc, keyed or not (5.6.40 wanted translate keys, so your
+  attached wrist went to the onion skin's view-only arcs and nothing showed). With no translate keys the message
+  says "set a key to edit it". View-only (onion skin) only for a locked or constrained translate (FK).
+- Making a trail puts your selection back, and a trail is never taken for a control (by its shape, wherever it
+  is) - follow selection can't move the arcs away while you drag a key.
+
+Real-Maya tests: h. arcs adds an unkeyed control moved by its parent and follow selection for real; i. attach is
+new: a box and a cup on one hand follow it exactly every frame, the IK hand follows a stick, a hand-over with no
+jump, both hands, the bookmarks, a loop refused, Bake.
+
+Decisions I made:
+- Before a change, the hold channels' last key is made stepped (no slide into the change); only the very first
+  change gets a 0 key one frame before it. Delete removes that one with the first change.
+- A snap change re-takes every holder's grip at that frame (nothing jumps); a hand-over keeps the grips of what
+  already carries it and only takes the new holder's.
+- Hold channels are normalised (they don't have to add up to 1); all at 0 = its own parent.
+- Attaches from 5.6.40 aren't converted: Repair stops their stutter; Bake and Attach again for the channels.
+- Hidden grips / free poses live in gusAttach_grp (hidden), one group per follower; Remove / Bake delete them.
+- tests: test_5640 builds its FK wrist with translate locked (5.6.41's rule); test_animtool32's attach part reads
+  the new setup (hold channels) and shows the loop refused.
+
+Tested against the fake Maya (tests/test_5641.py, the full suite) and the Attach window with real Qt (offscreen,
+outside the suite). Not tested in real Maya: run real-Maya tests h and i; the hand-over's feel and the window
+need your eyes.
+
 Gus_Rigtool 5.6.40 - Animtool arcs: like the onion skin's, still editable; follow selection, pin, no arcs in saved files
 
 Animtool > Arcs (same button) now uses Maya's editable motion trail dressed like the onion skin's arcs:

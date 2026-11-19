@@ -28,8 +28,13 @@ _state = {"follow": False, "followed": [], "pinned": [], "onion": [], "jobs": []
 
 
 # --------------------------------------------------------------------------- what kind of control
+FREE_SOURCES = ("animCurve", "pairBlend", "animBlendNodeBase")    # keys, also through a blend or anim layers
+
+
 def moves(node):
-    """True when the control's arc can be edited: its translate is animated (a trail drag keys translate)."""
+    """True when the control's arc can be edited: a translate channel that's free - keyable, not locked, not driven
+    by a constraint or anything else than keys (5.6.41: keyed or not; 5.6.40 wanted keys, so a control moved by
+    its parent or an attach got no arc)."""
     for ax in "XYZ":
         plug = "%s.translate%s" % (node, ax)
         try:
@@ -37,9 +42,25 @@ def moves(node):
                 continue
         except (RuntimeError, ValueError):
             continue
-        if cmds.listConnections(plug, source=True, destination=False, type="animCurve"):
+        src = cmds.listConnections(plug, source=True, destination=False, skipConversionNodes=True) or []
+        if not src or any(cmds.objectType(s, isAType=t) for s in src for t in FREE_SOURCES):
             return True
     return False
+
+
+def has_translate_keys(node):
+    for ax in "XYZ":
+        if cmds.listConnections("%s.translate%s" % (node, ax), source=True, destination=False, type="animCurve"):
+            return True
+    return False
+
+
+def _is_trail(node):
+    try:
+        shapes = cmds.listRelatives(node, shapes=True, fullPath=True) or []
+        return any(cmds.nodeType(s).startswith("motionTrail") for s in shapes)
+    except (RuntimeError, ValueError):
+        return False
 
 
 def controls(nodes):
@@ -47,7 +68,7 @@ def controls(nodes):
     the arcs to something else; not components)."""
     out = []
     for n in nodes or []:
-        if "." in n or GROUP in n or not cmds.objExists(n):
+        if "." in n or GROUP in n or not cmds.objExists(n) or _is_trail(n):
             continue
         try:
             if cmds.objectType(n, isAType="transform") and n not in out:
@@ -75,20 +96,35 @@ def _short(n):
 
 
 def make(nodes):
-    """Editable trails on these controls (the ones whose translate is animated). Returns the trail nodes made."""
+    """Editable trails on these controls. Returns the trail nodes made. Your selection is put back after (Maya
+    selects a new trail - that must not count as you selecting something)."""
     s, e = A.frame_range()
-    grp = _group()
+    sel = cmds.ls(selection=True, long=True) or []
+    was = _state["busy"]
+    _state["busy"] = True
     made = []
-    for n in nodes:
-        got = cmds.snapshot(n, motionTrail=True, increment=1, startTime=s, endTime=e, name=_short(n) + "_arc") or []
-        for g in got:
-            if cmds.nodeType(g) == "transform":
-                try:
-                    g = cmds.parent(g, grp)[0]
-                except RuntimeError:
-                    pass
-            made.append(g)
-            style(g)
+    try:
+        grp = _group()
+        for n in nodes:
+            got = cmds.snapshot(n, motionTrail=True, increment=1, startTime=s, endTime=e,
+                                name=_short(n) + "_arc") or []
+            for g in got:
+                if cmds.nodeType(g) == "transform":
+                    try:
+                        g = cmds.parent(g, grp)[0]
+                    except RuntimeError:
+                        pass
+                made.append(g)
+                style(g)
+    finally:
+        try:
+            if sel:
+                cmds.select(sel, replace=True)
+            else:
+                cmds.select(clear=True)
+        except (RuntimeError, ValueError):
+            pass
+        _state["busy"] = was
     return made
 
 
@@ -251,8 +287,14 @@ def show(nodes):
 
 def describe(edit, view, unseen):
     parts = []
-    if edit:
-        parts.append("%d editable arc(s) (drag a key dot; select a key for its handles)" % len(edit))
+    keyed = [n for n in edit if has_translate_keys(n)]
+    bare = [n for n in edit if n not in keyed]
+    if keyed:
+        parts.append("%d editable arc(s): %s (drag a key dot; select a key for its handles)" % (
+            len(keyed), ", ".join(_short(n) for n in keyed[:3])))
+    if bare:
+        parts.append("%d arc(s) with no translate keys yet: %s (set a key to edit it)" % (
+            len(bare), ", ".join(_short(n) for n in bare[:3])))
     seen = [v for v in view if v not in unseen]
     if seen:
         parts.append("%d shown by the onion skin%s (they only rotate: shown, not editable)" % (

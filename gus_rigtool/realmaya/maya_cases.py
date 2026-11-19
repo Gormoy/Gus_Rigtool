@@ -537,8 +537,15 @@ def arcs(rep):
     wrist = _ctrl("L_wrist_fk_ctrl", parent=cmds.group(empty=True, name="L_elbow_fk"))
     for f, r in ((1, 0.0), (24, 60.0), (48, 0.0)):
         cmds.setKeyframe(wrist, attribute="rotateZ", time=f, value=r)
+    _lock(wrist, ["translate"])                                  # an FK control: translate locked
+    mover = cmds.group(empty=True, name="prop_space")
+    for f, x in ((1, 0.0), (48, 10.0)):
+        cmds.setKeyframe(mover, attribute="translateZ", time=f, value=x)
+    led = _ctrl("L_prop_ctrl", parent=mover)                      # no keys: moved by its parent (5.6.40 gave no arc)
     rep.expect("the IK hand's arc can be edited (its translate is animated)", arctrail.moves(hand))
-    rep.expect("the FK wrist only rotates: shown, not editable", not arctrail.moves(wrist))
+    rep.expect("the FK wrist (translate locked): shown, not editable", not arctrail.moves(wrist))
+    rep.expect("5.6.41: a control with no translate keys, moved by its parent, gets an editable arc",
+               arctrail.moves(led) and not arctrail.has_translate_keys(led))
     cmds.currentTime(24)
     made = rep.step("make the hand's arc", arctrail.make, [hand]) or []
     rep.add(INFO, "nodes made", ", ".join(m.split("|")[-1] for m in made))
@@ -579,10 +586,117 @@ def arcs(rep):
                bad=NOTE)
     arctrail.clear()
     rep.expect("Clear: the arcs are gone", not cmds.ls(arctrail.GROUP))
+    # follow selection for real: making a trail must not count as a new selection (5.6.40: nothing showed)
+    cmds.select(led, replace=True)
+    arctrail.follow(True)
+    arctrail._selection_changed()
+    rep.expect("follow selection: the arc of what you selected shows", bool(arctrail._trails_of(led)))
+    rep.expect("... and your selection is still yours (not the new trail)",
+               cmds.ls(selection=True, long=True) == [cmds.ls(led, long=True)[0]], str(cmds.ls(selection=True)))
+    trail = arctrail._trails_of(led)[0]
+    cmds.select(trail, replace=True)
+    arctrail._selection_changed()
+    rep.expect("selecting the trail (to drag a key) keeps the arc", bool(arctrail._trails_of(led)))
+    arctrail.clear()
+
+
+# --- i: Attach (5.6.41) ---------------------------------------------------------------------------------------------
+def attach_case(rep):
+    """i. Attach: no loop (the follower follows exactly on every frame), the hand follows a prop, two things on one
+    holder, a hand-over with no jump, both hands, delete a change, the bookmarks, a loop refused, Bake."""
+    _animtool()
+    from gus_animtool import attach as AT
+    rep.start("i. Attach (Animtool): follows exactly, hand-over, both hands, bookmarks")
+    cmds.playbackOptions(minTime=1, maxTime=60)
+    rig = cmds.group(empty=True, name="rig_grp")
+    arm = cmds.group(empty=True, name="L_wrist_IK_offset", parent=rig)
+    lhand = _ctrl("L_wrist_IK_ctrl", parent=arm)
+    rhand = _ctrl("R_wrist_IK_ctrl", parent=rig)
+    box = _ctrl("Box_ctrl")
+    cup = _ctrl("Cup_ctrl")
+    prop = _ctrl("Stick_ctrl")
+    for n, k in ((lhand, ((1, 0, 0, 0), (30, 6, 3, 0), (60, 0, 6, 2))), (rhand, ((1, -4, 0, 0), (60, -1, 4, 5))),
+                 (prop, ((1, 0, 0, 5), (60, 8, 2, 5)))):
+        for f, x, y, z in k:
+            for a, v in (("translateX", x), ("translateY", y), ("translateZ", z)):
+                cmds.setKeyframe(n, attribute=a, time=f, value=v)
+        cmds.setKeyframe(n, attribute="rotateY", time=1, value=0)
+        cmds.setKeyframe(n, attribute="rotateY", time=60, value=90)
+    cmds.currentTime(10)
+    AT.attach(box, lhand)
+    AT.attach(cup, lhand)
+    cmds.currentTime(10)
+    rel = {n: A_rel(n, lhand) for n in (box, cup)}
+    worst = 0.0
+    for f in range(10, 50):
+        cmds.currentTime(f)
+        for n in (box, cup):
+            worst = max(worst, _diff(A_rel(n, lhand), rel[n]))
+    rep.expect("a box and a cup on the same hand: both follow it exactly, every frame 10-49", worst < TOL, "%.5f" % worst)
+    d = AT.read(box)
+    src = cmds.listConnections(d["holders"][1]["mm"] + ".matrixIn[2]", source=True, destination=False, plugs=True)
+    rep.expect("no loop: the box's own parentInverseMatrix isn't used", not src or "parentInverse" not in src[0],
+               str(src))
+    cmds.currentTime(20)
+    AT.attach(lhand, prop)                                        # the hand follows the stick (the way Gus needs it)
+    rel_h = A_rel(lhand, prop)
+    worst = 0.0
+    for f in range(20, 60):
+        cmds.currentTime(f)
+        worst = max(worst, _diff(A_rel(lhand, prop), rel_h))
+    rep.expect("the IK hand follows the stick exactly, frames 20-59 (and the box and cup in it follow too)",
+               worst < TOL, "%.5f" % worst)
+    for n in (lhand,):
+        AT.remove(n)
+    cmds.currentTime(30)
+    before = _pos(box)
+    AT.hand_over(box, rhand, frames=4)
+    cmds.currentTime(30)
+    rep.expect("hand-over at 30: no jump at its start", _diff(_pos(box), before) < TOL,
+               "%.5f" % _diff(_pos(box), before))
+    cmds.currentTime(34)
+    rel_r = A_rel(box, rhand)
+    cmds.currentTime(45)
+    rep.expect("after the hand-over the box follows the right hand exactly", _diff(A_rel(box, rhand), rel_r) < TOL)
+    cmds.currentTime(50)
+    before = _pos(box)
+    AT.both(box, lhand)
+    cmds.currentTime(50)
+    rep.expect("both hands at 50: no jump", _diff(_pos(box), before) < TOL)
+    cmds.currentTime(55)
+    rep.add(INFO, "both hands: the box at 55", "%s (left %s, right %s)" % (
+        [round(v, 3) for v in _pos(box)], [round(v, 3) for v in _pos(lhand)], [round(v, 3) for v in _pos(rhand)]))
+    rep.add(INFO, "where the box is held", AT.describe(box))
+    marks = [b for b in (cmds.ls(type="timeSliderBookmark") or [])
+             if (cmds.getAttr(b + ".name") or "").startswith("gusAttach_Box")]
+    rep.expect("coloured stretches on the Time Slider for the box", len(marks) >= 2, str(len(marks)), bad=NOTE)
+    n = len(AT.events(box))
+    AT.delete_change(box, 50)
+    rep.expect("delete the 'both' change: one change fewer", len(AT.events(box)) == n - 1)
+    try:
+        AT.attach(rhand, box)
+        refused = ""
+    except RuntimeError as e:
+        refused = str(e)
+    rep.expect("a loop is refused (the right hand can't follow the box it holds)", "loop" in refused, refused)
+    cmds.currentTime(40)
+    at40 = _pos(box)
+    rep.step("Bake the box", AT.bake, box, 1, 60)
+    cmds.currentTime(40)
+    rep.expect("baked: the attach gone, the box where it was (frame 40)", not AT.read(box) and
+               _diff(_pos(box), at40) < 1e-2, "%.5f" % _diff(_pos(box), at40))
+
+
+def A_rel(n, holder):
+    """n's world position in holder's space (what 'follows exactly' keeps)."""
+    import maya.api.OpenMaya as om
+    m = om.MMatrix(_wm(n)) * om.MMatrix(_wm(holder)).inverse()
+    return [m[12], m[13], m[14], m[0], m[1], m[2]]
 
 
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
-         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs)]
+         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
+         ("i. attach", attach_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

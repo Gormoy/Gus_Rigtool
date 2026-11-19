@@ -27,24 +27,37 @@ I = list(AT.IDENTITY)
 _get = cmds.getAttr
 cmds.getAttr = lambda plug, **k: list(I) if plug.split(".")[-1] in ("offsetParentMatrix", "parentMatrix[0]") else _get(plug, **k)
 KEYS = []
-cmds.setKeyframe = lambda plug, time=None, value=None, **k: KEYS.append((plug.split(".", 1)[1], time, value))
+def _skf(plug, time=None, value=None, **k):
+    KEYS.append((plug.split(".", 1)[1], time, value))
+cmds.setKeyframe = _skf
 cmds.keyTangent = mock.MagicMock()
+cmds.keyframe = lambda plug, **k: sorted(set(t for p, t, v in KEYS if p == plug.split(".", 1)[1] and k.get("timeChange")))
+cmds.cutKey = mock.MagicMock()
+cmds.getAttr = (lambda g: lambda plug, **k: 0.0 if "time" in k else g(plug, **k))(cmds.getAttr)
+def holds():
+    return sorted((p, t, v) for p, t, v in KEYS if p.startswith("hold_"))
 cmds.select(box, hand)
 AT.attach()
 d = AT.read(box)
 print("attached:", said[-1], "| blend on the box:", cmds.listConnections(box + ".offsetParentMatrix", source=True, destination=False))
-print("target 0 follows:", cmds.listConnections(d["targets"][0]["node"] + ".matrixIn[1]", source=True, destination=False),
-      "| through the box's parent inverse:", bool(cmds.listConnections(d["targets"][0]["node"] + ".matrixIn[2]", source=True, destination=False)))
-print("weight keys:", KEYS)
-KEYS[:] = []; NOW[0] = 30.0
+mm = d["holders"][1]["mm"]
+print("target 1 follows:", cmds.listConnections(mm + ".matrixIn[1]", source=True, destination=False),
+      "| the box's parent's inverse (none: it's at the top - 5.6.41 never uses its own):", cmds.listConnections(mm + ".matrixIn[2]", source=True, destination=False))
+print("hold keys:", holds())
+NOW[0] = 30.0
 cmds.select(box, table); AT.attach()
-print("then the table at 30:", [k for k in KEYS], "| events:", AT.events(box))
-KEYS[:] = []; NOW[0] = 45.0
+print("then the table at 30:", [(p, v) for p, t, v in holds() if t == 30.0])
+NOW[0] = 45.0
 cmds.select(box); AT.release()
-print("released at 45:", sorted(set(k[2] for k in KEYS if k[1] == 45.0)), "| events:", AT.events(box))
-# the other way: the hand follows the box
-cmds.select(hand, box); AT.attach()
-print("the hand follows the box:", AT.read(hand)["targets"][0]["holder"], "| attached:", sorted(A.short(n) for n in AT.attached()))
+print("released at 45:", [(p, v) for p, t, v in holds() if t == 45.0])
+# the other way: the hand follows a stick; the box (attached to the hand, even released) would be a loop
+stick = ctrl("stick_ctrl", pos=(7, 2, 0))
+cmds.select(hand, stick); AT.attach()
+print("the hand follows the stick:", AT.read(hand)["holders"][1]["name"], "| attached:", sorted(A.short(n) for n in AT.attached()))
+try:
+    AT.attach(hand, box)
+except RuntimeError as e:
+    print("the hand on the box it held:", str(e).split(" - ")[1].split(".")[0], "|", "Bake box_ctrl first" in str(e))
 try:
     cmds.select(box, box); AT.attach(box, box)
 except RuntimeError as e:

@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.40). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.40`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.41). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.41`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.40, about 160 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.41, about 161 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -236,6 +236,9 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   (Harmony style), per-character pictures and keys, light table (others see-through), arcs on vertices / controls,
   new window (Ghosts / Arcs / Settings) and mini bar. Tested with a fake render API and real Qt offscreen; Gus
   confirmed it works in Maya.
+- **5.6.41**: Attach rebuilt (hold channels on the follower, normalised blendMatrix, grips keyed so nothing jumps,
+  hand-over, both hands, Attach window, bookmarks plugin loaded, loops refused) after Gus saw the stutter (cycle from
+  the follower's own parentInverseMatrix); arcs on any control with free translate. Real-Maya tests h and i.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
   edit the hand's trail, bake back to FK. To make it pleasant: bake only on the FK keys' frames, not every frame.
 

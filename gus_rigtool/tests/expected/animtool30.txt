@@ -2,9 +2,9 @@ icons: True 55 | extra icons: True
 menus point at real actions: True
 actions that crashed: []
 unknown action: [('warn', 'unknown action: nope')]
-shelf buttons: 56 | first: Gus Animtool | icons: True | right-click menus: ['Add inbetween', 'Arcs', 'Back to original', 'Bake keys', 'Blocking / spline', 'Body parts', 'Continue cycle', 'Copy keys', 'Ghosts', 'Key', 'Mirror', 'Mirror cycle', 'Offset +', 'Offset -', 'Overlap', 'Paste keys', 'Playblast', 'Reduce keys', 'Release', 'Remove inbetween', 'Reset', 'Slower / faster', 'Time scale']
+shelf buttons: 56 | first: Gus Animtool | icons: True | right-click menus: ['Add inbetween', 'Arcs', 'Attach', 'Back to original', 'Bake keys', 'Blocking / spline', 'Body parts', 'Continue cycle', 'Copy keys', 'Ghosts', 'Key', 'Mirror', 'Mirror cycle', 'Offset +', 'Offset -', 'Overlap', 'Paste keys', 'Playblast', 'Reduce keys', 'Release', 'Remove inbetween', 'Reset', 'Slower / faster', 'Time scale']
 shelf command: import gus_animtool.actions as _ga; _ga.run('main')
-toolbar docked under the Time Slider: ('TimeSlider', 'bottom') | buttons: 42 | right-click menus: 16 | tween slider: True
+toolbar docked under the Time Slider: ('TimeSlider', 'bottom') | buttons: 42 | right-click menus: 17 | tween slider: True
 chosen buttons: ['key', 'mirror', 'playblast']
 button picker lists every action: True
 copied curves: 1
@@ -19,4 +19,4 @@ arcs: 2 True | cleared: True False
 hide controls: False {'edit': True, 'nurbsCurves': False}
 isolate: True enableIsolateSelect modelPanel4 1
 playblast: movies/untitled_blast 50 1
-version: 5.6.40
+version: 5.6.41

@@ -22,7 +22,9 @@ still = createNode("transform", name="COG_ctrl")
 for n, attr in ((hand, "translateX"), (wrist, "rotateZ"), (still, "translateY")):
     cv = createNode("animCurveTL", name=n.split("|")[-1] + "_" + attr)
     connectAttr(cv + ".output", n + "." + attr)
-cmds.setAttr(still + ".translateY", lock=True)
+for _fk in (wrist, still):                 # FK-like: translate locked (5.6.41: a free translate can be edited)
+    for _ax in "XYZ":
+        cmds.setAttr(_fk + ".translate" + _ax, lock=True)
 hand, wrist, still = [cmds.ls(n, long=True)[0] for n in (hand, wrist, still)]
 real_lc = cmds.listConnections
 cmds.listConnections = lambda plug, **k: (

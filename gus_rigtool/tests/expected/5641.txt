@@ -1,0 +1,32 @@
+PASS the hand follows the box, through its PARENT's inverse (L_wrist_IK_offset) - not its own: no loop, no stutter
+PASS the Hold channels on the hand (Channel Box): Hold Free and hold_Box_ctrl, plus the Attach separator
+PASS normalised: target 1's weight = hold_Box / (free + Box)
+PASS keys: off at 9, on at 10, stepped (no slide)
+PASS the grip is keyed at 10 (the offset that keeps the hand still: no jump)
+PASS the message says you can still move it
+PASS hand-over 50-54: the right hand eases out, the table eases in (both carry it in between)
+PASS the table's grip keyed at the start (50): it takes the box where it is
+PASS the right hand's grip isn't touched by the hand-over (it keeps carrying it)
+PASS both: the table and the right hand, 50 / 50 from 70
+PASS released at 90: Hold Free 1, the others 0; the free pose keyed at 90
+PASS the timeline: own parent, right hand 30, hand-over 50, table 54, both 70, free 90
+PASS the changes (Show where it holds): from 30 on
+PASS previous / next change from 60: 54 and 70
+PASS Show where it holds: the stretches with their frames
+PASS Delete the 'both' change: the table holds it on to 90, the other frames as before
+PASS Move the right hand's change from 30 to 25 (taken again there)
+PASS refused: itself
+PASS refused: its child
+PASS refused: holds the hand that holds the box
+PASS a 5.6.40 attach is recognised
+PASS Repair: its link to its own parentInverseMatrix replaced by the parent's (the stutter gone)
+PASS Release on an old one says what to do (Bake, then Attach again)
+PASS the bookmark plugin is loaded, then a coloured stretch per holder (not for 'free')
+PASS Remove: the hold channels and the setup gone
+PASS right-click on Attach: hand-over, both hands, where it holds, previous / next change, the window, repair
+PASS arcs: a control with free translate but no keys can be edited now (5.6.40 sent it away)
+PASS translate locked (an FK control): view only
+PASS translate driven by a constraint: view only
+PASS a trail (by its shape, wherever it is) is never taken for a control
+PASS after making a trail, your selection is put back (Maya selects the new trail)
+31/31 passed

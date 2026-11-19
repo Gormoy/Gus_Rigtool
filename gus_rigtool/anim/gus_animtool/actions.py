@@ -75,7 +75,8 @@ ACTIONS = [
     ("temp_world", "World space", "Animate the selection in world space for a while", "space"),
     ("temp_pivot", "Temp pivot", "A temporary pivot for the selection", "space"),
     ("bake_back", "Bake back", "Temporary spaces baked back onto the controls", "space"),
-    ("attach", "Attach", "Select what follows, then what it holds on to: from this frame it follows, no jump", "space"),
+    ("attach", "Attach", "Select what follows, then what it holds on to: from this frame it follows, no jump "
+     "(right-click: hand-over, both hands, where it holds, the Attach window)", "space"),
     ("release", "Release", "The selected attached thing stays where it is from this frame (right-click: bake / "
      "remove)", "space"),
     ("arcs", "Arcs", "Arcs follow your selection: drag a key dot to edit; rotation-only controls shown by the onion "
@@ -110,7 +111,13 @@ MENUS = {
              ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted"),
              ("Clear the arcs", "arcs_clear")],
     "ghosts": [("Clear the ghosts", "ghosts_clear")],
-    "release": [("Bake the attached motion to keys", "attach_bake"), ("Remove the attach (no bake)", "attach_remove")],
+    "attach": [("Hand-over to the second one (4 frames)", "attach_handover"),
+               ("Both hands: held by both (50 / 50)", "attach_both"),
+               ("Show where it holds", "attach_show"), ("Go to the previous change", "attach_prev"),
+               ("Go to the next change", "attach_next"), ("Open the Attach window", "attach_window"),
+               ("Repair attaches in this scene (stutter)", "attach_repair")],
+    "release": [("Bake the attached motion to keys", "attach_bake"), ("Remove the attach (no bake)", "attach_remove"),
+                ("Show where it holds", "attach_show"), ("Open the Attach window", "attach_window")],
     "mirror_cycle": [("Mirror without looping the curves", "mirror_cycle_noloop")],
     "blocking": [("Blocking (stepped)", "block_on"), ("Spline (back)", "block_off"),
                  ("Scope: the whole character", "blkscope_1"), ("Scope: selected controls", "blkscope_2")],
@@ -195,6 +202,36 @@ def _call(key):
         from gus_animtool import attach as AT
         AT.attach()
         return None
+    if key == "attach_handover":
+        from gus_animtool import attach as AT
+        AT.hand_over()
+        return None
+    if key == "attach_both":
+        from gus_animtool import attach as AT
+        AT.both()
+        return None
+    if key == "attach_show":
+        from gus_animtool import attach as AT
+        nodes = [n for n in A.selected() if AT.read(n)] or AT.attached()
+        if not nodes:
+            raise RuntimeError("nothing is attached in this scene.")
+        text = "\n".join(AT.describe(n) for n in nodes)
+        print("Gus Animtool - where it holds:\n" + text)
+        return "where it holds (also in the Script Editor): " + " | ".join(
+            "%s: %s" % (A.short(n), ", ".join("%g %s" % e for e in AT.events(n)) or "-") for n in nodes)
+    if key in ("attach_prev", "attach_next"):
+        from gus_animtool import attach as AT
+        return "frame %g" % AT.go_change(backwards=key == "attach_prev")
+    if key == "attach_window":
+        try:
+            from gus_animtool import attachwin
+        except ImportError as e:
+            raise RuntimeError("the Attach window couldn't open (Qt: %s)." % e)
+        attachwin.show()
+        return None
+    if key == "attach_repair":
+        from gus_animtool import attach as AT
+        return "repaired %d attach link(s): no more stutter" % AT.repair()
     if key == "release":
         from gus_animtool import attach as AT
         AT.release()
