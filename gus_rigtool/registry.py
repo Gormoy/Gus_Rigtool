@@ -109,6 +109,10 @@ def category_of(key):
 PANELS = [
     ("build_rig", "Build rig", "gus_rigtool.tools.build_tab", "Build, rebuild, publish - with its own module list.",
      "build_rig_panel"),
+    # 5.7.6 (Gus: "move"): Publish on its own page - the new window's Check & publish > Publish (the old window
+    # keeps it in Build)
+    ("publish", "Publish", "gus_rigtool.tools.build_tab", "Publish a clean rig for animators, unpublish, deliver.",
+     "build_publish_panel"),
 ]
 
 

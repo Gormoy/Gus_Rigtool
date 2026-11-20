@@ -16,7 +16,9 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls", "skin", "settings", "build", "connect")   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
+NEW_LOOK = ("controls", "skin", "settings", "build", "connect", "check")
+EXTRA_TOOLS = {"check": ["publish"]}             # 5.7.6: pages only the new window has (Publish moved from Build)
+MOVED_OUT = {"build": "publish"}                 # ...and the tool whose page no longer shows it   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
 #                                                        5.7.3 Build)
 # a tool whose page has its own tabs: each tab a sub-page (5.7.3 Build) - its tabLayout's name, the tabs' labels
 TABBED = {"build": ("Tabs", ["Rig builder", "Animation", "Existing rig", "Advanced"])}
@@ -88,6 +90,9 @@ def area_of(key):
     tool, page = registry.resolve(key)
     if tool == "settings":                       # 5.7.2: Settings is its own button (not in the Toolbox)
         return "settings", tool, page
+    for area, extra in EXTRA_TOOLS.items():
+        if tool in extra:
+            return area, tool, page
     cat, _l = registry.category_of(tool)
     for a, c in CATEGORY.items():
         if c == cat:
@@ -142,6 +147,7 @@ class Area(QtWidgets.QWidget):
         self.accent = theme.colour(key)
         self.tools = ["settings"] if key == "settings" else [
             t for t in dict((c, k) for c, _l, k in registry.CATEGORIES).get(CATEGORY[key], []) if t != "settings"]
+        self.tools += EXTRA_TOOLS.get(key, [])
         if only:
             self.tools = [t for t in self.tools if t in only]
         self.subs = []                          # [(tool key, page or None, label)]
@@ -217,10 +223,15 @@ class Area(QtWidgets.QWidget):
         mod = registry.module(tool)
         prefix = self.prefix(tool)
         ui._view["tool"] = tool                 # Simple view: the tool's advanced sections start closed, as before
+        moved = tool in MOVED_OUT and hasattr(mod, "SKIP_PUBLISH")
+        if moved:
+            mod.SKIP_PUBLISH["on"] = True       # its Publish section is on Check & publish > Publish
         try:
-            rec = record.record(mod.build, prefix)
+            rec = record.record(registry.builder(tool), prefix)
         finally:
             ui._view["tool"] = None
+            if moved:
+                mod.SKIP_PUBLISH["on"] = False
         page = render.Page(tool, rec, self.accent)
         self.pages[tool] = page
         if tool == "controls_tab":
@@ -1019,6 +1030,9 @@ class Frame(QtWidgets.QWidget):
             self.entries["%s  —  %s" % (label, theme.area(area)[1])] = (key, None)
         for stage in registry.STAGES:
             self.entries["%s  —  %s" % (stage[4], stage[1])] = (stage[3], stage[4])
+        for area, extra in EXTRA_TOOLS.items():           # 5.7.6: Publish
+            for key in extra:
+                self.entries["%s  —  %s" % (registry.get(key)[1], theme.area(area)[1])] = (key, None)
         self.entries["Edit shape  —  Controls"] = ("shapes", None)
         self.entries["Make controls  —  Controls"] = ("makectrl", None)
         comp = QtWidgets.QCompleter(sorted(self.entries))

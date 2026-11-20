@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Check & publish plan: "1 move (Publish to Check & publish) 2 yes". 5.7.6 built and sent; waiting for
+  his results and OK to push. Next after it: Toolbox (preview first), then the old window can go.
+
 - 2026-11-20: Check & publish preview sent (design/screens576: Checker 69 controls, Organize 37 - both short, fine
   in the new look). Found: Publish (Publish / Unpublish / Deliver) lives in Build > Rig builder, not in Check &
   publish. Asked: move it there (my pick) or leave it; plan 5.7.6 waiting for his OK.
@@ -120,7 +123,7 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- Next: Check & publish preview (pictures first), then Toolbox; then the old window can go; then 5.8.
+- 5.7.6 Check & publish sent; then Toolbox (preview first); then the old window can go; then 5.8.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).

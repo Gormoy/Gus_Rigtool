@@ -1,3 +1,23 @@
+Gus_Rigtool 5.7.6 - Check & publish in the new look; Publish moved there
+
+Gus approved the plan: Publish moves to Check & publish ("move"), Checker and Organize as they are.
+
+Check & publish (5 in the sidebar):
+- Three tabs: Checker · Organize · Publish. Every button and option (over 110), nothing twice, nothing cut off at
+  300 / 420 / 700 px.
+- Publish (Publish, Unpublish, Deliver to animators, and its options) has its own page here, open, after the
+  checks - no longer on Build > Rig builder in the new window. The old window keeps it in Build, as before.
+- What the tools make while you work shows on the page: Run checks (a row per check), Find repairs (a tick box per
+  repair - Apply the ticked repairs reads them), Analyze the Outliner (a row per item with where it goes).
+- Search "Publish": Check & publish > Publish.
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release checks Check & publish in your Maya.
+
+Decisions I made:
+- Publish is a page of its own (not a copy): its options live on that page only, so there's one place to set them.
+- Checker and Organize stay plain pages (like Constraints): they already read in order (Check, Repair; Analyze,
+  The plan).
+
 Gus_Rigtool 5.7.5 - Connect in the new look
 
 Gus approved the Connect plan (pictures in design/screens575): Nodes in three pages with those names, Constraints and

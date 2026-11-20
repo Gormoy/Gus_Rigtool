@@ -12,7 +12,8 @@ things deform). Every fix is one undo.
 import math
 import os
 
-import maya.cmds as cmds
+from gus_rigtool.newui import proxy
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.6)
 import maya.api.OpenMaya as om
 
 from gus_rigtool.core import colors, naming, sides, ui, utils
@@ -1349,17 +1350,21 @@ def find_repairs(*_):
     items = repair.find()
     _repairs[_P["p"]] = items
     col = N("Repairs")
-    for child in cmds.columnLayout(col, query=True, childArray=True) or []:
-        cmds.deleteUI(child)
-    cmds.setParent(col)
-    if not items and not repair.ERRORS:
-        cmds.text(label="Nothing to repair.", align="left")
-    for what, why in repair.ERRORS:                  # 5.6.29: a check that couldn't run says so
-        cmds.text(label="  couldn't check: %s - %s" % (what, why), align="left", font="smallPlainLabelFont")
-    for it in items:
-        cmds.checkBox(N("Rep_" + it.id), label="%s  (%d)" % (it.label, it.count), value=True, annotation=it.detail)
-        cmds.text(label="      " + it.detail, align="left", font="smallPlainLabelFont")
-    cmds.setParent("..")
+
+    def fill():
+        for child in cmds.columnLayout(col, query=True, childArray=True) or []:
+            cmds.deleteUI(child)
+        cmds.setParent(col)
+        if not items and not repair.ERRORS:
+            cmds.text(label="Nothing to repair.", align="left")
+        for what, why in repair.ERRORS:              # 5.6.29: a check that couldn't run says so
+            cmds.text(label="  couldn't check: %s - %s" % (what, why), align="left", font="smallPlainLabelFont")
+        for it in items:
+            cmds.checkBox(N("Rep_" + it.id), label="%s  (%d)" % (it.label, it.count), value=True,
+                          annotation=it.detail)
+            cmds.text(label="      " + it.detail, align="left", font="smallPlainLabelFont")
+        cmds.setParent("..")
+    proxy.refill(col, fill)                          # 5.7.6: in the new window, drawn on its page
     utils.info(TOOL, "%d repair(s) found%s." % (len(items), "; %d check(s) couldn't run - listed" % len(
         repair.ERRORS) if repair.ERRORS else ""), "warn" if items or repair.ERRORS else "ok")
 
@@ -1379,6 +1384,11 @@ def apply_repairs(*_):
 
 
 def _show(results):
+    """The checks' results, row by row (5.7.6: in the new window, drawn on its page)."""
+    return proxy.refill(N("Results"), lambda: _show_now(results))
+
+
+def _show_now(results):
     col = N("Results")
     for child in cmds.columnLayout(col, query=True, childArray=True) or []:
         cmds.deleteUI(child)

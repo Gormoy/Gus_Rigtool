@@ -13,7 +13,8 @@ Organize: tidy the Outliner.
                 moved, where ribbon builds go, extras (Outliner colours, geo display layer, sorting).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui import proxy
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.6)
 
 from gus_rigtool.core import organize, ui, utils
 
@@ -74,21 +75,25 @@ def analyze(*_):
     _save()
     rows = organize.analyze(_o())
     _plan[_P["p"]] = rows
-    _clear_rows()
     o = _o()
-    for i, r in enumerate(rows):
-        cmds.rowLayout(numberOfColumns=3, adjustableColumn=3, columnWidth3=(150, 150, 200), parent=N("Rows"),
-                       columnAttach=[(1, "both", 2), (2, "both", 2), (3, "both", 2)])
-        cmds.text(label=r["name"], align="left", annotation=r["node"])
-        menu = cmds.optionMenu(N("Dest%d" % i), changeCommand=_w(lambda *_, k=i: _row_changed(k)))
-        for d in organize.DESTS:
-            label = organize.DEST_LABELS[d] if d in ("leave", "delete", "rig_nodes") else organize.group_name(d, o)
-            cmds.menuItem(label=label)
-        cmds.optionMenu(menu, edit=True, select=organize.DESTS.index(r["dest"]) + 1)
-        cmds.text(label=r["why"], align="left", font="smallPlainLabelFont")
-        cmds.setParent("..")
-    if not rows:
-        cmds.text(label="  (nothing at the top of the Outliner)", parent=N("Rows"), align="left")
+
+    def fill():
+        _clear_rows()
+        for i, r in enumerate(rows):
+            cmds.rowLayout(numberOfColumns=3, adjustableColumn=3, columnWidth3=(150, 150, 200), parent=N("Rows"),
+                           columnAttach=[(1, "both", 2), (2, "both", 2), (3, "both", 2)])
+            cmds.text(label=r["name"], align="left", annotation=r["node"])
+            menu = cmds.optionMenu(N("Dest%d" % i), changeCommand=_w(lambda *_, k=i: _row_changed(k)))
+            for d in organize.DESTS:
+                label = organize.DEST_LABELS[d] if d in ("leave", "delete", "rig_nodes") else \
+                    organize.group_name(d, o)
+                cmds.menuItem(label=label)
+            cmds.optionMenu(menu, edit=True, select=organize.DESTS.index(r["dest"]) + 1)
+            cmds.text(label=r["why"], align="left", font="smallPlainLabelFont")
+            cmds.setParent("..")
+        if not rows:
+            cmds.text(label="  (nothing at the top of the Outliner)", parent=N("Rows"), align="left")
+    proxy.refill(N("Rows"), fill)                    # 5.7.6: in the new window, drawn on its page
     ui.refresh_light(N("Light"))
 
 

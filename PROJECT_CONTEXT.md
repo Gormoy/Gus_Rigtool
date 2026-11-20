@@ -309,6 +309,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - **5.7.5**: NEW_LOOK + connect, TWO_ROWS + connect, SPLITS nodes (3 pages), window.TOOL_LABEL / tool_label
   (Connections, Driven keys - new window only), Frame.go(as_tool=True) for tabs, go_key, next step, Recent (the
   'connect' tool vs area). render._fit_list (lists as tall as their rows). sdk_tool: Copy section managed by mode.
+- **5.7.6**: NEW_LOOK + check; registry.PANELS + ("publish", build_tab.build_publish_panel); build_tab._publish_part /
+  NP (Publish fields' own prefix, _PUB) / SKIP_PUBLISH (window.MOVED_OUT while recording Build); window.EXTRA_TOOLS
+  {"check": ["publish"]} (area_of, search); Area records registry.builder(tool). checker (_show, find_repairs) and
+  organize_tool (analyze) fill their rows through proxy.refill.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

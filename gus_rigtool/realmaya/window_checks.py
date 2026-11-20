@@ -392,6 +392,22 @@ def new_window(rep):
         rep.expect("the Connections tab opens Connections (5.7.4 could open the area's last page)",
                    cn.current == ("connect", None), str(cn.current))
 
+    def check_area():                          # 5.7.6: Check & publish in the new look, Publish moved there
+        ck = f._area("check")
+        cut = cut_pages(ck, ck.subs)
+        rep.expect("Check & publish: Checker, Organize, Publish - nothing cut off narrow or wide",
+                   [s[0] for s in ck.subs] == ["checker", "organize", "publish"] and not cut,
+                   str(list(cut.items())[:3]))
+        f.go(("build", 1))
+        settle()
+        bp = f._area("build").pages.get("build")
+        rep.expect("Build > Rig builder: no Publish section (it's on Check & publish > Publish now)",
+                   bp is not None and not [c for c in bp.cards if c.title.startswith("Publish")])
+        f.go(("checker", None), as_tool=True)
+        settle()
+        rep.add(INFO, "look at Check & publish", "Run checks and Find repairs: their rows show on the page; "
+                "Organize > Analyze the Outliner: the plan shows on the page")
+
     def profiles():
         was = FV.current()
         try:
@@ -406,7 +422,8 @@ def new_window(rep):
     for name, part in (("one window", one_window), ("Controls pages, narrow and wide", controls_cut),
                        ("docking", docking), ("Limits + Ctrl+Z", limits), ("Settings", settings),
                        ("Pop out", pop_out), ("favourites bar and row", favourites), ("Skin", skin),
-                       ("Build", build), ("Connect", connect), ("favourites profiles", profiles)):
+                       ("Build", build), ("Connect", connect),
+                       ("Check & publish", check_area), ("favourites profiles", profiles)):
         rep.guard("new window: " + name, part)
     rep.add(INFO, "look at the new window", "the sidebar, the coloured areas; drag it narrow - nothing is cut off, "
             "the sidebar becomes icons")

@@ -682,8 +682,8 @@ def _publish_options():
 def _save_publish(*_):
     o = {}
     for key, _l, _t in PUBLISH_BOOLS:
-        o[key] = cmds.checkBox(N("Pub_" + key), query=True, value=True)
-    o["guides"] = ["hide", "delete", "leave"][cmds.optionMenu(N("Pub_guides"), query=True, select=True) - 1]
+        o[key] = cmds.checkBox(NP("Pub_" + key), query=True, value=True)
+    o["guides"] = ["hide", "delete", "leave"][cmds.optionMenu(NP("Pub_guides"), query=True, select=True) - 1]
     utils.save_setting("build_publish", o)
     return o
 
@@ -865,6 +865,49 @@ def _list_section(height=150, extra_buttons=True):
 
 
 
+SKIP_PUBLISH = {"on": False}     # 5.7.6: while the new window records Build (Publish has its own page there)
+_PUB = {"p": None}               # the prefix of the Publish fields shown (Build's, or the Publish page's)
+
+
+def NP(name):
+    """A Publish field's name (on Build's page in the old window, on Check & publish > Publish in the new one)."""
+    return (_PUB["p"] or _P["p"]) + name
+
+
+def _publish_part(collapse=True):
+    """Publish, Unpublish, Deliver and their options (5.7.6: on its own, so the new window can show it in Check &
+    publish)."""
+    _PUB["p"] = _P["p"]
+    ui.section("Publish (clean rig for animators)", collapse=collapse,
+               help_text="Publish makes the built rig clean: groups locked, locked channels hidden, joints hidden, "
+               "selection sets (rig_ctrls_set with a set per module, bind_joints_set), each control remembers "
+               "its default pose (Reset pose and Gus Animtool go back to it), guides hidden. Then the Checker runs on "
+               "the rig. Unpublish puts everything back; Build / Back to guides unpublish first.")
+    po = _publish_options()
+    for key, label, tip in PUBLISH_BOOLS:
+        cmds.checkBox(NP("Pub_" + key), label=label, value=bool(po[key]), annotation=tip,
+                      changeCommand=_w(_save_publish))
+    cmds.rowLayout(numberOfColumns=2, columnWidth2=(110, 200), columnAttach=[(1, "right", 4), (2, "both", 2)])
+    cmds.text(label="Guides")
+    cmds.optionMenu(NP("Pub_guides"), changeCommand=_w(_save_publish),
+                    annotation="hide: they stay (Back to guides still works). delete: smaller file, but no going "
+                               "back to guides. leave: as they are.")
+    for c in ("hide", "delete (no going back to guides)", "leave"):
+        cmds.menuItem(label=c)
+    cmds.optionMenu(NP("Pub_guides"), edit=True, select=1 + ["hide", "delete", "leave"].index(po["guides"]))
+    cmds.setParent("..")
+    ui.row(2, 170)
+    cmds.button(label="Publish", height=28, backgroundColor=ui.MAIN_BG, command=_w(_guard(publish_rig)),
+                annotation="Clean the built rig for animators (one undo). Unpublish puts it back.")
+    cmds.button(label="Unpublish", height=28, command=_w(_guard(unpublish_rig)),
+                annotation="Put back everything Publish changed (not deleted guides).")
+    cmds.setParent("..")
+    cmds.button(label="Deliver to animators...", height=26, command=_w(_guard(_deliver)),
+                annotation="One folder: the published rig, the animator tools with your naming, the rig check and "
+                           "a README (optionally zipped). Your scene stays as it is.")
+    ui.end_section()
+
+
 def _build_part(s, pop=True, advanced=True):
     """Build, Publish (and, with advanced, Keep, Custom steps, Naming, Templates): on the Modules page, and
     in the Build pop-out."""
@@ -977,34 +1020,8 @@ def _build_part(s, pop=True, advanced=True):
                            "face's): every control, the joints and the geometry shown. Asks first; one undo.")
     ui.end_section()
 
-    ui.section("Publish (clean rig for animators)", collapse=True,
-               help_text="Publish makes the built rig clean: groups locked, locked channels hidden, joints hidden, "
-               "selection sets (rig_ctrls_set with a set per module, bind_joints_set), each control remembers "
-               "its default pose (Reset pose and Gus Animtool go back to it), guides hidden. Then the Checker runs on "
-               "the rig. Unpublish puts everything back; Build / Back to guides unpublish first.")
-    po = _publish_options()
-    for key, label, tip in PUBLISH_BOOLS:
-        cmds.checkBox(N("Pub_" + key), label=label, value=bool(po[key]), annotation=tip,
-                      changeCommand=_w(_save_publish))
-    cmds.rowLayout(numberOfColumns=2, columnWidth2=(110, 200), columnAttach=[(1, "right", 4), (2, "both", 2)])
-    cmds.text(label="Guides")
-    cmds.optionMenu(N("Pub_guides"), changeCommand=_w(_save_publish),
-                    annotation="hide: they stay (Back to guides still works). delete: smaller file, but no going "
-                               "back to guides. leave: as they are.")
-    for c in ("hide", "delete (no going back to guides)", "leave"):
-        cmds.menuItem(label=c)
-    cmds.optionMenu(N("Pub_guides"), edit=True, select=1 + ["hide", "delete", "leave"].index(po["guides"]))
-    cmds.setParent("..")
-    ui.row(2, 170)
-    cmds.button(label="Publish", height=28, backgroundColor=ui.MAIN_BG, command=_w(_guard(publish_rig)),
-                annotation="Clean the built rig for animators (one undo). Unpublish puts it back.")
-    cmds.button(label="Unpublish", height=28, command=_w(_guard(unpublish_rig)),
-                annotation="Put back everything Publish changed (not deleted guides).")
-    cmds.setParent("..")
-    cmds.button(label="Deliver to animators...", height=26, command=_w(_guard(_deliver)),
-                annotation="One folder: the published rig, the animator tools with your naming, the rig check and "
-                           "a README (optionally zipped). Your scene stays as it is.")
-    ui.end_section()
+    if not SKIP_PUBLISH["on"]:                  # 5.7.6: the new window shows Publish in Check & publish
+        _publish_part()
 
     if advanced:
         _advanced_part(s)
@@ -1316,6 +1333,18 @@ def _advanced_part(s):
     cmds.button(label="Load template...", command=_w(_guard(load_template)))
     cmds.setParent("..")
     ui.end_section()
+
+
+def build_publish_panel(prefix="p_publish_"):
+    """Publish on its own page (5.7.6: the new window's Check & publish > Publish). Build's own functions run
+    as usual; only the Publish fields live here."""
+    _PUB["p"] = prefix
+    keep = _P["p"]
+    _P["p"] = prefix
+    try:
+        _publish_part(collapse=False)
+    finally:
+        _P["p"] = keep
 
 
 def build_rig_panel(prefix="p_build_rig_"):
