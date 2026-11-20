@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Check & publish preview sent (design/screens576: Checker 69 controls, Organize 37 - both short, fine
+  in the new look). Found: Publish (Publish / Unpublish / Deliver) lives in Build > Rig builder, not in Check &
+  publish. Asked: move it there (my pick) or leave it; plan 5.7.6 waiting for his OK.
+
 - 2026-11-20: Gus "yes to all": 570/571/575 outputs accepted, 5.7.5 pushed to main, Check & publish preview next.
 
 - 2026-11-20: 5.7.5 results: Real Maya 112 ok; Test this release 39 ok - the new window 23 ok incl. Connect (nothing
