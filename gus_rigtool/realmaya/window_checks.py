@@ -296,6 +296,36 @@ def new_window(rep):
                [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
                FV.keys())
     FV.close_bar()
+    # 5.7.2: Skin in the new look, Settings its own button, favourites profiles
+    sk = f._area("skin")
+    cut = {}
+    for width in (330, 700):
+        try:
+            cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
+        except RuntimeError:
+            pass
+        for sub in sk.subs:
+            f.go(sub[:2])
+            for _i in range(3):
+                QtWidgets.QApplication.processEvents()
+            got = W.cut_off(sk)
+            if got:
+                cut["%s at %d" % (sub[2], f.width())] = got[:2]
+    rep.expect("Skin: its 7 sub-pages, nothing cut off narrow or wide", len(sk.subs) == 7 and not cut,
+               str(list(cut.items())[:3]))
+    f.go(("settings", None))
+    for _i in range(3):
+        QtWidgets.QApplication.processEvents()
+    st = f.areas["settings"].widgets.get(("settings", None))
+    rep.expect("Settings: its own button at the bottom of the sidebar; today's Settings page in it",
+               list(f.nav)[-1] == "settings" and st is not None and st.layout().count() > 0)
+    was = FV.current()
+    FV.set_current("Skin")
+    QtWidgets.QApplication.processEvents()
+    rep.expect("favourites profile 'Skin': the row shows Skin and Fixes",
+               [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
+               ["skin", "fixes"])
+    FV.set_current(was)
     rep.add(INFO, "look at the new window", "the sidebar, the green Controls pages; drag it narrow - nothing is cut "
             "off, the sidebar becomes icons")
     f.go(("controls_tab", 1))

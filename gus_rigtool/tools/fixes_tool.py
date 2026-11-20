@@ -6,7 +6,7 @@ Fixes: corrective shapes. Pose the rig, sculpt the fix, it turns on by itself as
 
 import json
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import naming, shape_fixes, ui, utils
 

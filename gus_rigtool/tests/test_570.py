@@ -88,9 +88,9 @@ check("nothing cut off: every Controls page at 300, 420 and 700 px wide", not cr
 if crops:
     print("  ", list(crops.items())[:4])
 f.resize(700, 900); app.processEvents()
-check("the sidebar: Home, the rig's 5 steps, Toolbox (names); narrow: icons only",
-      [b.text() for k, b in f.nav.items()] == ["Home", "Build", "Skin", "Controls", "Connect", "Check && publish",
-                                               "Toolbox"])
+check("the sidebar: Home, the rig's 5 steps, Toolbox (names) - and Settings at the bottom; narrow: icons only",
+      [b.text() for k, b in f.nav.items()][:7] == ["Home", "Build", "Skin", "Controls", "Connect",
+                                                   "Check && publish", "Toolbox"])
 f.resize(400, 900); app.processEvents()
 check("...narrow: icons only, the section names hidden", f.slim and not any(b.text() for b in f.nav.values())
       and not f.sec_labels[0].isVisibleTo(f))

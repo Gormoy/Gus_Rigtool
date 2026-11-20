@@ -19,7 +19,7 @@ Skin: bind, copy, clean, mirror and save skin weights.
 
 import os
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import naming, skin_io, skin_mirror, skin_tools, ui, utils
 

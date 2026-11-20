@@ -10,6 +10,8 @@ PATHS = {
     "connect": '<path d="M3 12h18 M7 7l-5 5 5 5 M17 7l5 5-5 5"/>',
     "check": '<path d="M5 12l5 5 9-10"/>',
     "toolbox": '<path d="M4 8h16v11H4z M9 8V5h6v3 M4 13h16"/>',
+    "gear": '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3 M12 18.5v3 M2.5 12h3 M18.5 12h3 M5.3 5.3l2.1 2.1 '
+            'M16.6 16.6l2.1 2.1 M5.3 18.7l2.1-2.1 M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
     "star": '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
     "spine": '<circle cx="12" cy="4" r="2"/><rect x="9" y="8" width="6" height="3" rx="1"/>'
              '<rect x="9" y="13" width="6" height="3" rx="1"/><rect x="9" y="18" width="6" height="3" rx="1"/>',

@@ -4,6 +4,9 @@ bar you keep anywhere over Maya. One list for both - the same one the old window
 
 Click: go to that tool. Right-click: Pop out / Move left / Move right / Remove. '+' chooses them; the star on a
 page's header adds or removes that page. Map: where everything is.
+
+Profiles (5.7.2, the same design as the Animtool bar): All tools, one per area, and your own (My tools = the old
+window's list). The row and the bar show the profile picked; Edit (pencil): drag to move, x to take off, + Add.
 """
 
 from gus_rigtool.newui import theme, widgets
@@ -15,28 +18,144 @@ _listeners = []
 _bar = {"w": None}
 
 
+PROFILES_KEY = "favProfiles"
+MINE = "My tools"                              # the old window's My tools list (myTools), kept in step
+
+
+# --------------------------------------------------------------------------- profiles
+def _store():
+    from gus_rigtool.core import ui, utils
+    st = utils.load_setting(PROFILES_KEY, {}) or {}
+    st.setdefault("current", MINE)
+    st.setdefault("mine", {})
+    st["mine"][MINE] = [k for k in ui.my_tools() if k != "home"]          # always the old window's list
+    return st
+
+
+def _save_store(st):
+    from gus_rigtool.core import utils
+    utils.save_setting(PROFILES_KEY, st)
+
+
+def builtin():
+    """{profile: tools} that come with the tool: All tools, and one per area (in the sidebar's order)."""
+    from gus_rigtool import registry
+    from gus_rigtool.newui import window
+    out = {"All tools": [k for k, _l, _m, _d in registry.TOOLS if k != "home"]}
+    for key, lab, _c, _i, _cats in theme.AREAS:
+        if key in ("home",):
+            continue
+        tools = [k for k, _l, _m, _d in registry.TOOLS if k != "home" and window.area_of(k)[0] == key]
+        if tools:
+            out[lab] = tools
+    return out
+
+
+def profiles():
+    """(the built-in profile names, your own profile names)."""
+    return list(builtin()), list(_store()["mine"])
+
+
+def current():
+    name = _store()["current"]
+    b, m = profiles()
+    return name if name in b or name in m else MINE
+
+
+def set_current(name):
+    st = _store()
+    st["current"] = name
+    _save_store(st)
+    changed()
+
+
+def editable(name=None):
+    return (name or current()) in _store()["mine"]
+
+
+def new_profile(name, copy_from=None):
+    st = _store()
+    name = (name or "").strip()
+    if not name or name in st["mine"] or name in builtin():
+        raise RuntimeError("a profile needs a new name.")
+    st["mine"][name] = list(keys_of(copy_from or current()))
+    st["current"] = name
+    _save_store(st)
+    changed()
+    return name
+
+
+def rename_profile(old, new):
+    st = _store()
+    new = (new or "").strip()
+    if old == MINE or old not in st["mine"]:
+        raise RuntimeError("'%s' can't be renamed." % old)
+    if not new or new in st["mine"] or new in builtin():
+        raise RuntimeError("a profile needs a new name.")
+    st["mine"][new] = st["mine"].pop(old)
+    if st["current"] == old:
+        st["current"] = new
+    _save_store(st)
+    changed()
+
+
+def delete_profile(name):
+    st = _store()
+    if name == MINE or name not in st["mine"]:
+        raise RuntimeError("'%s' can't be deleted." % name)
+    st["mine"].pop(name)
+    if st["current"] == name:
+        st["current"] = MINE
+    _save_store(st)
+    changed()
+
+
+def keys_of(name):
+    st = _store()
+    if name in st["mine"]:
+        return list(st["mine"][name])
+    return list(builtin().get(name, st["mine"][MINE]))
+
+
 # --------------------------------------------------------------------------- the list
 def keys():
-    from gus_rigtool.core import ui
-    return [k for k in ui.my_tools() if k != "home"]
+    """The tools of the profile shown."""
+    return keys_of(current())
 
 
 def set_keys(new):
+    """The profile shown gets these tools (a built-in one can't change: 'My tools' gets them)."""
     from gus_rigtool.core import utils
     out = []
     for k in new:
-        if k not in out:
+        if k not in out and k != "home":
             out.append(k)
-    utils.save_setting("myTools", out)
+    st = _store()
+    name = st["current"] if st["current"] in st["mine"] else MINE
+    st["mine"][name] = out
+    st["current"] = name
+    _save_store(st)
+    if name == MINE:
+        utils.save_setting("myTools", out)            # the old window's My tools row: the same list
     changed()
 
 
 def toggle(key):
     from gus_rigtool import registry
     key = registry.resolve(key)[0]
-    now = keys()
+    now = keys() if editable() else keys_of(MINE)
     set_keys([k for k in now if k != key] if key in now else now + [key])
     return key in keys()
+
+
+def move_to(key, index):
+    """Drag in Edit: key goes to place index."""
+    now = keys()
+    if key not in now or not editable():
+        return
+    now.remove(key)
+    now.insert(max(0, min(len(now), index)), key)
+    set_keys(now)
 
 
 def move(key, step):
@@ -132,6 +251,59 @@ def _exec(menu, pos):
     return menu.exec_(pos) if hasattr(menu, "exec_") else menu.exec(pos)
 
 
+def profile_menu(parent):
+    """The profiles: pick one; New (a copy of this one), Rename, Delete."""
+    m = QtWidgets.QMenu(parent)
+    b, mine = profiles()
+    cur = current()
+    for name in mine:
+        a = m.addAction(name)
+        a.setCheckable(True)
+        a.setChecked(name == cur)
+        a.triggered.connect(lambda _=False, n=name: set_current(n))
+    m.addSeparator()
+    for name in b:
+        a = m.addAction("%s  (%d)" % (name, len(keys_of(name))))
+        a.setCheckable(True)
+        a.setChecked(name == cur)
+        a.triggered.connect(lambda _=False, n=name: set_current(n))
+    m.addSeparator()
+    m.addAction("New profile (a copy of this one)...").triggered.connect(lambda _=False: _ask_new(parent))
+    if editable() and cur != MINE:
+        m.addAction("Rename '%s'..." % cur).triggered.connect(lambda _=False: _ask_rename(parent))
+        m.addAction("Delete '%s'" % cur).triggered.connect(lambda _=False: delete_profile(cur))
+    return m
+
+
+def _ask(parent, title, text, value=""):
+    got, ok = QtWidgets.QInputDialog.getText(parent, title, text, QtWidgets.QLineEdit.Normal, value)
+    return got if ok else None
+
+
+def _ask_new(parent):
+    name = _ask(parent, "New profile", "Its name (a copy of '%s'):" % current())
+    if name:
+        new_profile(name)
+
+
+def _ask_rename(parent):
+    name = _ask(parent, "Rename the profile", "New name:", current())
+    if name:
+        rename_profile(current(), name)
+
+
+def profile_button(parent=None):
+    b = QtWidgets.QToolButton(parent)
+    b.setText(current() + " ▾")
+    b.setToolTip("Your favourites profiles: All tools, one per area, your own")
+    b.setAutoRaise(True)
+    b.setCursor(Qt.PointingHandCursor)
+    b.setStyleSheet("QToolButton { background: rgba(255,255,255,0.08); color: %s; padding: 3px 9px; "
+                    "border-radius: 10px; }" % theme.TXT)
+    b.clicked.connect(lambda _=False: _exec(profile_menu(b), b.mapToGlobal(QtCore.QPoint(0, b.height()))))
+    return b
+
+
 def fav_button(key, text=True, size=22):
     b = QtWidgets.QToolButton()
     b.setIcon(QtGui.QIcon(badge(key, size)))
@@ -156,20 +328,28 @@ def choose(parent=None):
     d = QtWidgets.QDialog(parent)
     d.setWindowTitle("Gus_Rigtool - favourites")
     v = QtWidgets.QVBoxLayout(d)
-    v.addWidget(widgets.label("Your favourite tools - at the top of the window and on the floating bar:"))
+    v.addWidget(widgets.label("'%s' - tick the tools you want (at the top of the window and on the floating bar):" %
+                              (current() if editable() else MINE)))
     box = QtWidgets.QWidget()
     bv = QtWidgets.QVBoxLayout(box)
     mine = set(keys())
     ticks = []
-    for k, lab, _m, desc in registry.TOOLS:
-        if k == "home":
+    from gus_rigtool.newui import window
+    for akey, alab, acol, _i, _cats in theme.AREAS:                    # grouped by area, in the sidebar's order
+        tools = [(k, lab, desc) for k, lab, _m, desc in registry.TOOLS if k != "home" and
+                 window.area_of(k)[0] == akey]
+        if not tools:
             continue
-        c = QtWidgets.QCheckBox(lab)
-        c.setChecked(k in mine)
-        c.setToolTip(desc)
-        c.setIcon(QtGui.QIcon(badge(k, 18)))
-        bv.addWidget(c)
-        ticks.append((k, c))
+        head = widgets.label(alab.upper(), wrap=False)
+        head.setStyleSheet("QLabel { color: %s; font-size: 11px; font-weight: bold; margin-top: 6px; }" % acol)
+        bv.addWidget(head)
+        for k, lab, desc in tools:
+            c = QtWidgets.QCheckBox(lab)
+            c.setChecked(k in mine)
+            c.setToolTip(desc)
+            c.setIcon(QtGui.QIcon(badge(k, 18)))
+            bv.addWidget(c)
+            ticks.append((k, c))
     sc = QtWidgets.QScrollArea()
     sc.setWidget(box)
     sc.setWidgetResizable(True)
@@ -198,8 +378,36 @@ class FavRow(QtWidgets.QWidget):
         self.setLayout(widgets.FlowLayout(spacing=2))
         self.layout().setContentsMargins(8, 2, 8, 4)
         self.slim = False
+        self.editing = False
+        self._drag = None
         self.refresh()
         _listeners.append(self.refresh)
+
+    def set_editing(self, on):
+        self.editing = bool(on) and editable()
+        self.refresh()
+
+    def drop(self, key, onto):
+        """Edit: drop the favourite key onto another one - it takes that one's place."""
+        now = keys()
+        if onto in now:
+            move_to(key, now.index(onto))
+
+    def eventFilter(self, obj, event):
+        key = obj.property("fav")
+        if self.editing and key:
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._drag = key
+                return True
+            if event.type() == QtCore.QEvent.MouseButtonRelease and self._drag:
+                under = QtWidgets.QApplication.widgetAt(QtGui.QCursor.pos())
+                while under is not None and not under.property("fav"):
+                    under = under.parentWidget()
+                start, self._drag = self._drag, None
+                if under is not None and under.property("fav") != start:
+                    self.drop(start, under.property("fav"))
+                return True
+        return False
 
     def set_slim(self, slim):
         if slim != self.slim:
@@ -209,12 +417,42 @@ class FavRow(QtWidgets.QWidget):
     def refresh(self):
         from gus_rigtool.newui.window import _clear
         _clear(self.layout())
+        self.profile = profile_button()
+        self.layout().addWidget(self.profile)
         for k in keys():
-            self.layout().addWidget(fav_button(k, text=not self.slim, size=18 if not self.slim else 22))
-        for text, tip, fn in (("+", "Choose your favourites", lambda: choose(self).exec_() if hasattr(
+            b = fav_button(k, text=not self.slim, size=18 if not self.slim else 22)
+            if self.editing:
+                b.setStyleSheet(b.styleSheet() + " QToolButton { border: 1px dashed #6f93bd; }")
+                b.setToolTip("Drag onto another favourite to move it")
+                b.installEventFilter(self)
+                box = QtWidgets.QWidget()
+                h = QtWidgets.QHBoxLayout(box)
+                h.setContentsMargins(0, 0, 0, 0)
+                h.setSpacing(0)
+                h.addWidget(b)
+                x = QtWidgets.QToolButton()
+                x.setText("×")
+                x.setToolTip("Take %s off this profile" % label(k))
+                x.setProperty("remove", k)
+                x.setStyleSheet("QToolButton { color: white; background: #e2504a; border-radius: 8px; "
+                                "min-width: 16px; max-width: 16px; min-height: 16px; max-height: 16px; "
+                                "padding: 0px; font-weight: bold; }")
+                x.clicked.connect(lambda _=False, k=k: toggle(k))
+                h.addWidget(x, 0, Qt.AlignTop)
+                self.layout().addWidget(box)
+            else:
+                self.layout().addWidget(b)
+        if self.editing:
+            items = (("+ Add", "Tick the tools you want, grouped by area", lambda: choose(self).exec_() if hasattr(
                 QtWidgets.QDialog, "exec_") else choose(self).exec()),
-                              ("Map", "Where everything is: every area and page.", _map),
-                              ("Bar", "The favourites in a floating bar you keep anywhere over Maya.", show_bar)):
+                     ("Done", "Finish editing", lambda: self.set_editing(False)))
+        else:
+            items = (("✎", "Edit this profile: drag to move, × to take off, + to add" if editable() else
+                      "Built-in profiles can't change - pick 'New profile' in the profile menu to make your own",
+                      lambda: self.set_editing(True)),
+                     ("Map", "Where everything is: every area and page.", _map),
+                     ("Bar", "The favourites in a floating bar you keep anywhere over Maya.", show_bar))
+        for text, tip, fn in items:
             b = QtWidgets.QToolButton()
             b.setText(text)
             b.setToolTip(tip)
@@ -266,9 +504,10 @@ class FavBar(QtWidgets.QWidget):
                            "border-top: 3px solid #36b38a; }" % (theme.WIN, theme.TXT))
         self.setObjectName("gusFavBar")
         self._drag = None
-        st = self._state()
-        self.vertical = bool(st.get("vertical"))
+        self.editing = False
+        self.vertical = False
         self.build()
+        st = self._state()
         if st.get("x", -1) >= 0 and st.get("y", -1) >= 0:
             self.move(int(st["x"]), int(st["y"]))
         _listeners.append(self.build)
@@ -289,6 +528,9 @@ class FavBar(QtWidgets.QWidget):
         if lay is None:
             lay = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.LeftToRight, self)
         _clear(lay)
+        st = self._state()                       # 5.7.2: each profile keeps its own shape
+        shapes = st.get("shapes")                # none yet: the bar's one shape from 5.7.1
+        self.vertical = bool(shapes.get(current(), False) if shapes else st.get("vertical", False))
         lay.setDirection(QtWidgets.QBoxLayout.TopToBottom if self.vertical else QtWidgets.QBoxLayout.LeftToRight)
         lay.setContentsMargins(6, 5, 6, 5)
         lay.setSpacing(3)
@@ -297,11 +539,28 @@ class FavBar(QtWidgets.QWidget):
         self.handle.setStyleSheet("QLabel { color: %s; padding: 0 4px; }" % theme.FAINT)
         self.handle.setCursor(Qt.SizeAllCursor)
         lay.addWidget(self.handle)
+        self.profile = profile_button()
+        lay.addWidget(self.profile)
         self.buttons = {}
         for k in keys():
             b = fav_button(k, text=False, size=26)
-            lay.addWidget(b)
             self.buttons[k] = b
+            if self.editing:
+                box = QtWidgets.QWidget()
+                g = QtWidgets.QGridLayout(box)
+                g.setContentsMargins(0, 0, 0, 0)
+                g.addWidget(b, 0, 0)
+                x = QtWidgets.QToolButton()
+                x.setText("×")
+                x.setProperty("remove", k)
+                x.setToolTip("Take %s off this profile" % label(k))
+                x.setStyleSheet("QToolButton { color: white; background: #e2504a; border-radius: 7px; "
+                                "min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px; padding: 0; }")
+                x.clicked.connect(lambda _=False, k=k: toggle(k))
+                g.addWidget(x, 0, 0, Qt.AlignTop | Qt.AlignRight)
+                lay.addWidget(box)
+            else:
+                lay.addWidget(b)
         m = QtWidgets.QToolButton()
         m.setText("≡")
         m.setAutoRaise(True)
@@ -313,6 +572,9 @@ class FavBar(QtWidgets.QWidget):
     def menu(self):
         m = QtWidgets.QMenu(self)
         m.addAction("Open the Gus_Rigtool window").triggered.connect(lambda _=False: go_window())
+        if editable():
+            m.addAction("Done editing" if self.editing else "Edit (× takes one off)").triggered.connect(
+                lambda _=False: self.set_editing(not self.editing))
         m.addAction("Choose the favourites...").triggered.connect(
             lambda _=False: choose(self).exec_() if hasattr(QtWidgets.QDialog, "exec_") else choose(self).exec())
         m.addAction("A column" if not self.vertical else "A row").triggered.connect(lambda _=False: self.flip())
@@ -320,9 +582,15 @@ class FavBar(QtWidgets.QWidget):
         m.addAction("Close the bar").triggered.connect(lambda _=False: close_bar())
         return m
 
+    def set_editing(self, on):
+        self.editing = bool(on) and editable()
+        self.build()
+
     def flip(self):
-        self.vertical = not self.vertical
-        self._save(vertical=self.vertical)
+        st = self._state()
+        shapes = dict(st.get("shapes", {}))
+        shapes[current()] = not self.vertical
+        self._save(shapes=shapes)
         self.build()
 
     def mousePressEvent(self, e):

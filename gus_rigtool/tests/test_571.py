@@ -88,9 +88,9 @@ with mock.patch.object(QT, "maya_widget", lambda name, kind="layout": hosts.get(
           [t.text() for t in pop2.tabs.findChildren(QtWidgets.QPushButton)] == ["Make", "Edit shape"])
     opened = []
     with mock.patch.object(ui, "open_panel", lambda k: opened.append(k)):
-        f.go(("skin", None)); app.processEvents()
+        f.go(("joints", None)); app.processEvents()
         f.pop_out()
-    check("Pop out a page not redone yet (Skin): its own panel, as before", opened == ["skin"])
+    check("Pop out a page not redone yet (Build > Joints): its own panel, as before", opened == ["joints"])
 
 # --- 3. no button text cut off - also in a wider font, like Maya's
 f = W.Frame(); f.show()
@@ -144,7 +144,8 @@ shown = [b.property("fav") for b in f3.favs.findChildren(QtWidgets.QToolButton) 
 check("the favourites row: your My tools from the old window (the same list)", shown == FV.keys() and
       shown == [registry.resolve(k)[0] for k in registry.MY_TOOLS if registry.resolve(k)[0] != "home"])
 extras = [b.text() for b in f3.favs.findChildren(QtWidgets.QToolButton) if not b.property("fav")]
-check("...then + (choose), Map (where everything is), Bar (the floating bar)", extras == ["+", "Map", "Bar"])
+check("...the profile first, then ✎ (edit: + inside it), Map (where everything is), Bar (the floating bar)",
+      extras[0].startswith("My tools") and extras[1:] == ["✎", "Map", "Bar"])
 star = [b for b in f3.head_buttons.findChildren(QtWidgets.QPushButton) if "Favourite" in b.text()][0]
 star.click(); app.processEvents()
 check("☆ Favourite on Behaviour: added at the end of the row, the star filled", FV.keys()[-1] == "behaviour" and
@@ -181,7 +182,8 @@ with mock.patch.object(W.Frame, "go_key", lambda self, k, section=None: went.app
     bar.buttons["skin"].click()
 check("...click Skin on the bar: the window goes to Skin", went == ["skin"])
 bar.flip(); app.processEvents()
-check("...a column instead of a row (remembered)", bar.vertical and utils.load_setting(FV.BAR_KEY, {}).get("vertical"))
+check("...a column instead of a row (remembered, for this profile)", bar.vertical and
+      utils.load_setting(FV.BAR_KEY, {}).get("shapes", {}).get(FV.current()))
 FV.toggle("select"); app.processEvents()
 check("...a favourite added anywhere shows on the bar too", "select" in bar.buttons)
 bar.move(120, 80); bar._drag = QtCore.QPoint(0, 0); bar.mouseReleaseEvent(None)

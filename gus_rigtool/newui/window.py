@@ -16,17 +16,24 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls",)                         # the areas drawn in the new look (5.7.0: Controls)
+NEW_LOOK = ("controls", "skin", "settings")      # the areas drawn in the new look (5.7.0 Controls, 5.7.2 Skin)
+# a long tool page shown as several sub-pages: (label, the card titles on it) - 5.7.2 Skin (Gus's picture)
+SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror weights"]),
+                   ("Save / load", ["Save / load weights"]), ("Clean", ["Clean"]),
+                   ("Weights", ["Vertex weights", "Weight list"]), ("Cloth & jiggle", ["Cloth", "Jiggle and wave"])]}
+OLD_PAGE = ("settings",)                         # drawn as today's page even in a new-look area
 CATEGORY = {"home": "home", "build": "build", "skin": "skin", "controls": "controls", "connect": "links",
-            "check": "finish", "toolbox": "toolbox"}
+            "check": "finish", "toolbox": "toolbox", "settings": "settings"}
 WHY = {"home": "Where you are in the rig, and the next step.",
        "build": "Modules, face, ribbons and joints: the rig's skeleton and parts.",
        "skin": "Bind meshes and fix the weights.",
        "controls": "Make controls and shape them; how they behave, their attributes, spaces and follows.",
        "connect": "Constraints, connections, nodes and driven keys.",
        "check": "Find problems, tidy up and hand the rig over.",
-       "toolbox": "Small tools for any moment."}
+       "toolbox": "Small tools for any moment.",
+       "settings": "Update, your defaults, the window, side colours, the shelf - one place."}
 SLIM = 560                                       # narrower than this: the sidebar shows its icons only
+SHORT = 640                                      # lower than this: Recent and Help fold away
 _frame = {"w": None}
 
 
@@ -56,6 +63,8 @@ def area_of(key):
     """(area, tool key, page) for a tool key (old keys - shapes, makectrl - included)."""
     from gus_rigtool import registry
     tool, page = registry.resolve(key)
+    if tool == "settings":                       # 5.7.2: Settings is its own button (not in the Toolbox)
+        return "settings", tool, page
     cat, _l = registry.category_of(tool)
     for a, c in CATEGORY.items():
         if c == cat:
@@ -108,13 +117,16 @@ class Area(QtWidgets.QWidget):
         from gus_rigtool import registry
         self.frame, self.key, self.pfx = frame, key, prefix
         self.accent = theme.colour(key)
-        self.tools = dict((c, k) for c, _l, k in registry.CATEGORIES).get(CATEGORY[key], [])
+        self.tools = ["settings"] if key == "settings" else [
+            t for t in dict((c, k) for c, _l, k in registry.CATEGORIES).get(CATEGORY[key], []) if t != "settings"]
         if only:
             self.tools = [t for t in self.tools if t in only]
         self.subs = []                          # [(tool key, page or None, label)]
         for t in self.tools:
             if t == "controls_tab" and key in NEW_LOOK:
                 self.subs += [("controls_tab", 1, "Make"), ("controls_tab", 2, "Edit shape")]
+            elif t in SPLITS and key in NEW_LOOK:
+                self.subs += [(t, label, label) for label, _titles in SPLITS[t]]
             else:
                 self.subs.append((t, None, registry.get(t)[1]))
         self.pages = {}                         # tool key -> render.Page (new look)
@@ -150,11 +162,23 @@ class Area(QtWidgets.QWidget):
         self.pinned = None                      # (card, its own layout, its index there)
 
     # -------------------------------------------------- pages
+    def default_sub(self, tool, page=None):
+        """The sub-page to show for a tool: the one asked for, else the one you used last, else its first."""
+        mine = [tuple(x[:2]) for x in self.subs if x[0] == tool]
+        if (tool, page) in mine:
+            return (tool, page)
+        last = _state()["sub"].get(self.key)
+        if last and tuple(last) in mine:
+            return tuple(last)
+        return mine[0] if mine else (tool, page)
+
     def page_widget(self, sub):
         tool, page = sub[0], sub[1]
+        if tool in SPLITS:
+            page = None                         # one page, its cards shown a sub-page at a time
         if (tool, page) in self.widgets:
             return self.widgets[(tool, page)]
-        if self.key in NEW_LOOK:
+        if self.key in NEW_LOOK and tool not in OLD_PAGE:
             self._build_new(tool)
         else:
             w = OldPage(tool)
@@ -230,6 +254,23 @@ class Area(QtWidgets.QWidget):
     def prefix(self, tool):
         return "%s%s_" % (self.pfx, tool)
 
+    def _show_cards(self, page, sub):
+        """A split page: only this sub-page's cards, numbered 1, 2... (nothing left out: a card no sub-page names
+        shows on the first)."""
+        groups = SPLITS[sub[0]]
+        named = set(t for _l, ts in groups for t in ts)
+        want = dict(groups).get(sub[1], [])
+        first = sub[1] == groups[0][0]
+        n = 0
+        for card in page.cards:
+            if self.pinned and card is self.pinned[0]:
+                continue
+            on = card.title in want or (first and card.title not in named)
+            card.setVisible(on)
+            if on and card.num.text():
+                n += 1
+                card.num.setText(str(n))
+
     def _mark_all(self, name):
         for g in getattr(self, "grids", []):
             g.mark(name)
@@ -243,6 +284,8 @@ class Area(QtWidgets.QWidget):
             target.fill()
         self.current = sub
         page = self.pages.get(sub[0])
+        if page is not None and sub[0] in SPLITS:
+            self._show_cards(page, sub)
         if page is not None and sub[0] == "controls_tab" and sub[1]:
             name = self.prefix("controls_tab") + "Pages"
             if page.tab_current.get(name) != sub[1]:
@@ -587,7 +630,7 @@ class Frame(QtWidgets.QWidget):
 
     def _build_side(self):
         lay = self.side_layout
-        steps = [a for a in theme.AREAS if a[0] not in ("home", "toolbox")]
+        steps = [a for a in theme.AREAS if a[0] not in ("home", "toolbox", "settings")]
         self.sec_labels = []
         b = self._nav_button("home", "Home")
         b.clicked.connect(lambda: self.go(("home", None)))
@@ -624,6 +667,10 @@ class Frame(QtWidgets.QWidget):
         self.help_btn.clicked.connect(self._help)
         lay.addWidget(self.help_btn)
         lay.addStretch(1)
+        b = self._nav_button("settings", "Settings")         # 5.7.2: its own button, at the bottom
+        b.clicked.connect(lambda: self.go(("settings", None)))
+        lay.addWidget(b)
+        self.nav["settings"] = b
         self.side.setFixedWidth(196)
 
     def _my_tools(self):
@@ -654,7 +701,8 @@ class Frame(QtWidgets.QWidget):
         for area, tool, page in _state()["recent"][:3]:
             try:
                 label = "%s › %s" % (theme.area(area)[1], "Edit shape" if (tool, page) == ("controls_tab", 2) else
-                                     "Make" if (tool, page) == ("controls_tab", 1) else registry.get(tool)[1])
+                                     "Make" if (tool, page) == ("controls_tab", 1) else
+                                     page if isinstance(page, str) else registry.get(tool)[1])
             except KeyError:
                 continue
             b = QtWidgets.QPushButton(label.replace("&", "&&"))
@@ -667,14 +715,12 @@ class Frame(QtWidgets.QWidget):
     def go_key(self, key, section=None):
         """Show a tool (any key, old ones too), with one of its sections open."""
         area, tool, page = area_of(key)
-        if tool == "controls_tab" and not page:
-            page = _state()["sub"].get("controls", ["controls_tab", 1])[1] or 1
         self.go((tool, page), section)
 
     def go(self, where, section=None):
         """where: (area key, None) - its remembered sub-page - or (tool key, page)."""
         first, page = where
-        if first in CATEGORY:
+        if first in CATEGORY and page is None:   # an area ('skin' is also a tool: with a page it's the tool)
             area = first
             sub = _state()["sub"].get(area)
             area_obj = self._area(area)
@@ -683,9 +729,7 @@ class Frame(QtWidgets.QWidget):
         else:
             area, tool, _p = area_of(first)
             area_obj = self._area(area)
-            sub = (tool, page if tool == "controls_tab" else None)
-            if tool == "controls_tab" and not page:
-                sub = ("controls_tab", 1)
+            sub = area_obj.default_sub(tool, page)
         self.area = area
         self.stack.setCurrentWidget(area_obj)
         self.setStyleSheet(theme.stylesheet(area_obj.accent))
@@ -806,12 +850,15 @@ class Frame(QtWidgets.QWidget):
         self.side.setFixedWidth(54 if slim else 196)
         for b in list(self.nav.values()) + [self.mine]:
             b.setText("" if slim else b.property("full"))
-        for w in self.sec_labels + [self.recent_head, self.help_head, self.help_btn]:
+        short = self.height() < SHORT                # a short window: Recent and Help fold away (the preview)
+        for w in self.sec_labels:
             w.setVisible(not slim)
+        for w in [self.recent_head, self.help_head, self.help_btn]:
+            w.setVisible(not slim and not short)
         for i in range(self.recent_box.count()):
             it = self.recent_box.itemAt(i)
             if it.widget():
-                it.widget().setVisible(not slim)
+                it.widget().setVisible(not slim and not short)
 
     # -------------------------------------------------- search
     def _search_setup(self):
@@ -994,7 +1041,7 @@ class PopFrame(QtWidgets.QWidget):
             if alive(w):
                 w.go(where, section)
             return
-        sub = (tool, page)
+        sub = self.body.default_sub(tool, page)
         self.body.show_sub(sub)
         _clear(self.tabs.layout())
         if len(self.body.subs) > 1:
@@ -1002,7 +1049,7 @@ class PopFrame(QtWidgets.QWidget):
                 b = QtWidgets.QPushButton(label)
                 b.setProperty("role", "tab")
                 b.setCheckable(True)
-                b.setChecked((t, p) == sub)
+                b.setChecked((t, p) == tuple(sub))
                 b.clicked.connect(lambda _=False, t=t, p=p: self.go((t, p)))
                 self.tabs.layout().addWidget(b)
 

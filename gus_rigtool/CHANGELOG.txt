@@ -1,3 +1,35 @@
+Gus_Rigtool 5.7.2 - Skin in the new look (7 sub-pages), Settings its own button, favourites profiles you edit
+
+Gus approved the 5.7.2 preview: Settings out of the Toolbox onto its own button, the favourites edited like the
+Animtool bar will be (profiles, drag, x, +), Skin in the new look split into short sub-pages, Fixes one of them.
+
+Skin (2 in the sidebar):
+- Today's Skin and Fixes pages in the new look - every button and option (a test counts all 100), nothing cut off
+  at any width - split by job: Bind · Copy & mirror · Save / load · Clean · Weights · Cloth & jiggle · Fixes.
+  The cards are numbered 1, 2... on each sub-page. Skin opens on the sub-page you used last; Pop out takes the
+  sub-page you're on, with Skin's sub-pages in the panel.
+
+Settings: its own button at the bottom of the sidebar (and only there - not in the Toolbox any more).
+
+Favourites:
+- Profiles (the menu at the start of the row and on the bar): My tools (your list, the same as the old window's),
+  All tools, one per area (Build, Skin, Controls...), and your own - New profile (a copy of the one shown),
+  Rename, Delete. The row and the floating bar show the profile picked.
+- ✎ Edit (your own profiles): an × on each favourite takes it off; drag one onto another to move it there;
+  + Add opens the list grouped by area (in the sidebar's order); Done. The bar has Edit in its ≡ menu too.
+- Each profile keeps its own bar shape (a row, or a column).
+- ☆ Favourite while a built-in profile is shown (All tools, an area): the page goes to My tools.
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release checks Skin (7 sub-pages, nothing
+cut off), the Settings button and a profile in your Maya.
+
+Decisions I made:
+- Built-in profiles (All tools, the areas) can't be edited; they're always up to date with the tool. Your own can.
+- My tools can't be renamed or deleted: the old window's My tools row uses it.
+- A Skin card that no sub-page names would show on the first one (none today) - so nothing can get lost if a
+  card is added later.
+- The cards keep their order inside a sub-page; only the numbers restart at 1.
+
 Gus_Rigtool 5.7.1 - the new window fixed (it opened twice), Pop out, your favourites (a row at the top and a
 floating bar), and the old window's good parts back
 

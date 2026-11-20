@@ -1,0 +1,33 @@
+PASS the sidebar ends with Settings (its own button, under the rest)
+PASS Settings: today's Settings page, in its own place
+PASS ...and no longer in the Toolbox (one place only)
+PASS search 'Settings' goes there
+PASS Skin's sub-pages: Bind, Copy & mirror, Save / load, Clean, Weights, Cloth & jiggle, Fixes
+PASS nothing lost: every named control of today's Skin and Fixes pages is there (100 controls)
+PASS nothing twice, nothing left undrawn
+PASS every Skin card is on exactly one sub-page (9 cards)
+PASS Copy & mirror: Copy skin and Mirror weights, numbered 1 and 2 on their sub-page
+PASS Fixes: the Fixes page, as a Skin sub-page
+PASS nothing cut off: every Skin sub-page at 300, 420 and 700 px (button text too)
+  [info] skinned 0 mesh(es). Next: Build > Start: template or add a module (Home shows every step).
+PASS Skin > Bind in the new window: 8 influences reaches the tool's own Bind (the same code as before)
+PASS Skin opens on the sub-page you used last
+PASS Pop out Skin > Weights: its own panel, on Weights, with Skin's sub-pages
+PASS profiles: My tools (your list), All tools, and one per area
+PASS My tools is your old list (the old window's My tools)
+PASS pick 'Skin': the row shows Skin and Fixes
+PASS ...the window's row follows the profile
+PASS ☆ on a built-in profile: the tool goes to My tools (built-in ones can't change)
+PASS New profile 'Face' (a copy), then its own tools - My tools unchanged
+PASS ✎ Edit: an × on each favourite, + Add and Done
+PASS ...× takes Follow off
+PASS ...drag Stick onto Face: Stick takes its place
+PASS + Add: the tools grouped by area, in the sidebar's order
+PASS Rename the profile
+PASS the floating bar shows the same profile
+PASS each profile keeps its own bar shape (Face rig: a column; My tools: a row)
+PASS ...back to Face rig: a column again
+PASS the bar's Edit: an × on each square
+PASS Delete a profile: back to My tools
+PASS My tools can't be deleted (the old window uses it)
+31/31 passed

@@ -25,6 +25,7 @@ AREAS = [
     ("connect", "Connect", "#9b74dc", "connect", ["links"]),
     ("check", "Check & publish", "#e3bd3c", "check", ["finish"]),
     ("toolbox", "Toolbox", "#6f93bd", "toolbox", ["toolbox"]),
+    ("settings", "Settings", "#8a9098", "gear", []),
 ]
 AXIS = {"X": "#e2504a", "Y": "#5fbf4f", "Z": "#4c8fe0"}
 KIND = {"joint": "#f0c85a", "control": "#6fd6b0", "mesh": "#9ec3f0", "other": "#cfd2d6"}

@@ -6,14 +6,14 @@ PASS Pop out: Behaviour in its own panel, in the new look
   [info] tx limited -45 .. 90 on 1 control(s).
 PASS ...the panel and the main window each use their own fields (-10..10 there, -45..90 here)
 PASS Pop out the Controls tab: Make / Edit shape in it, on the page you were on (several panels open)
-PASS Pop out a page not redone yet (Skin): its own panel, as before
+PASS Pop out a page not redone yet (Build > Joints): its own panel, as before
 PASS no button text cut off (Delete, Load...): every Controls page, 300 / 420 / 700 px, normal and wider font
 PASS the header: Favourite, Pop out, Guide, Simple / Full view, What's new, Update... (as in the old window)
 PASS the tool's own description under the sub-pages
 PASS after an error: 'Copy error report' on the status line
 PASS Simple view: a tool's advanced sections start closed (Attributes > Order), as in the old window
 PASS the favourites row: your My tools from the old window (the same list)
-PASS ...then + (choose), Map (where everything is), Bar (the floating bar)
+PASS ...the profile first, then ✎ (edit: + inside it), Map (where everything is), Bar (the floating bar)
 PASS ☆ Favourite on Behaviour: added at the end of the row, the star filled
 PASS right-click > Move left: one place earlier
 PASS click a favourite: the window goes to that tool
@@ -24,7 +24,7 @@ PASS a square says which tool (initials) in its area's colour
 PASS the floating bar: your favourites as squares, a menu
 PASS ...stays in front of Maya, on the Mac too (a tool window, like the Animtool bar)
 PASS ...click Skin on the bar: the window goes to Skin
-PASS ...a column instead of a row (remembered)
+PASS ...a column instead of a row (remembered, for this profile)
 PASS ...a favourite added anywhere shows on the bar too
 PASS ...where you drag it is remembered
 PASS ...Close the bar

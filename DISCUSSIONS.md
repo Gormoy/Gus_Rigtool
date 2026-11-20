@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.2 test outputs accepted; next is 5.7.3 Build in the new look (Build, Face, Ribbon, Joints) -
+  preview first (Gus: "yes").
+
 - 2026-11-20: 5.7.2 plan approved (Settings ⚙ button; favourites profiles + editing on the row and the bar; Skin
   in the new look, 7 sub-pages Bind / Copy & mirror / Save / load / Clean / Weights / Cloth & jiggle / Fixes -
   Fixes stays a Skin sub-page "as in the picture"). 5.7.1 pushed to main (Gus: "push it").
@@ -55,7 +58,8 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.2: being built (plan approved 2026-11-20).
+- 5.7.2: outputs accepted (Gus: "yes"), committed + zipped; waiting for his Maya tests, then the push.
+- Next after 5.7.2: 5.7.3 Build area (preview first), then Connect, Check, Toolbox.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
 ## Ideas parked (not now)

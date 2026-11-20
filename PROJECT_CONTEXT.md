@@ -285,6 +285,11 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   Pop out, Guide, Simple/Full, What's new, Update), tool description, Copy error report, Simple view while
   recording (ui._view); favourites.py (FavRow under the search, FavBar floating, myTools list, badges = initials
   in the area colour); cut_off also checks button text (_fits). Next: 5.7.2 Skin.
+- **5.7.2**: window.SPLITS (a tool page shown as sub-pages by card titles; Skin: 6 + Fixes), Area.default_sub,
+  NEW_LOOK skin + settings (settings drawn as today's page, OLD_PAGE), Settings its own area/button; favourites
+  profiles (favProfiles: current, mine; builtin = All tools + one per area; My tools mirrors myTools), edit mode
+  on the row (× remove, drop to reorder, + Add grouped) and the bar (per-profile shape: favBar.shapes).
+  Next: 5.7.3 Build (preview first), then Connect, Check, Toolbox.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
