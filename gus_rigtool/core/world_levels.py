@@ -61,15 +61,11 @@ def _hide(n, attrs):
 
 def _new_control(name, like, factor, parent, matrix):
     """An offset group + control at matrix under parent, with like's shape scaled by factor. (offset, ctrl)."""
-    off = cmds.createNode("transform", name=naming.unique(name + "_offset"), skipSelect=True)
-    if parent:
-        off = cmds.parent(off, parent, relative=True)[0]
-    off = cmds.ls(off, long=True)[0]
-    cmds.xform(off, worldSpace=True, matrix=matrix)
+    from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
     data = curves.read_shape(like) or shape_data.circle_curve(1.0)
-    ctrl = curves.create_curve_control(naming.unique(name), shape_data.scale(data, factor), curves.read_style(like))
-    ctrl = cmds.parent(ctrl, off, relative=True)[0]
-    return off, cmds.ls(ctrl, long=True)[0]
+    off_name = naming.unique(name + "_offset")
+    return control_maker.new(naming.unique(name), shape_data.scale(data, factor), curves.read_style(like),
+                             groups=[off_name], matrix=matrix, parent=parent)
 
 
 def _at_rest(n):

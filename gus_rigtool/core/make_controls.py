@@ -14,7 +14,7 @@ import math
 
 import maya.cmds as cmds
 
-from gus_rigtool.core import colors, curves, mirror_engine, naming, shape_data, sides, utils
+from gus_rigtool.core import colors, control_maker, curves, mirror_engine, naming, shape_data, sides, utils
 from gus_rigtool.core import nodes as _nodes
 
 DRIVE = ("constrain", "parent", "direct")
@@ -210,20 +210,12 @@ def make(nodes, shape="circle", size=None, face="X", stack=("_offset",), drive="
             data = _shape(shape, face, sz)
             if side == "R" and cmds.nodeType(node) != "joint":
                 data = shape_data.map_points(data, lambda p: (-p[0], p[1], p[2]))
-            ctrl = curves.create_curve_control(naming.unique(ctrl_name), data, style)
             mat = match_matrix(node)
-            groups = []
-            for g in group_names:
-                grp = cmds.createNode("transform", name=naming.unique(g))
-                if groups:
-                    grp = cmds.parent(grp, groups[-1])[0]
-                grp = cmds.ls(grp, long=True)[0]
-                cmds.xform(grp, worldSpace=True, matrix=mat)
-                groups.append(grp)
-            gids = [utils.uuid(g) for g in groups]
+            # 5.6.45: the one control maker (tagged below, once it's in the hierarchy)
+            top, ctrl = control_maker.new(naming.unique(ctrl_name), data, style,
+                                          groups=[naming.unique(g) for g in group_names], matrix=mat, tag=False)
+            gids = [utils.uuid(top)]
             cid = utils.uuid(ctrl)
-            cmds.parent(ctrl, utils.path(gids[-1]), relative=True)
-            ctrl = utils.path(cid)
             # where the stack goes
             up = None
             if drive == "direct":
@@ -252,13 +244,8 @@ def make(nodes, shape="circle", size=None, face="X", stack=("_offset",), drive="
                         cmds.setAttr("%s.%s" % (ctrl, a), lock=True, keyable=False, channelBox=False)
                     except RuntimeError:
                         pass
-            if tag:
-                try:
-                    cmds.controller(ctrl)
-                    if up and cmds.objExists(up) and cmds.listConnections(up, type="controller"):
-                        cmds.controller(ctrl, up, parent=True)
-                except (RuntimeError, TypeError, AttributeError):
-                    pass
+            if tag and control_maker.tag_one(ctrl):
+                control_maker.link(ctrl)                  # pick-walk: up to the control above
             made[utils.path(nid)] = ctrl
             out.append((utils.path(nid), utils.path(cid)))
     cmds.select([c for _n, c in out], replace=True)

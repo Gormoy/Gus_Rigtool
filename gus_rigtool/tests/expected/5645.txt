@@ -1,0 +1,28 @@
+PASS a control in its groups (top first), under its parent
+PASS at its place (world)
+PASS the same curve and colour as the old way
+PASS tagged as a Maya controller
+PASS a control under another: linked to it (pick-walk)
+PASS tag=False: left as it is
+PASS Make controls makes its controls with the one maker
+PASS Shapes (Create) makes its controls with the one maker
+PASS the Builder makes its controls with the one maker
+PASS Ribbon makes its controls with the one maker
+PASS IK spline makes its controls with the one maker
+PASS World levels makes its controls with the one maker
+PASS Face sliders makes its controls with the one maker
+PASS nothing makes a control another way any more (create_curve_control only in the maker / guides)
+PASS after a build: every control linked up the hierarchy
+PASS Builder: its control tagged, in its offset under the parent
+PASS an old rig: nothing tagged by itself
+PASS Tag all controls: both tagged, the hand linked to the arm
+PASS ...the 'not a control' curve left out
+PASS ...pressing it again changes nothing
+PASS Checker: the 'Tag all controls as Maya controllers' button
+PASS Publish doesn't tag (you chose: only the button)
+PASS the installer updates Gus Animtool too
+PASS your Animtool folder gets the new files (5.6.42 -> 5.6.45)
+PASS ...your defaults kept
+PASS an older Animtool: it says so and offers the update
+PASS the same version: nothing asked
+27/27 passed

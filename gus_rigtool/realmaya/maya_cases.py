@@ -837,10 +837,42 @@ def A_rel(n, holder):
     return [m[12], m[13], m[14], m[0], m[1], m[2]]
 
 
+def controllers(rep):
+    """l. The one control maker (5.6.45), on the biped e built: every control a Maya controller, pick-walk up goes
+    to the control above; a plain curve made by hand tagged by Checker > Tag all controls."""
+    from gus_rigtool.core import control_maker as CM
+    from gus_rigtool.tools import checker
+    rep.start("l. Every control a Maya controller, pick-walk (the biped)")
+    ctrls = [c for c in cmds.ls(type="transform", long=True) or [] if checker.is_control(c)]
+    untagged = [c for c in ctrls if not CM.is_tagged(c)]
+    rep.expect("every control the Builder made is a Maya controller", ctrls and not untagged,
+               "%d of %d untagged: %s" % (len(untagged), len(ctrls), ", ".join(c.split("|")[-1] for c in untagged[:6])))
+    walked = []
+    for c in ctrls:
+        above = CM._tagged_above(c)
+        if not above:
+            continue
+        try:
+            got = cmds.controller(c, query=True, parent=True)
+        except (RuntimeError, TypeError):
+            got = None
+        walked.append((c, above, got))
+    linked = [w for w in walked if w[2] and w[1].split("|")[-1] in str(w[2])]
+    rep.add(INFO, "controls with a control above them / linked to it", "%d / %d" % (len(walked), len(linked)))
+    rep.expect("pick-walk up: each goes to the control above it", walked and len(linked) == len(walked),
+               "; ".join("%s -> %s (wanted %s)" % (c.split("|")[-1], g, a.split("|")[-1])
+                         for c, a, g in walked if (c, a, g) not in linked)[:300])
+    loose = cmds.circle(name="Handmade_ctrl", constructionHistory=False)[0]
+    rep.expect("a curve made by hand: not tagged by itself", not CM.is_tagged(loose))
+    n, _l = CM.tag_all([cmds.ls(loose, long=True)[0]])
+    rep.expect("Tag all controls tags it", n == 1 and CM.is_tagged(loose))
+    cmds.delete(loose)
+
+
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
-         ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
+         ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
          ("k. add / remove inbetween", inbetween_case)]
-WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
+WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

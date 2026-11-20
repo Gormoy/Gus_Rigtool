@@ -1472,6 +1472,17 @@ def copy_report(*_):
         utils.info(TOOL, "report printed in the Script Editor.", "info")
 
 
+def tag_controls(*_):
+    """5.6.45: Tag all controls (the button - never automatic)."""
+    from gus_rigtool.core import control_maker
+    sel = cmds.ls(selection=True, long=True) or []
+    nodes = [n for n in transforms(sel or None) if is_control(n)]
+    tagged, linked = control_maker.tag_all(nodes)
+    utils.info(TOOL, "%d control(s) tagged as Maya controllers (%d were already), %d linked to the control above."
+               % (tagged, len(nodes) - tagged, linked))
+    return tagged, linked
+
+
 def build(prefix="p_checker_"):
     _P["p"] = prefix
     s = utils.tool_settings(SETTINGS_KEY, DEFAULTS)
@@ -1494,6 +1505,10 @@ def build(prefix="p_checker_"):
                 command=_w(lambda *_: __import__("gus_rigtool.scene_check", fromlist=["x"]).run_later()),
                 annotation="Reads the whole scene and writes a report to send: problems first, then each ribbon, "
                            "follow, skin, stuck control... Nothing changes.")
+    cmds.button(label="Tag all controls as Maya controllers", height=26, command=_w(_guard(tag_controls)),
+                annotation="For rigs made before 5.6.45: every control (the selected hierarchies, or the whole "
+                           "scene) tagged as a Maya controller and linked to the control above it - pick-walk and "
+                           "the animators' tools find them. 'Not a control' curves are left out. One undo.")
     ui.end_section()
 
     ui.section("Repair", help_text="Finds what Check this scene can fix safely: ribbons whose joints copy their "

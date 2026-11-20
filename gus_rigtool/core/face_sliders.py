@@ -75,6 +75,8 @@ def _knob(name, size, parent, pos, colour=17):
     s = cmds.listRelatives(c, shapes=True, fullPath=True)[0]
     cmds.setAttr(s + ".overrideEnabled", 1)
     cmds.setAttr(s + ".overrideColor", colour)
+    from gus_rigtool.core import control_maker              # 5.6.45: a Maya controller like every control
+    control_maker.tag_one(c)
     return c
 
 

@@ -187,16 +187,10 @@ def _with_side(base, target, s):
 
 
 def _new_control(base, shape, style, offset, target):
+    from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
     ctrl_name, offset_name = naming.ctrl_names(base)
-    ctrl = curves.create_curve_control(ctrl_name, shape, style)
-    top = ctrl
-    if offset:
-        grp = cmds.createNode("transform", name=offset_name)
-        ctrl = cmds.parent(ctrl, grp, relative=True)[0]
-        top = cmds.ls(grp, long=True)[0]
-        ctrl = cmds.ls(ctrl, long=True)[0]
-    if target:
-        cmds.xform(top, worldSpace=True, matrix=curves.match_matrix(target))
+    _top, ctrl = control_maker.new(ctrl_name, shape, style, groups=[offset_name] if offset else (),
+                                   matrix=curves.match_matrix(target) if target else None)
     return ctrl
 
 

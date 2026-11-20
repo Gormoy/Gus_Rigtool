@@ -1127,6 +1127,31 @@ def _settings_tab():
 DOCK = ["Floating (drag its tab to dock it)", "Docked next to the Channel Box"]
 
 
+def _version_check():
+    """This Animtool older than the Gus_Rigtool installed: say so, and offer to update it from there."""
+    import gus_animtool
+    try:
+        import gus_rigtool
+    except ImportError:
+        return None
+    mine, theirs = gus_animtool.__version__, getattr(gus_rigtool, "__version__", "")
+    as_tuple = lambda v: tuple(int(x) for x in v.split(".") if x.isdigit())
+    if not theirs or as_tuple(mine) >= as_tuple(theirs):
+        return None
+    A.message("Gus Animtool %s is older than Gus_Rigtool %s." % (mine, theirs), "warn")
+    got = cmds.confirmDialog(title="Gus Animtool", message="Gus Animtool %s is older than the Gus_Rigtool installed "
+                             "(%s).\n\nUpdate Gus Animtool from it now? (Your defaults stay; restart Maya after.)"
+                             % (mine, theirs), button=["Update", "Not now"], defaultButton="Update",
+                             cancelButton="Not now", dismissString="Not now")
+    if got != "Update":
+        return False
+    import os
+    from gus_rigtool.core import updater
+    where = updater.update_animtool(os.path.dirname(gus_rigtool.__file__))
+    A.message("Gus Animtool updated%s - restart Maya." % (" in %s" % where if where else ""))
+    return True
+
+
 def show():
     """The window. Floating by default - drag its tab onto Maya's side to dock it; Maya remembers where."""
     A.track_selection_order()
@@ -1142,6 +1167,10 @@ def show():
                           uiScript="import gus_animtool.ui as _u; _u.build()", **flags)
     if not cmds.formLayout(P + "Root", exists=True):
         build()
+    try:                                     # 5.6.45: an Animtool older than the Gus_Rigtool next to it
+        _version_check()
+    except Exception:
+        pass
     if not A.opt("bar_replaces_toolbar", 0):                  # 5.6.44: the bar does its job - the toolbar off once
         A.set_opt("bar_replaces_toolbar", 1)                  # (Settings > Toolbar under the Time Slider brings it)
         A.set_opt("toolbar", 0)

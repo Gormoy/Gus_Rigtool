@@ -577,6 +577,12 @@ def _put_up(targets, height):
         from gus_rigtool.core import joint_labels
         skel_joints = cmds.listRelatives(skel, allDescendents=True, type="joint", fullPath=True) or []
         joint_labels.label(skel_joints)
+    try:                                                 # 5.6.45: pick-walk - each control up to the one above
+        from gus_rigtool.core import control_maker
+        control_maker.link_all(cmds.listRelatives(groups["controls"], allDescendents=True, type="transform",
+                                                  fullPath=True) or [])
+    except Exception as e:                               # never stops a build
+        utils.warn(TOOL, "controllers not linked up the hierarchy: %s" % e)
     if settings().get("controls_on_top", True):         # body controls in front of the mesh (face ones not)
         from gus_rigtool.core import on_top
         from gus_rigtool.tools import checker

@@ -82,13 +82,10 @@ def _control_shape(o):
 
 def _make_control(name, matrix, o):
     """Offset group + control at a world matrix. Returns (offset, ctrl)."""
-    offset = cmds.createNode("transform", name=naming.unique(name + "_offset"))
-    offset = cmds.ls(offset, long=True)[0]
-    cmds.xform(offset, worldSpace=True, matrix=matrix)
-    ctrl = curves.create_curve_control(naming.unique(name), _control_shape(o),
-                                       curves.rgb_style(o["color"]))
-    ctrl = cmds.parent(ctrl, offset, relative=True)[0]
-    return offset, cmds.ls(ctrl, long=True)[0]
+    from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
+    off_name = naming.unique(name + "_offset")
+    return control_maker.new(naming.unique(name), _control_shape(o), curves.rgb_style(o["color"]),
+                             groups=[off_name], matrix=matrix)
 
 
 # ---------------------------------------------------------------------------

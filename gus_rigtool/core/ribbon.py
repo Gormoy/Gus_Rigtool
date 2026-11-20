@@ -22,7 +22,7 @@ import json
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 
-from gus_rigtool.core import colors, curves, mirror_engine, naming, shape_data, sides, utils
+from gus_rigtool.core import colors, mirror_engine, naming, shape_data, sides, utils
 
 TOOL = "Ribbon"
 AXES = {'X': (1, 0, 0), 'Y': (0, 1, 0), 'Z': (0, 0, 1)}
@@ -149,7 +149,8 @@ def _library_shape(name):
 def _make_control(name, shape, face_axis, radius):
     """Create a control curve (a Shape Library shape) and return its transform."""
     data = shape_data.scale(shape_data.face(_library_shape(shape), face_axis), float(radius))
-    node = curves.create_curve_control(name, data, {})
+    from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
+    _top, node = control_maker.new(name, data, {})
     return naming.short_name(node)
 
 

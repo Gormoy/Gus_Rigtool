@@ -1,3 +1,39 @@
+Gus_Rigtool 5.6.45 - one control maker, every control a Maya controller; the installer updates Gus Animtool too
+
+Gus chose Stage 2a: one control maker, Shapes + Make controls in one tab (that tab is 5.6.46, with a mock-up first).
+And he found his Animtool still at 5.6.42: drag_to_maya.mel never updated his own Gus Animtool folder.
+
+One control maker (core/control_maker.py, new):
+- Make controls, Shapes (Create), the Builder, Ribbon, IK spline, World levels, Group controls and the face sliders
+  now make their controls in one place: the curve (shape, colour, line width), its group stack, its place, its
+  parent. They look exactly as before - the tests that measure them didn't change.
+- Every new control is tagged as a Maya controller, linked to the control above it: pick-walk (the arrow keys)
+  goes up and down the rig, and Maya's and the animators' tools find every control. Before, only Make controls
+  tagged them (Builder, Ribbon, IK spline... didn't).
+- Checker > "Tag all controls as Maya controllers": for rigs made before 5.6.45 (the selected hierarchies, or the
+  whole scene). Only when you press it - never on Publish. 'Not a control' curves are left out. One undo.
+
+Gus Animtool:
+- drag_to_maya.mel now also updates your own Gus Animtool folder (maya/scripts/gus_animtool), keeping your
+  defaults - the message says so. Before, only the Update button did.
+- The Animtool window says when it's older than the Gus_Rigtool installed, and offers to update it.
+
+Real-Maya test l (new, on the biped): every control the Builder made is a Maya controller, pick-walk up goes to
+the control above, a curve made by hand is tagged by Tag all controls.
+
+Decisions I made:
+- The maker places a control in the world first, then parents it (the Builder's order) - so every number came
+  out exactly as before (the other order changed a -0 into a 0 in one test).
+- The Builder links the controllers once, at the end of a build (the hierarchy is only complete then); Make
+  controls links each one as it's made.
+- 'Tag all controls' is a button in the Check section, not a Checker check: a check would report every control
+  of every old rig as a problem on each run.
+- 'Distance in front' and 'pivot on the shape' stay where they are (Make controls / Shapes); they move into the
+  maker with the one Controls tab (5.6.46).
+
+Tested against the fake Maya (tests/test_5645.py with a small fake of Maya's controller tag, the full suite). Not
+tested in real Maya: run the real-Maya tests (l is new; everything else checks the controls still build).
+
 Gus_Rigtool 5.6.44 - the bar replaces the toolbar, choose the bar's buttons; your real-Maya results
 
 Gus: the bar does the toolbar's job; the attach and the Attach / Arcs windows work. His first real-Maya run of

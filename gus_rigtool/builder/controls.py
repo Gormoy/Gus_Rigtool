@@ -60,15 +60,10 @@ def make(side, part, shape="circle", size=1.0, matrix=None, parent=None, face="X
         else:
             data = shape_data.map_points(data, lambda p: (-p[0], -p[1], -p[2]))
     rgb = rgb or colors.side_colors()[side]
-    ctrl = curves.create_curve_control(names.make(side, part, "ctrl", variant, s), data, curves.rgb_style(rgb))
-    offset = cmds.createNode("transform", name=names.make(side, part, "offset", variant, s))
-    if matrix is not None:
-        cmds.xform(offset, worldSpace=True, matrix=matrix)
-    ctrl = cmds.parent(ctrl, offset, relative=True)[0]
-    if parent:
-        offset = cmds.parent(offset, parent)[0]
-    offset = long(offset)
-    ctrl = cmds.listRelatives(offset, children=True, type="transform", fullPath=True)[0]
+    from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
+    offset, ctrl = control_maker.new(names.make(side, part, "ctrl", variant, s), data, curves.rgb_style(rgb),
+                                     groups=[names.make(side, part, "offset", variant, s)], matrix=matrix,
+                                     parent=parent)
     for attr in lock or ():
         cmds.setAttr(ctrl + "." + attr, lock=True, keyable=False, channelBox=False)
     return offset, ctrl

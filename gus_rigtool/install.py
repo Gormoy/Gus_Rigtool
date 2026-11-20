@@ -169,6 +169,13 @@ def install(source_dir):
 
     msg = "Gus_Rigtool %s installed in %s" % (gus_rigtool.__version__, dest)
     extras = []
+    try:                                     # 5.6.45: your own Gus Animtool folder (maya/scripts) updated too
+        from gus_rigtool.core import updater
+        anim = updater.update_animtool(dest)
+        if anim:
+            extras.append("Gus Animtool updated in %s - restart Maya" % anim)
+    except Exception as e:
+        utils.warn("Gus_Rigtool", "Gus Animtool wasn't updated (%s): use its Update button." % e)
     if keep:
         extras.append("kept %d data file(s)" % len(keep))
     if moved:
