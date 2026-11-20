@@ -60,6 +60,9 @@ Winter". He writes in English (sometimes Portuguese) and prefers plain words ove
 12. **Viewport looks proven first** (5.6.46): for anything Gus sees in the viewport (arcs, ghosts, shapes), send a
     tiny try-it script and get his screenshot before building the whole feature (5.6.40's arcs were reverted).
 13. **Releases go to `main`** once Gus OKs a push (fast-forward; every release branch builds on the last).
+14. **Save the conversation, not only the code** (Gus, 5.7.1): keep `DISCUSSIONS.md` (repo root) up to date in
+    every conversation - his decisions, preferences, answers to questions and open plans - and commit it with
+    the next commit. Read it at the start of every session, with PROJECT_CONTEXT.md.
 
 ## Layout
 
@@ -128,4 +131,5 @@ gus_rigtool/
 - Short numbered lists. Name the button or menu path ("Ribbon tab > Not symmetric").
 - Be honest about what is untested or uncertain.
 
-See `PROJECT_CONTEXT.md` for the history, the Hare rig's current state and the open items.
+See `PROJECT_CONTEXT.md` for the history, the Hare rig's current state and the open items, and `DISCUSSIONS.md`
+for what Gus decided and wants next.
