@@ -17,6 +17,8 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Gus "yes to all": 570/571/575 outputs accepted, 5.7.5 pushed to main, Check & publish preview next.
+
 - 2026-11-20: 5.7.5 results: Real Maya 112 ok; Test this release 39 ok - the new window 23 ok incl. Connect (nothing
   cut off on 6 pages, two rows, Connections tab fix); 1 FAIL again = his Gus_Animtool shelf is still empty (Make the
   shelf not run yet). Waiting: OK on 570/571/575 outputs and the 5.7.5 push.
@@ -114,8 +116,7 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.5 Connect sent - waiting for his tests / push OK. Then: Check & publish, then Toolbox (preview first); then
-  the old window can go; then 5.8.
+- Next: Check & publish preview (pictures first), then Toolbox; then the old window can go; then 5.8.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).

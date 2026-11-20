@@ -23,7 +23,7 @@ PASS ...its button takes you there (nothing is made)
 PASS pin 'In front of the mesh': it stays on top of the other Controls pages (Attributes)
 PASS ...unpinned: back in its page
 PASS search 'Edit shape': the Controls area on Edit shape
-PASS search 'constraints': the Connect area on Constraints (today's page inside the new window until Connect is redone)
+PASS search 'select': the Toolbox on Select (today's page inside the new window until the Toolbox is redone)
 PASS an area opens on the sub-page you used last
 PASS the new window is the default
 PASS Toolbox > Settings > Window > the old window: gr.show() opens the old one from now on

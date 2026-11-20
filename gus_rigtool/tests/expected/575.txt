@@ -1,0 +1,18 @@
+PASS nothing lost: every named control of today's Constraints, Connect, Nodes and SDK is on the new pages (over 170 controls)
+PASS nothing twice, every kind of control drawn
+PASS Connect: Constraints, Connections, Nodes, Driven keys on top; Nodes' pages under them
+PASS Nodes > Make a driver: Make a driver, Setups library
+PASS click Connections: the Connections page (5.7.4 went to the Connect area's last page - its name is the area's)
+PASS ...a favourite / search for Connect: Connections too
+PASS ...the sidebar's Connect button: the area (its last page)
+PASS nothing cut off: every Connect page (6), 300 / 420 / 700 px, normal and wider font
+PASS every Connect page fits a narrow window (no more room than Controls > Behaviour)
+PASS Driven keys in Mirror mode: the Copy section hidden, the others numbered 1 2 3 4 (no gap)
+PASS ...Copy mode: the Copy section shows (numbered 2, as before)
+PASS the driven keys list: short with one line, taller with more (up to its old height)
+  [info] 0 parent constraint(s) made (offset kept).
+PASS Constraints > Constrain: the tool's own Constrain (with the Order on the page)
+  [warn] nothing connected.
+PASS Connections > Connect: the tool's own Connect
+PASS Nodes > Make the driver: the tool's own, with the page's channels and amount (its plan shown first)
+15/15 passed
