@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Face + Ribbon previews approved. Two curves is the default (remembered) for eyelids, strips - and
+  (read as yes) mouth and brows too; edges stay as the other way. Full 5.7.3 plan to send before building.
+
 - 2026-11-20: Face: Gus prefers the step page but clearer - eyelids and facial strips are best made from TWO
   CURVES (select two curves, the ribbon lofted between). Face kit today only takes edges (it makes the two sides
   itself); two curves = a new way in, the edge way stays. Ribbon as steps too (Gus: yes). Previews sent
