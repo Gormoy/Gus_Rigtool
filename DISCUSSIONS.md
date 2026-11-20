@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Connect plan: "1 yes 2 its ok (Nodes: See & trace / Make a driver / Find & clean) 3 keep plain"
+  (Constraints and Driven keys without steps). 5.7.5 built and sent; waiting for his results and OK to push.
+
 - 2026-11-20: Gus: "ok lets go for the connect". Preview sent (design/screens575: now_* = today's 4 tools in the
   new look, idea_* = Nodes in 3 pages). Found: the Connections tool's key 'connect' = the area's key (its tab goes
   to the area). 5.7.5 plan sent; waiting for his OK.
@@ -107,7 +110,8 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- Next: Connect, Check, Toolbox areas in the new look (preview first); then the old window can go; then 5.8.
+- 5.7.5 Connect sent - waiting for his tests / push OK. Then: Check & publish, then Toolbox (preview first); then
+  the old window can go; then 5.8.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).

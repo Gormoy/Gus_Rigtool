@@ -153,6 +153,8 @@ class Field(object):
             w.setEnabled(bool(v))
         elif key in ("manage", "m", "visible", "vis"):
             w.setVisible(bool(v))
+            if isinstance(w, widgets.Card) and w in self.page.cards:
+                self.page.renumber()                     # 5.7.5: 1, 2, 3... over the cards shown
         elif key in ("label", "l"):
             self._set_label(v)
         elif key in ("annotation", "ann"):
@@ -178,11 +180,14 @@ class Field(object):
             self.list_items = []
             if isinstance(w, QtWidgets.QListWidget):
                 w.clear()
+                _fit_list(w)
         elif key in ("append", "a"):
             for t in (v if isinstance(v, (list, tuple)) else [v]):
                 self.list_items.append(t)
                 if isinstance(w, QtWidgets.QListWidget):
                     w.addItem(str(t))
+            if isinstance(w, QtWidgets.QListWidget):
+                _fit_list(w)
         elif key in ("removeItem", "ri"):
             if v in self.list_items:
                 i = self.list_items.index(v)
@@ -411,6 +416,15 @@ class _Item(object):
         self.field.remove_item(self.item)
 
 
+def _fit_list(lw):
+    """5.7.5: a list as tall as its rows (a short list doesn't leave an empty box), up to the height it asked for."""
+    rows = lw.count()
+    each = lw.sizeHintForRow(0) if rows else 20
+    h = max(56, min(getattr(lw, "tallest", 120), rows * max(each, 18) + 12))
+    lw.setMinimumHeight(h)
+    lw.setMaximumHeight(h)
+
+
 def _num_text(v, kw, kind):
     if kind == "intField" or kind == "intSliderGrp":
         try:
@@ -503,6 +517,15 @@ class Page(object):
         self.tab_current[name] = i
         if self.on_tab:
             self.on_tab(name, i)
+
+    def renumber(self):
+        """The shown cards numbered 1, 2, 3... (a card hidden by its tool - Driven keys' Copy in Mirror mode - has
+        no number in between)."""
+        n = 0
+        for card in self.cards:
+            if getattr(card, "number", None) and not card.isHidden():
+                n += 1
+                card.set_number(n)
 
     # -------------------------------------------------- drawing
     def build(self, root=None):
@@ -965,7 +988,8 @@ class Page(object):
             lw.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         rows = n.kw.get("numberOfRows") or n.kw.get("nr")
         h = n.kw.get("height") or n.kw.get("h") or (int(rows) * 20 + 8 if rows else 120)
-        lw.setMinimumHeight(min(int(h), 260))
+        lw.tallest = min(int(h), 260)
+        _fit_list(lw)
         sc, dc = n.kw.get("selectCommand") or n.kw.get("sc"), n.kw.get("doubleClickCommand") or n.kw.get("dcc")
         lw.itemSelectionChanged.connect(lambda: _call(sc))
         if dc:

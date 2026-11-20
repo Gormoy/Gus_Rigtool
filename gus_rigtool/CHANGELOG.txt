@@ -1,3 +1,35 @@
+Gus_Rigtool 5.7.5 - Connect in the new look
+
+Gus approved the Connect plan (pictures in design/screens575): Nodes in three pages with those names, Constraints and
+Driven keys kept plain.
+
+Connect (4 in the sidebar):
+- Constraints, Connections, Nodes and Driven keys in the new look - every button and option (over 170), nothing
+  twice, nothing cut off at 300 / 420 / 700 px.
+- Two rows of tabs: the tools on top - Constraints · Connections · Nodes · Driven keys (plain names in the new
+  window: the old window keeps Connect and SDK) - and Nodes' pages under them:
+  - See & trace: name utility nodes, select the setup, trace a channel, Node Editor;
+  - Make a driver: make a driver, setups library;
+  - Find & clean: find problems, clean up.
+- Driven keys: the Copy section shows only in Copy mode (in both windows); the sections are numbered 1, 2, 3...
+  over the ones shown (no gap where Copy is hidden).
+- Lists are as tall as their rows (up to the height they had): a short list doesn't leave an empty box (the
+  driven keys list, Build's module list...).
+
+Fixed on the way:
+- The Connections tool's name is the same as the Connect area's: its tab, a favourite or a search for it could open
+  the Connect page you used last instead. It opens Connections now. (The sidebar's Connect button still opens the
+  area on its last page.)
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release checks Connect in your Maya.
+
+Decisions I made:
+- The plain names (Connections, Driven keys) only in the new window: the old window keeps its labels, so nothing
+  you know moves there.
+- Lists fit their rows everywhere in the new window, not only on Driven keys (the same rule for every page).
+- The two older checks that used Connect as "a page not redone yet" now use Toolbox > Select.
+- Recent (in the sidebar) shows the plain names too (Connect > Driven keys).
+
 Gus_Rigtool 5.7.4 - Face and Ribbon as steps; face parts from two curves
 
 The second half of the plan Gus approved ("yes to all"): Face and Ribbon as steps, and two curves as the way in.

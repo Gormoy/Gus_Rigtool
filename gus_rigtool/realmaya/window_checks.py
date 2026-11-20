@@ -377,6 +377,21 @@ def new_window(rep):
             lists[0].clearSelection()
             cmds.select(was, replace=True) if was else cmds.select(clear=True)
 
+    def connect():                             # 5.7.5: the Connect area in the new look
+        cn = f._area("connect")
+        cut = cut_pages(cn, cn.subs)
+        rep.expect("Connect: Constraints, Connections, Nodes' 3 pages, Driven keys - nothing cut off narrow or wide",
+                   len(cn.subs) == 6 and not cut, str(list(cut.items())[:3]))
+        f.go(("nodes", "See & trace"))
+        settle()
+        top = [b.text() for b in f.tabs.findChildren(QtWidgets.QPushButton)]
+        rep.expect("two rows of tabs: Constraints Connections Nodes Driven keys, then Nodes' pages",
+                   top == ["Constraints", "Connections", "Nodes", "Driven keys"] and f.tabs2.isVisible(), str(top))
+        [b for b in f.tabs.findChildren(QtWidgets.QPushButton) if b.text() == "Connections"][0].click()
+        settle()
+        rep.expect("the Connections tab opens Connections (5.7.4 could open the area's last page)",
+                   cn.current == ("connect", None), str(cn.current))
+
     def profiles():
         was = FV.current()
         try:
@@ -391,7 +406,7 @@ def new_window(rep):
     for name, part in (("one window", one_window), ("Controls pages, narrow and wide", controls_cut),
                        ("docking", docking), ("Limits + Ctrl+Z", limits), ("Settings", settings),
                        ("Pop out", pop_out), ("favourites bar and row", favourites), ("Skin", skin),
-                       ("Build", build), ("favourites profiles", profiles)):
+                       ("Build", build), ("Connect", connect), ("favourites profiles", profiles)):
         rep.guard("new window: " + name, part)
     rep.add(INFO, "look at the new window", "the sidebar, the coloured areas; drag it narrow - nothing is cut off, "
             "the sidebar becomes icons")

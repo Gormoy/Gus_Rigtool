@@ -16,11 +16,11 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls", "skin", "settings", "build")   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
+NEW_LOOK = ("controls", "skin", "settings", "build", "connect")   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
 #                                                        5.7.3 Build)
 # a tool whose page has its own tabs: each tab a sub-page (5.7.3 Build) - its tabLayout's name, the tabs' labels
 TABBED = {"build": ("Tabs", ["Rig builder", "Animation", "Existing rig", "Advanced"])}
-TWO_ROWS = ("build", "skin")                     # tools on the top row, the chosen tool's sub-pages under it
+TWO_ROWS = ("build", "skin", "connect")                     # tools on the top row, the chosen tool's sub-pages under it
 # a long tool page shown as several sub-pages: (label, the card titles on it) - 5.7.2 Skin (Gus's picture)
 SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror weights"]),
                    ("Save / load", ["Save / load weights"]), ("Clean", ["Clean"]),
@@ -30,7 +30,18 @@ SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror w
                    ("Ribbons & groups", ["Face ribbons", "Group controls (mouth)"]),
                    ("Squash & expressions", ["Head squash", "Expressions and selection sets"])],
           "ribbon": [("Make a ribbon", ["Surface", "Follicles", "Controls", "Build and mirror"]),
-                     ("Builds in the scene", ["Builds in the scene"])]}
+                     ("Builds in the scene", ["Builds in the scene"])],
+          # 5.7.5 (Gus: "its ok")
+          "nodes": [("See & trace", ["Name utility nodes", "Select the setup", "Trace a channel", "Node Editor"]),
+                    ("Make a driver", ["Make a driver", "Setups library"]),
+                    ("Find & clean", ["Find problems", "Clean up"])]}
+# 5.7.5: plain names for the tabs (the old window keeps its own)
+TOOL_LABEL = {"connect": "Connections", "sdk": "Driven keys"}
+
+
+def tool_label(tool):
+    from gus_rigtool import registry
+    return TOOL_LABEL.get(tool) or registry.get(tool)[1]
 FACE_STEPS = {"brows": "Brows", "eyes": "Eyes", "eyelids": "Eyelids", "mouth": "Mouth", "strip": "Facial strips"}
 RIBBON_STEPS = ["Surface", "Follicles", "Controls", "Build and mirror"]
 OLD_PAGE = ("settings",)                         # drawn as today's page even in a new-look area
@@ -142,7 +153,7 @@ class Area(QtWidgets.QWidget):
             elif t in TABBED and key in NEW_LOOK:
                 self.subs += [(t, i + 1, label) for i, label in enumerate(TABBED[t][1])]
             else:
-                self.subs.append((t, None, registry.get(t)[1]))
+                self.subs.append((t, None, tool_label(t)))
         self.pages = {}                         # tool key -> render.Page (new look)
         self.widgets = {}                       # (tool, page) -> QWidget
         self.current = None
@@ -441,7 +452,7 @@ class Area(QtWidgets.QWidget):
                     w.setFocus()
                     break
             return
-        self.frame.go((tool, sub))
+        self.frame.go((tool, sub), as_tool=True)
 
     # -------------------------------------------------- pinning
     def toggle_pin(self, card, tool):
@@ -820,19 +831,18 @@ class Frame(QtWidgets.QWidget):
             pass
 
     def _refresh_recent(self):
-        from gus_rigtool import registry
         lay = self.recent_box
         _clear(lay)
         for area, tool, page in _state()["recent"][:3]:
             try:
                 label = "%s › %s" % (theme.area(area)[1], "Edit shape" if (tool, page) == ("controls_tab", 2) else
                                      "Make" if (tool, page) == ("controls_tab", 1) else
-                                     page if isinstance(page, str) else registry.get(tool)[1])
+                                     page if isinstance(page, str) else tool_label(tool))
             except KeyError:
                 continue
             b = QtWidgets.QPushButton(label.replace("&", "&&"))
             b.setProperty("role", "nav")
-            b.clicked.connect(lambda _=False, t=(tool, page): self.go(t))
+            b.clicked.connect(lambda _=False, t=(tool, page): self.go(t, as_tool=True))
             lay.addWidget(b)
         self._apply_slim()
 
@@ -840,12 +850,14 @@ class Frame(QtWidgets.QWidget):
     def go_key(self, key, section=None):
         """Show a tool (any key, old ones too), with one of its sections open."""
         area, tool, page = area_of(key)
-        self.go((tool, page), section)
+        self.go((tool, page), section, as_tool=True)
 
-    def go(self, where, section=None):
-        """where: (area key, None) - its remembered sub-page - or (tool key, page)."""
+    def go(self, where, section=None, as_tool=False):
+        """where: (area key, None) - its remembered sub-page - or (tool key, page). as_tool (5.7.5): it's a tool
+        even when an area has its name ('connect': the Connections tool, not the Connect area)."""
         first, page = where
-        if first in CATEGORY and page is None:   # an area ('skin' is also a tool: with a page it's the tool)
+        if first in CATEGORY and page is None and not as_tool:   # an area ('skin' is also a tool: with a page
+            #                                                       it's the tool)
             area = first
             sub = _state()["sub"].get(area)
             area_obj = self._area(area)
@@ -894,17 +906,16 @@ class Frame(QtWidgets.QWidget):
     def _fill_tabs(self, area_obj, sub):
         _clear(self.tabs2.layout())
         if area_obj.key in TWO_ROWS and len(area_obj.tools) > 1:
-            from gus_rigtool import registry
-            tools = [(t, None, registry.get(t)[1]) for t in area_obj.tools]
+            tools = [(t, None, tool_label(t)) for t in area_obj.tools]
             self._tab_row(self.tabs.layout(), tools, (sub[0], None),
-                          lambda t, p: self.go(area_obj.default_sub(t)), "tab")
+                          lambda t, p: self.go(area_obj.default_sub(t), as_tool=True), "tab")
             mine = [s for s in area_obj.subs if s[0] == sub[0]]
             self.tabs2.setVisible(len(mine) > 1)
             if len(mine) > 1:
-                self._tab_row(self.tabs2.layout(), mine, sub, lambda t, p: self.go((t, p)), "tab2")
+                self._tab_row(self.tabs2.layout(), mine, sub, lambda t, p: self.go((t, p), as_tool=True), "tab2")
             return
         self.tabs2.setVisible(False)
-        self._tab_row(self.tabs.layout(), area_obj.subs, sub, lambda t, p: self.go((t, p)), "tab")
+        self._tab_row(self.tabs.layout(), area_obj.subs, sub, lambda t, p: self.go((t, p), as_tool=True), "tab")
 
     def _tab_row(self, lay, shown, sub, go, role):
         """One row of tabs (with More ▾ for the rest when the window is narrow)."""

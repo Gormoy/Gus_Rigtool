@@ -12,7 +12,7 @@ Constraints: make, swap, remove and check constraints.
              Remove: the constraints ON the selected nodes (asks first).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.5)
 
 from gus_rigtool.core import constraints, ui, utils
 

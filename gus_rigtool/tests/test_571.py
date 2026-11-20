@@ -88,9 +88,9 @@ with mock.patch.object(QT, "maya_widget", lambda name, kind="layout": hosts.get(
           [t.text() for t in pop2.tabs.findChildren(QtWidgets.QPushButton)] == ["Make", "Edit shape"])
     opened = []
     with mock.patch.object(ui, "open_panel", lambda k: opened.append(k)):
-        f.go(("constrain", None)); app.processEvents()
+        f.go(("select", None)); app.processEvents()
         f.pop_out()
-    check("Pop out a page not redone yet (Connect > Constraints): its own panel, as before", opened == ["constrain"])
+    check("Pop out a page not redone yet (Toolbox > Select): its own panel, as before", opened == ["select"])
 
 # --- 3. no button text cut off - also in a wider font, like Maya's
 f = W.Frame(); f.show()

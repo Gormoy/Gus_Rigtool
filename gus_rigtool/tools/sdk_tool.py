@@ -16,7 +16,7 @@ blendWeighted node, like Maya does. "Replace existing" swaps an older copy inste
 stacking a new one.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.5)
 
 from gus_rigtool.core import naming, sides, ui, utils
 
@@ -370,6 +370,9 @@ def _refresh_attrs(driver):
     _state.setdefault(_P["p"], {})["attrs"] = attrs
 
 
+_copy_section = {}           # prefix -> the Copy section (shown in Copy mode only)
+
+
 def preview(*_):
     if not cmds.textScrollList(N("Rows"), exists=True):
         return
@@ -381,6 +384,9 @@ def preview(*_):
         cmds.rowLayout(N("CopyRow1"), edit=True, enable=mode == 2)
         cmds.rowLayout(N("CopyRow2"), edit=True, enable=mode == 2)
         cmds.rowLayout(N("CopyRow3"), edit=True, enable=mode == 2)
+        frame = _copy_section.get(_P["p"])
+        if frame and cmds.frameLayout(frame, exists=True):          # 5.7.5: Copy shows in Copy mode only
+            cmds.frameLayout(frame, edit=True, manage=mode == 2)
     except RuntimeError:
         return
     cmds.textScrollList(N("Rows"), edit=True, removeAll=True)
@@ -529,7 +535,8 @@ def build(prefix="p_sdk_"):
     cmds.setParent("..")
     ui.end_section()
 
-    ui.section("Copy (Copy mode)", step=2, help_text="Copy mode: the new attribute (e.g. middleCurl) drives "
+    _copy_section[_P["p"]] = ui.section(
+        "Copy (Copy mode)", step=2, help_text="Copy mode: the new attribute (e.g. middleCurl) drives "
                "nodes found by search / replace on the driven names (index -> middle), times the multiplier. "
                "Mirror mode ignores this section.")
     cmds.rowLayout(N("CopyRow1"), numberOfColumns=4, columnWidth4=(90, 120, 70, 60), adjustableColumn=2,

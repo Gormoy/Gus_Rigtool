@@ -24,7 +24,7 @@ controls drive.
   Clean up           : unit conversions back to back folded away; the heaviest parts of the rig listed.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.5)
 
 from gus_rigtool.core import networks, ui, utils
 

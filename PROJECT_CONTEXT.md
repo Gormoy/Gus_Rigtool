@@ -306,6 +306,9 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   ready). ui.step_light / set_light (both windows). Card.set_state -> tick / dot. window.SPLITS face + ribbon,
   FaceMap card (Build the face), StepStrip (Make a ribbon), Area._update_steps on selection. ribbon_tool:
   _curves_check, step_states, loft panel first, Loft options, More. realmaya case p + fact loft_curves.
+- **5.7.5**: NEW_LOOK + connect, TWO_ROWS + connect, SPLITS nodes (3 pages), window.TOOL_LABEL / tool_label
+  (Connections, Driven keys - new window only), Frame.go(as_tool=True) for tabs, go_key, next step, Recent (the
+  'connect' tool vs area). render._fit_list (lists as tall as their rows). sdk_tool: Copy section managed by mode.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

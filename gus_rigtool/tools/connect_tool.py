@@ -11,7 +11,7 @@ Select the driver FIRST, then the driven nodes.
   What's connected? : a report of the selection's connections.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.5)
 
 from gus_rigtool.core import connector, ui, utils
 
