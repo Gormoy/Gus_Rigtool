@@ -48,7 +48,7 @@ the code; this file has what Gus said, decided and wants next.
   labels / 2 compact row / 3 grid / 4 pie on a hotkey / 5 viewport HUD / 6 docked by the Channel Box, honest
   risks + rollout 5.8.0-5.8.5). Waiting for: which style variants (recommended A default + B + C), which bar
   variants (1-3 core; 4-6 optional), whether the pie / HUD count as 'new tools' for him (they are new ways in).
-  Mock-up sources: scratchpad mock/pitch.py, anim_mock.py (not in the repo).
+  Mock-up sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py - see its README).
 - Push 5.7.1 to main (needs his explicit "push 5.7.1").
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
