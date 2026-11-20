@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.5 results: Real Maya 112 ok; Test this release 39 ok - the new window 23 ok incl. Connect (nothing
+  cut off on 6 pages, two rows, Connections tab fix); 1 FAIL again = his Gus_Animtool shelf is still empty (Make the
+  shelf not run yet). Waiting: OK on 570/571/575 outputs and the 5.7.5 push.
+
 - 2026-11-20: Connect plan: "1 yes 2 its ok (Nodes: See & trace / Make a driver / Find & clean) 3 keep plain"
   (Constraints and Driven keys without steps). 5.7.5 built and sent; waiting for his results and OK to push.
 
