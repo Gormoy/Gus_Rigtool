@@ -27,6 +27,13 @@ def _load_defaults():
     it makes the animator tools (Build > 5)."""
     import os
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "defaults.json")
+    try:                                          # 5.6.46: the installed copy's naming, when it runs Gus_Rigtool's
+        import gus_animtool
+        local = os.path.join(gus_animtool.LOCAL_ROOT, "defaults.json")
+        if os.path.isfile(local):
+            path = local
+    except (ImportError, AttributeError):
+        pass
     if not os.path.isfile(path):
         return
     try:
@@ -107,7 +114,52 @@ def is_rotation(curve):
     return kind == "animCurveTA" if kind else "rotate" in curve
 
 
+LAST_PROBLEM = {}                                 # 5.6.46: the bar's "Copy the last problem"
+
+
+def note_problem(text, details=""):
+    """Remember the last warning / error (what the animator saw, and the details) for Copy the last problem."""
+    import time
+    LAST_PROBLEM.clear()
+    LAST_PROBLEM.update(text=text, details=details or "", when=time.strftime("%Y-%m-%d %H:%M:%S"),
+                        action=LAST_ACTION.get("key", ""))
+
+
+LAST_ACTION = {}                                  # which tool ran last (actions.run sets it)
+
+
+def problem_report():
+    """The last problem as text to paste in a message: what it said, the details, the versions."""
+    import platform
+    if not LAST_PROBLEM:
+        return ""
+    try:
+        import gus_animtool
+        anim_v, redirected = gus_animtool.__version__, gus_animtool.REDIRECTED
+    except (ImportError, AttributeError):
+        anim_v, redirected = VERSION, None
+    try:
+        import gus_rigtool
+        rig_v = gus_rigtool.__version__
+    except ImportError:
+        rig_v = "-"
+    try:
+        maya_v = cmds.about(version=True)
+    except Exception:
+        maya_v = "?"
+    lines = ["Gus Animtool problem (%s)" % LAST_PROBLEM.get("when", ""),
+             "Tool: %s" % (LAST_PROBLEM.get("action") or "-"),
+             "Said: %s" % LAST_PROBLEM.get("text", ""),
+             "Gus Animtool %s%s | Gus_Rigtool %s | Maya %s | %s" % (
+                 anim_v, " (from Gus_Rigtool)" if redirected else "", rig_v, maya_v, platform.platform())]
+    if LAST_PROBLEM.get("details"):
+        lines += ["", LAST_PROBLEM["details"].rstrip()]
+    return "\n".join(lines)
+
+
 def message(text, level="ok"):
+    if level != "ok":
+        note_problem(text)
     try:
         if cmds.text(P + "Status", exists=True):
             cmds.text(P + "Status", edit=True, label="  " + text, backgroundColor=OK_BG if level == "ok" else WARN_BG)
@@ -131,8 +183,10 @@ def guard(fn):
             except RuntimeError:
                 pass
         except Exception as e:
-            print(traceback.format_exc())
+            details = traceback.format_exc()
+            print(details)
             message("error: %s (details in the Script Editor)" % e, "warn")
+            note_problem("error: %s" % e, details)
     return run
 
 

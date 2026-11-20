@@ -308,6 +308,9 @@ class Bar(QtWidgets.QWidget):
         m.addAction("The Animtool window").triggered.connect(lambda *_: AC.run("main"))
         m.addAction("A row / a column").triggered.connect(lambda *_: self.flip())
         m.addAction("Choose buttons...").triggered.connect(lambda *_: self.choose())
+        m.addSeparator()
+        m.addAction("Copy the last problem").triggered.connect(lambda *_: copy_last_problem())
+        m.addAction("Test this release (in this Maya)...").triggered.connect(lambda *_: test_this_release())
         m.exec_(QtGui.QCursor.pos())
 
     def choose(self):
@@ -389,3 +392,24 @@ class Chooser(QtWidgets.QDialog):
 
     def chosen(self):
         return [k for k, b in self.boxes if b.isChecked()]
+
+
+def copy_last_problem():
+    """The last warning / error, with the details and the versions, on the clipboard - paste it in a message."""
+    text = A.problem_report()
+    if not text:
+        A.message("no problem since Maya started - nothing to copy.")
+        return ""
+    QtWidgets.QApplication.clipboard().setText(text)
+    A.message("the last problem is on the clipboard - paste it in your message.")
+    return text
+
+
+def test_this_release():
+    """The checks that need Maya's window (Gus_Rigtool's realmaya/window_checks.py), on a new empty scene."""
+    try:
+        from gus_rigtool.realmaya import window_checks
+    except ImportError as e:
+        A.message("Test this release needs Gus_Rigtool (%s)." % e, "warn")
+        return None
+    return window_checks.run()

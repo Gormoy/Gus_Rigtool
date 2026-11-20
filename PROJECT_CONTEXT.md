@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.45). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.45`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.46). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.46`; `main` holds the latest release since 5.6.45). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.45, about 165 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.46, about 166 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -254,6 +254,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   every new control a Maya controller, linked up (pick-walk); Checker > Tag all controls (button only, Gus: never
   on Publish). drag_to_maya.mel updates Gus's own maya/scripts/gus_animtool (it didn't: his Animtool stayed 5.6.42
   through 5.6.43-44 until he ran updater.update_animtool by hand). Next: 5.6.46 one Controls tab (mock-up first).
+- **5.6.46** (foundations, Gus: 'all of them'): the installed Animtool redirects to Gus_Rigtool's newer copy
+  (gus_animtool/__init__.py, LOCAL_ROOT keeps defaults.json); realmaya/maya_facts.py + MAYA_FACTS.md (case m);
+  realmaya/window_checks.py = bar > Test this release; bar > Copy the last problem (anim.LAST_PROBLEM); attach
+  bake_all; run_tests normalizes the version; CLAUDE.md rules 11-13. Next: 5.6.47 one Controls tab (mock-up first).
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

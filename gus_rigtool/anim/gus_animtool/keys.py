@@ -463,6 +463,8 @@ def inbetween(frames, scope=None):
                                % (len(refused), names, why))
         A.message("%d curve(s) didn't move (%s: %s) - the rest did. Details in the Script Editor."
                   % (len(refused), names, why), "warn")
+        A.note_problem("inbetween: %d curve(s) didn't move" % len(refused),
+                       "\n".join("%s: %s" % (c, w) for c, w in refused))
     return moved
 
 

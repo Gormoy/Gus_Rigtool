@@ -1,3 +1,48 @@
+Gus_Rigtool 5.6.46 - foundations: one Animtool, Maya facts, Test this release, Copy the last problem, Bake all
+
+Gus asked for every 'better way' from the 5.6.45 review in one bigger update (attach stays as it is: a keyed
+hand's own keys work on top). The one Controls tab comes next (5.6.47, mock-up first).
+
+1. One Animtool, never out of date. Your installed Gus Animtool (maya/scripts/gus_animtool) runs the Animtool that
+   came with Gus_Rigtool whenever that one is newer - however you updated (the Update button or drag_to_maya.mel).
+   Your naming (defaults.json) is still read from your folder. An animator's copy (Deliver / Make animator tools,
+   no Gus_Rigtool) runs as it is. The Animtool's own Update writes your installed copy (the newest one runs).
+2. Maya facts: realmaya/maya_facts.py checks how Maya behaves where the tool depends on it (what counts as zero,
+   ls([]), undo, what refuses to move keys, controllers, Time Slider bookmarks, matrix nodes) in both test runs;
+   realmaya/MAYA_FACTS.md keeps what we learned.
+3. Test this release (Animtool bar > = > Test this release): in your open Maya, the checks only the window can
+   show - the bar in front, the shelf's buttons, undo (Ctrl+Z), the Time Slider's stretches, pick-walk, Add /
+   Remove inbetween, the versions, and the Maya facts. It asks before leaving your scene (Save, then test / Don't
+   save / Cancel), works on new empty scenes, and the report opens in a window and goes on the clipboard.
+4. Copy the last problem (Animtool bar > =): the last warning or error, which tool, the details and the versions,
+   on the clipboard - paste it in your message.
+5. Bake all attaches (right-click Release, or the Attach window's "Bake all..."): finish a shot - every attach in
+   the scene baked to plain keys over the range; asks first; Ctrl+Z undoes it.
+6-7. Working rules (CLAUDE.md): Maya behaviour checked first; viewport looks tried in Maya before a whole feature;
+   releases go to main. The test runner reads the version, so a version bump no longer changes test output - no
+   more version-string diffs for you to approve.
+8. GitHub: main now holds the latest release (5.6.45 went to main, with your OK).
+
+Real-Maya case m (new): the Maya facts.
+
+Decisions I made:
+- One Animtool without changing any file on your Mac: the installed copy points itself at Gus_Rigtool's newer one
+  when it starts (the plan said 'a tiny loader'; this does the same, and an animator's copy is untouched).
+- 'Newest wins': if you ever install a newer Animtool zip on its own, that one runs.
+- The Maya facts run inside the test runs you already do (no extra step); they only report (info lines).
+- Test this release lives in Gus_Rigtool (realmaya/window_checks.py) - the bar's menu item says so if Gus_Rigtool
+  isn't there.
+- While I built this, the Animtool's update test wrote over two of the tool's own files (my change sent the
+  Update to your installed copy, and the test only moved the old folder setting). I put them back from the
+  backup the updater makes and fixed the cause: Update writes your installed copy only when it runs
+  Gus_Rigtool's. The test runner now reports any test that changes the tool's own files.
+- The git address switch to Gormoy/Gus_Rigtool was blocked by this session's safety check; GitHub forwards the
+  old address, so pushing works as before.
+
+Tested against the fake Maya (tests/test_5646.py: the redirect with real folders and Python, the rest with the fake
+Maya; the full suite) and the bar with real Qt (offscreen). Not tested in real Maya: run Test this release in your
+Maya, and the Terminal run (cases h-m) - and tell me what the Maya facts say.
+
 Gus_Rigtool 5.6.45 - one control maker, every control a Maya controller; the installer updates Gus Animtool too
 
 Gus chose Stage 2a: one control maker, Shapes + Make controls in one tab (that tab is 5.6.46, with a mock-up first).

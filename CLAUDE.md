@@ -6,7 +6,7 @@ Put this file at the root of the repository. Claude Code reads it automatically 
 
 Gus_Rigtool is a personal rigging toolkit for **Maya 2024+** (Python 3.10 inside Maya; code must also lint as
 Python 3.7). It ships with **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`), the animators' tools: picker,
-pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.45**.
+pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.46**.
 
 Owner: Gus (Gustavo), a rigger on macOS. He is finishing the **Hare** rig for the short "The Tree That Bloomed in
 Winter". He writes in English (sometimes Portuguese) and prefers plain words over jargon.
@@ -42,6 +42,12 @@ Winter". He writes in English (sometimes Portuguese) and prefers plain words ove
 8. Nothing is tested in real Maya here. Say plainly what was only tested against the fake Maya.
 9. Don't edit `.ma` / `.mb` scene files; the Hare scenes are on Gus's Mac.
 10. Don't push, merge or open a PR until Gus says so.
+11. **Maya behaviour first** (5.6.46): before building on how Maya behaves (a node, a command, an evaluation
+    rule), check `gus_rigtool/realmaya/MAYA_FACTS.md`; if it isn't there, add the question to `maya_facts.py` and
+    get Gus's answer first. When an answer changes, change `tests/fakemaya.py` to match.
+12. **Viewport looks proven first** (5.6.46): for anything Gus sees in the viewport (arcs, ghosts, shapes), send a
+    tiny try-it script and get his screenshot before building the whole feature (5.6.40's arcs were reverted).
+13. **Releases go to `main`** once Gus OKs a push (fast-forward; every release branch builds on the last).
 
 ## Layout
 
@@ -72,8 +78,11 @@ gus_rigtool/
   Names are **exact**; end one with `*` for a prefix (`fix56*` runs fix561, fix5617, fix5618...).
 - Accept new output: `python3 run_tests.py --update <names>` (refused without names; prints each diff). Show
   Gus the diffs first. After accepting, `grep -l "^FAIL" expected/*.txt` must print nothing.
-- After a version bump, `animtool30`, `updater`, `anim_ui` and the picker tests show CHANGED (the version string).
-  That's expected.
+- **Test this release** (since 5.6.46): in Gus's open Maya, Animtool bar > = > Test this release - the checks
+  that need Maya's window (`realmaya/window_checks.py`: the bar, the shelf, undo, Time Slider stretches,
+  pick-walk). Add a check there for anything only the window shows.
+- **Version strings** (since 5.6.46): `run_tests.py` replaces the current version with `<this version>`, so a
+  version bump changes no expected output.
 - **Real-Maya tests** (since 5.6.35): `gus_rigtool/realmaya/` - Gus double-clicks `run_maya_tests.bat` (Windows)
   or `run_maya_tests.command` (Mac); mayapy runs `maya_cases.py` and writes `maya_test_results.txt`, which he
   sends. They can't run here. Add a case there for anything the fake Maya can't show, and list in the release

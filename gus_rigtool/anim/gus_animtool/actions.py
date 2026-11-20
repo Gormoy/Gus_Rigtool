@@ -117,7 +117,9 @@ MENUS = {
                ("Show where it holds", "attach_show"), ("Go to the previous change", "attach_prev"),
                ("Go to the next change", "attach_next"), ("Open the Attach window", "attach_window"),
                ("Repair attaches in this scene (stutter, divide-by-zero warnings)", "attach_repair")],
-    "release": [("Bake the attached motion to keys", "attach_bake"), ("Remove the attach (no bake)", "attach_remove"),
+    "release": [("Bake the attached motion to keys", "attach_bake"),
+                ("Bake ALL attaches in this shot (finish the shot)", "attach_bake_all"),
+                ("Remove the attach (no bake)", "attach_remove"),
                 ("Show where it holds", "attach_show"), ("Open the Attach window", "attach_window")],
     "mirror_cycle": [("Mirror without looping the curves", "mirror_cycle_noloop")],
     "blocking": [("Blocking (stepped)", "block_on"), ("Spline (back)", "block_off"),
@@ -244,6 +246,19 @@ def _call(key):
         from gus_animtool import attach as AT
         AT.release()
         return None
+    if key == "attach_bake_all":
+        from gus_animtool import attach as AT
+        n = len([x for x in AT.attached() if AT.read(x)])
+        if not n:
+            raise RuntimeError("nothing is attached in this scene.")
+        lo, hi = A.frame_range()
+        if cmds.confirmDialog(title="Gus Animtool", message="Bake all %d attach(es) to plain keys, frames %g-%g?\n\n"
+                              "The motion stays; the attach setups go. Ctrl+Z undoes it." % (n, lo, hi),
+                              button=["Bake all", "Cancel"], defaultButton="Bake all", cancelButton="Cancel",
+                              dismissString="Cancel") != "Bake all":
+            return None
+        done = AT.bake_all(lo, hi)
+        return "baked %d attach(es) to keys, frames %g-%g" % (len(done), lo, hi)
     if key in ("attach_bake", "attach_remove"):
         from gus_animtool import attach as AT
         if key == "attach_bake":
@@ -425,6 +440,7 @@ def _call(key):
 def run(key):
     """Run an action (one undo, problems become a warning on the window / in the script editor)."""
     A.track_selection_order()
+    A.LAST_ACTION["key"] = key
     try:
         got = _call(key)
         if isinstance(got, str):
@@ -434,8 +450,10 @@ def run(key):
         A.message(str(e), "warn")
     except Exception as e:                                  # a button never throws at the animator
         import traceback
-        print(traceback.format_exc())
+        details = traceback.format_exc()
+        print(details)
         A.message("error: %s (details in the Script Editor)" % e, "warn")
+        A.note_problem("error: %s" % e, details)
     return None
 
 

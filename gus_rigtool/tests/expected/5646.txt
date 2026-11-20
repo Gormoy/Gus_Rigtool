@@ -1,0 +1,22 @@
+PASS Gus_Rigtool's Animtool is newer: your installed copy runs it (your naming still from your folder)
+PASS yours is newer (its own Update): yours runs
+PASS an animator's copy (no Gus_Rigtool): runs as it is
+PASS your naming (defaults.json) read from your installed copy's folder
+PASS the Animtool's own Update writes your installed copy when it runs Gus_Rigtool's (never the one inside Gus_Rigtool) - and its own folder otherwise
+PASS nothing yet: nothing to copy
+PASS a warning: it's the last problem, with the versions
+PASS a crash: the error, which tool, and the details (the traceback)
+PASS the bar's menu: Copy the last problem / Test this release
+PASS Bake all attaches: every attach baked over the range
+PASS nothing attached: says so
+PASS in Release's right-click menu and the Attach window
+PASS Test this release: the bar, the shelf, undo, Time Slider, pick-walk, inbetween, versions, Maya facts
+PASS your scene has changes and you press Cancel: nothing happens
+PASS Save, then test: your scene saved, then a new empty one
+PASS Maya facts: zero, ls([]), undo, moving keys, controllers, bookmarks, node types
+PASS ...in the Terminal run too (case m)
+PASS MAYA_FACTS.md: what we learned (divide by zero, ls([]), the cycle, bookmarks, Mac windows)
+PASS the test runner: the current version becomes <this version> (no diffs on a version bump)
+PASS the test runner reports any test that changes the tool's own files
+PASS CLAUDE.md: Maya behaviour first, viewport looks first, releases go to main
+21/21 passed

@@ -25,7 +25,21 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PARENT = os.path.dirname(os.path.dirname(HERE))
 
 
+def _version():
+    try:
+        with open(os.path.join(os.path.dirname(HERE), "__init__.py")) as f:
+            m = re.search(r'__version__\s*=\s*"([^"]+)"', f.read())
+        return m.group(1) if m else None
+    except (IOError, OSError):
+        return None
+
+
+VERSION = _version()
+
+
 def normalize(text):
+    if VERSION:                                                       # 5.6.46: a version bump changes no output
+        text = re.sub(r"(?<![\d.])" + re.escape(VERSION) + r"(?![\d.])", "<this version>", text)
     text = re.sub(r"0x[0-9a-fA-F]+", "0x?", text)                    # object addresses
     text = re.sub(r"/tmp[^\s'\"]*", "<tmp>", text)                    # temporary folders
     return "\n".join(line.rstrip() for line in text.strip().splitlines())
@@ -78,6 +92,23 @@ def check_one(t, update):
     return name, status, time.time() - start, out, ""
 
 
+def tool_files():
+    """5.6.46: the tool's own files (not the tests, not compiled ones) and when each last changed - a test that
+    writes over them (5.6.46: the Animtool update test once did) is caught."""
+    tool = os.path.dirname(HERE)
+    out = {}
+    for root, dirs, files in os.walk(tool):
+        dirs[:] = [d for d in dirs if d not in ("tests", "__pycache__", ".ruff_cache")]
+        for f in files:
+            path = os.path.join(root, f)
+            try:
+                st = os.stat(path)
+                out[os.path.relpath(path, tool)] = (st.st_mtime, st.st_size)
+            except OSError:
+                pass
+    return out
+
+
 def main(args):
     update = "--update" in args
     jobs = 4
@@ -100,6 +131,7 @@ def main(args):
         print("--update needs the test names (what you checked): python run_tests.py --update name1 name2")
         return 1
     failed = []
+    before = tool_files()
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for name, status, took, out, diff in pool.map(lambda t: check_one(t, update), tests):
@@ -111,6 +143,12 @@ def main(args):
             print("%-14s %-8s %5.1fs" % (name, status, took))
             if diff:
                 print(diff)
+    after = tool_files()
+    touched = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+    if touched:
+        print("\nA TEST CHANGED THE TOOL'S OWN FILES (put them back from git): %s%s" % (
+            ", ".join(touched[:10]), " ..." if len(touched) > 10 else ""))
+        failed.append("(tool files)")
     if failed:
         print("\n%d test(s) to look at: %s (their output is in tests/out/)" % (len(failed), ", ".join(failed)))
     return 1 if failed else 0

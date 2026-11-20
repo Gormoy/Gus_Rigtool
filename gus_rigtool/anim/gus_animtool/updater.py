@@ -41,7 +41,9 @@ def install(path):
     """Copy the zip's gus_animtool over the installed one. Returns (old version, new version, backup folder)."""
     if not os.path.isfile(path):
         raise RuntimeError("file not found: %s" % path)
-    target = gus_animtool.ROOT
+    target = gus_animtool.ROOT                     # 5.6.46: running Gus_Rigtool's copy (redirected) -> your installed
+    if getattr(gus_animtool, "REDIRECTED", None):  # copy is the one updated, never the one inside Gus_Rigtool
+        target = gus_animtool.LOCAL_ROOT
     parent = os.path.dirname(target)
     backup = os.path.join(parent, "gus_animtool_backup")
     with zipfile.ZipFile(path) as zf:

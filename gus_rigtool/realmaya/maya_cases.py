@@ -869,10 +869,16 @@ def controllers(rep):
     cmds.delete(loose)
 
 
+def maya_facts_case(rep):
+    """m. Maya facts (5.6.46): how Maya behaves where the tool depends on it - info only, for MAYA_FACTS.md."""
+    from gus_rigtool.realmaya import maya_facts
+    maya_facts.facts(rep)
+
+
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
-         ("k. add / remove inbetween", inbetween_case)]
+         ("k. add / remove inbetween", inbetween_case), ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

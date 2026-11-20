@@ -631,6 +631,22 @@ def bake(follower=None, start=None, end=None):
     return len(worlds)
 
 
+def bake_all(start=None, end=None):
+    """5.6.46: finish a shot - every attach in the scene baked to plain keys over the range (the motion kept, the
+    setups gone), one undo. Returns [(follower, frames)]."""
+    nodes = [n for n in attached() if read(n)]
+    if not nodes:
+        raise RuntimeError("nothing is attached in this scene.")
+    if start is None:
+        start, end = A.frame_range()
+    done = []
+    with A.Undo("gusAnimtoolAttachBakeAll"):
+        for n in nodes:                     # any order: each one keeps its world motion, so what holds on to
+            if read(n):                     # it (or what it holds) moves the same afterwards
+                done.append((n, bake(n, start, end)))
+    return done
+
+
 def remove(follower):
     """The attach setup off (no baking): the follower goes back to its own parent."""
     data = read(follower)

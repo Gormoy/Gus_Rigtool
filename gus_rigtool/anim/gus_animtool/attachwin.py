@@ -61,8 +61,10 @@ def _do(fn, *args, **kw):
         A.message(str(e), "warn")
     except Exception as e:
         import traceback
-        print(traceback.format_exc())
+        details = traceback.format_exc()
+        print(details)
         A.message("error: %s (details in the Script Editor)" % e, "warn")
+        A.note_problem("error: %s" % e, details)
     return None
 
 
@@ -181,7 +183,10 @@ class AttachWindow(QtWidgets.QWidget):
                    ("Both hands", "Held by what holds it now and the second one, 50 / 50", self.both, False),
                    ("Release", "From this frame it stays where it is", self.release, False),
                    ("Bake", "Plain keys every frame of the range; the attach goes", self.bake, False),
-                   ("Repair", "Older attaches: stop their stutter and the divide-by-zero warnings (nothing moves)", self.repair, False)]
+                   ("Repair", "Older attaches: stop their stutter and the divide-by-zero warnings (nothing moves)",
+                    self.repair, False),
+                   ("Bake all...", "Finish the shot: every attach in the scene baked to plain keys over the range "
+                                   "(asks first; Ctrl+Z undoes it)", self.bake_all, False)]
         for n, (label, tip, fn, main) in enumerate(actions):
             b = QtWidgets.QPushButton(label)
             b.setToolTip(tip)
@@ -333,6 +338,10 @@ class AttachWindow(QtWidgets.QWidget):
 
     def bake(self):
         cmds.evalDeferred(lambda: self._after(_do(AT.bake)), lowestPriority=True)
+
+    def bake_all(self):
+        from gus_animtool import actions as AC
+        cmds.evalDeferred(lambda: self._after(AC.run("attach_bake_all")), lowestPriority=True)
 
     def repair(self):
         got = _do(AT.repair)
