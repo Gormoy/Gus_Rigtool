@@ -17,6 +17,12 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.4 results: Real Maya 112 ok - case p (face from two curves) 8 ok, curve facts as expected (loft
+  uses world positions, reverseCurve flips the start, periodic curve form 2). Test this release: 36 ok, 1 FAIL -
+  the Gus_Animtool shelf is there but has none of its buttons (no Animtool code changed since 5.7.2.1, which
+  passed): his shelf was emptied - fix: Animtool window > Settings > Make the shelf. Still waiting: his OK on the
+  test outputs (570/571/573/574), the push (5.7.3.1 + 5.7.4), and whether "two curves" works the way he wants.
+
 - 2026-11-20: 5.7.3.1 results clean (Real 104 ok; Test this release 35 ok - module check skipped, no guides in his
   test scene). Gus: "still not working" = 1a, Face and Ribbon aren't the approved steps -> 5.7.4 built (the
   approved plan). "Two curves" read both ways: ends meet (lid/lip lines) = one loop, side by side = loft between.
