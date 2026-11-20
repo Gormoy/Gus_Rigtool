@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.6 results all clean: Real Maya 112 ok; Test this release 42 ok, 0 FAIL (the new window 25 ok
+  incl. Check & publish + Publish gone from Build; his shelf is back - he remade it). Waiting: OK on the 576 /
+  all_pages outputs, the 5.7.6 push, and Toolbox preview next.
+
 - 2026-11-20: Check & publish plan: "1 move (Publish to Check & publish) 2 yes". 5.7.6 built and sent; waiting for
   his results and OK to push. Next after it: Toolbox (preview first), then the old window can go.
 
