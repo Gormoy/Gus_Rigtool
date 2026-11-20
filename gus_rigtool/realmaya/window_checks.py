@@ -65,6 +65,10 @@ def versions(rep):
     rep.expect("the Animtool is the same version as Gus_Rigtool", gus_animtool.__version__ == gus_rigtool.__version__,
                "%s vs %s" % (gus_animtool.__version__, gus_rigtool.__version__))
     rep.add(INFO, "your naming read from", getattr(gus_animtool, "LOCAL_ROOT", "?"))
+    from gus_animtool import ui as AU
+    if cmds.workspaceControl(AU.WINDOW, exists=True):              # 5.6.48: the title Maya saved was the old one
+        label = cmds.workspaceControl(AU.WINDOW, query=True, label=True)
+        rep.expect("the Animtool window's title says this version", gus_animtool.__version__ in (label or ""), label)
 
 
 def bar_in_front(rep):
@@ -181,13 +185,22 @@ def controls_tab(rep):
     hs = SE.handles_start([c])
     cmds.setAttr(hs[0] + ".translateY", 2.0)
     cmds.select(clear=True)                        # clicking something else
-    try:
-        import maya.utils
-        maya.utils.processIdleEvents()
-    except Exception:
-        pass
+    for _i in range(3):                            # 5.6.48: Maya runs the 'selection changed' work when it's idle -
+        try:                                       # evalDeferred waits in Maya's own idle queue (flushIdleQueue)
+            cmds.flushIdleQueue()
+        except Exception:
+            pass
+        try:
+            import maya.utils
+            maya.utils.processIdleEvents()
+        except Exception:
+            pass
     rep.expect("shape handle, then click something else: kept (the handle gone)", not SE.handles_active() and
-               not cmds.ls("*" + SE.HANDLE + "*"))
+               not cmds.ls("*" + SE.HANDLE + "*"),
+               "" if not SE.handles_active() else "Maya hadn't done it yet inside this check - try it by hand: "
+               "Edit shape > Move / turn / size, move the handle, click empty space", bad=NOTE)
+    if SE.handles_active():
+        SE.handles_cancel()
     rep.add(INFO, "look at the Controls tab", "the list on the left (drag the divider), Make / Edit shape on the right")
 
 

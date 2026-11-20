@@ -19,7 +19,7 @@ PASS one shape list: the built-in shapes, My shapes last
 PASS two pages: Make, Edit shape
 PASS Custom starts open (not in the folded 'advanced' list)
 PASS joints selected: 'Make 1 control(s) (Four Way Arrow)', Edit greyed out with the reason
-PASS controls selected: Make greyed out and says why; Edit: 'Use Four Way Arrow on 1 control(s)'
+PASS controls selected: Make puts a new control at each (Gus asked, next release); Edit: 'Use Four Way Arrow on 1 control(s)'
 PASS nothing selected: one control at the centre
 PASS the old keys open the Controls tab, on their page (Shapes: Edit shape; Make controls: Make)
 PASS ...the page is chosen for you

@@ -1,0 +1,24 @@
+PASS fit to the body: every point out to the skin (2) and 20% more (2.4); the pivot stays
+PASS ...a circle bigger than the body comes in to it (Gus: 'the circle going to the point works')
+PASS points whose line meets no skin stay where they were, and it says how many
+PASS lie on the skin: every point on the skin, lifted 0.1 (20% of the shape's half size 0.5)
+PASS no mesh picked: says to select the controls, then the mesh
+PASS only edges: a new control on the loop, named after the mesh, at the loop's centre
+PASS ...its shape is the loop 20% off the skin (radius 1.2), around its own centre
+PASS edges + a control: the control takes the loop's shape, in its own space (its pivot stays)
+PASS no edges: says to select an edge loop
+PASS a control with a helper shape (a locator) counts; a mesh with a curve doesn't
+PASS a locked control: the same curve rebuilt in place (curve -replace), nothing deleted
+PASS an ordinary control: as before (a new curve, the old one deleted)
+PASS Make page: clicking a shape makes the controls at once (like the old Shapes tab)
+PASS Edit shape page with nothing selected: a click only picks (nothing made)
+PASS a control selected: Make says a new control goes at its place (it isn't changed), the button on
+  [info] 1 new control(s) on the selected control(s): L_hand_ctrl
+PASS ...a new control named after it (no namespace), at its pivot, not under it and not driving it
+PASS Edit shape page: On the body - Gap %, Fit to the body, Lie on the skin, Shape from edges
+PASS the Animtool window's title is set to this version when Maya reopens it (build)
+PASS Test this release: click away waits for Maya's idle queue; if Maya still hasn't, 'try it by hand' (not FAIL)
+PASS Maya facts: curve -replace on plain / history / locked / referenced controls
+PASS real-Maya case o: shapes on the body
+PASS the fake Maya: ls([], type=...) lists nothing, like Maya (5.6.47 facts)
+22/22 passed

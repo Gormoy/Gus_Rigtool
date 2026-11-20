@@ -126,8 +126,8 @@ with mock.patch.object(CT, "picked", lambda: "four_way_arrow"):
 check("joints selected: 'Make 1 control(s) (Four Way Arrow)', Edit greyed out with the reason",
       d_joints[1] == "Make 1 control(s) (Four Way Arrow)" and d_joints[2] and not d_joints[5] and
       d_joints[4] == "Select controls to change")
-check("controls selected: Make greyed out and says why; Edit: 'Use Four Way Arrow on 1 control(s)'",
-      not d_ctrls[2] and "Edit shape changes them" in d_ctrls[0] and d_ctrls[4] == "Use Four Way Arrow on 1 control(s)")
+check("controls selected: Make puts a new control at each (Gus asked, next release); Edit: 'Use Four Way Arrow on 1 control(s)'",
+      d_ctrls[2] and "a new control at each" in d_ctrls[0] and d_ctrls[4] == "Use Four Way Arrow on 1 control(s)")
 check("nothing selected: one control at the centre", d_none[1] == "Make 1 control at the centre (Four Way Arrow)")
 check("the old keys open the Controls tab, on their page (Shapes: Edit shape; Make controls: Make)",
       registry.resolve("shapes") == ("controls_tab", 2) and registry.resolve("makectrl") == ("controls_tab", 1) and

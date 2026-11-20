@@ -28,7 +28,7 @@ DEFAULTS = {"shape": "circle", "auto_size": True, "size": 1.0, "size_factor": 1.
             "front_axis": "+Y", "pivot_on_shape": False, "drive": 1, "stack": "_offset", "hierarchy": True,
             "both_sides": False, "scale": True, "side_colour": True, "lock": True, "tag": True, "name": "",
             "add_side": True, "centre_prefix": "", "edit_front": 1.0, "edit_axis": "+Y", "stretch_axis": "Y",
-            "step": 1.2, "line_width": 2.0, "page": 1, "keep_size": True}
+            "step": 1.2, "line_width": 2.0, "page": 1, "keep_size": True, "gap": 20.0}
 
 _P, N, _w, _guard = ui.tool_helpers("p_controls_", TOOL)
 _rows = {}                                             # prefix -> [(shape name, button, category)]
@@ -66,7 +66,8 @@ def picked():
 
 
 def pick(name, *_):
-    """A shape clicked in the list: chosen for Make; on the Edit shape page, used on the selected controls."""
+    """A shape clicked in the list - one click does it (5.6.48, like the old Shapes tab): on the Make page the
+    controls are made at once; on the Edit shape page it goes on the selected controls."""
     utils.update_setting(SETTINGS_KEY, "shape", name)
     shape_edit.end_preview()
     _mark(name)
@@ -75,7 +76,10 @@ def pick(name, *_):
         if sel:
             use_shape()
             return
+        refresh()
+        return
     refresh()
+    return make()
 
 
 def _mark(name):
@@ -203,7 +207,7 @@ def settings():
                      ("scale", "Scale"), ("side_colour", "SideCol"), ("lock", "Lock"), ("tag", "Tag"),
                      ("name", "Name"), ("add_side", "AddSide"), ("centre_prefix", "Centre"),
                      ("edit_front", "EditFront"), ("edit_axis", "EditAxis"), ("stretch_axis", "StretchAxis"),
-                     ("step", "Step"), ("line_width", "Width"), ("keep_size", "KeepSize")):
+                     ("step", "Step"), ("line_width", "Width"), ("keep_size", "KeepSize"), ("gap", "Gap")):
         v = _val(ctl)
         if v is not None:
             s[key] = v
@@ -247,7 +251,8 @@ def _set_text(name, label):
 
 # --------------------------------------------------------------------------- what the buttons will do
 def make_targets(sel=None):
-    """(the joints / objects to put controls on, the controls left out)."""
+    """(the joints / objects to put controls on, the selected controls - 5.6.48: each gets a NEW control at its
+    place too, it isn't changed)."""
     sel = utils.selected_transforms(ordered=True) if sel is None else sel
     ctrls = shape_edit.controls(sel)
     return [n for n in sel if n not in ctrls], ctrls
@@ -258,16 +263,18 @@ def describe(sel=None):
     sel = utils.selected_transforms(ordered=True) if sel is None else sel
     targets, ctrls = make_targets(sel)
     label = shape_data.label(picked())
-    if targets:
-        kinds = "joint" if all(cmds.nodeType(t) == "joint" for t in targets) else "object"
-        names = ", ".join(naming.short_name(t) for t in targets[:3]) + (" ..." if len(targets) > 3 else "")
-        make_line = "%d %s(s): %s." % (len(targets), kinds, names)
+    if targets or ctrls:
+        parts = []
+        if targets:
+            kinds = "joint" if all(cmds.nodeType(t) == "joint" for t in targets) else "object"
+            names = ", ".join(naming.short_name(t) for t in targets[:3]) + (" ..." if len(targets) > 3 else "")
+            parts.append("%d %s(s): %s." % (len(targets), kinds, names))
         if ctrls:
-            make_line += " (%d control(s) left out - Edit shape changes them.)" % len(ctrls)
-        make_btn, make_on = "Make %d control(s) (%s)" % (len(targets), label), True
-    elif ctrls:
-        make_line = "These are controls - Edit shape changes them. Select joints or objects to make controls."
-        make_btn, make_on = "Select joints or objects", False
+            names = ", ".join(naming.short_name(c) for c in ctrls[:3]) + (" ..." if len(ctrls) > 3 else "")
+            parts.append("%d control(s): %s - a new control at each one's place (they aren't changed)." %
+                         (len(ctrls), names))
+        make_line = " ".join(parts)
+        make_btn, make_on = "Make %d control(s) (%s)" % (len(targets) + len(ctrls), label), True
     else:
         make_line = "Nothing selected: one control at the centre of the scene."
         make_btn, make_on = "Make 1 control at the centre (%s)" % label, True
@@ -299,8 +306,11 @@ def refresh(*_):
 def make(*_):
     s = settings()
     _save()
-    targets, _ctrls = make_targets()
+    targets, ctrls = make_targets()
     name = s["shape"] = picked()
+    made = []
+    if ctrls:
+        made = on_controls(ctrls, s)
     if targets:
         from gus_rigtool.core import make_controls as MC
         from gus_rigtool.tools.group_maker import parse_suffixes
@@ -311,8 +321,44 @@ def make(*_):
                       front=s["front"], front_axis=s["front_axis"], pivot_on_shape=s["pivot_on_shape"])
         utils.info(TOOL, "%d control(s): %s" % (len(out), ", ".join(naming.short_name(c) for _n, c in out[:5]) +
                                                  (" ..." if len(out) > 5 else "")))
-        return [c for _n, c in out]
+        made += [c for _n, c in out]
+        if ctrls:
+            cmds.select(made, replace=True)
+        return made
+    if made:
+        return made
     return [make_one(s)]
+
+
+def on_controls(ctrls, s):
+    """A NEW control at each selected control's place (its pivot and turn), a bit bigger than it so you can click
+    both; the selected controls aren't changed, driven or parented - so it works on any rig, referenced or
+    locked (5.6.48: the old Shapes tab did this)."""
+    data = shape_data.face(shape_data_of(s["shape"]), "XYZ"[s["face"] - 1])
+    style = {}
+    if s["side_colour"]:
+        from gus_rigtool.core import colors
+        style = curves.rgb_style(colors.side_colors()["C"])
+    made = []
+    with utils.undo_chunk("gusrigControlsOnControls"):
+        for c in ctrls:
+            try:
+                center, half = shape_data.bounds(curves.read_shape(c))
+            except (RuntimeError, ValueError, TypeError):
+                center, half = (0.0, 0.0, 0.0), 1.0
+            if s["auto_size"]:
+                shape = shape_data.fit(data, center, half * 1.25 * float(s["size_factor"] or 1.0))
+            else:
+                shape = shape_data.scale(data, float(s["size"]))
+            base = naming.strip_type_suffix(naming.split_namespace(naming.short_name(c))[1])
+            ctrl_name, offset_name = naming.ctrl_names(base)
+            _top, ctrl = control_maker.new(ctrl_name, shape, style, groups=[offset_name],
+                                           matrix=curves.match_matrix(c), tag=s["tag"])
+            made.append(ctrl)
+        cmds.select(made, replace=True)
+    utils.info(TOOL, "%d new control(s) on the selected control(s): %s" % (
+        len(made), ", ".join(naming.short_name(c) for c in made[:5]) + (" ..." if len(made) > 5 else "")))
+    return made
 
 
 def make_one(s):
@@ -354,6 +400,45 @@ def use_shape(*_):
     cmds.select(nodes, replace=True)
     utils.info(TOOL, "%s on %d control(s)." % (shape_data.label(picked()), len(done)))
     return done
+
+
+def _ctrls_and_mesh():
+    sel = utils.selected_transforms()
+    if len(sel) < 2:
+        raise RuntimeError("select the controls, then the mesh (last).")
+    nodes = shape_edit.controls(sel[:-1])
+    if not nodes:
+        raise RuntimeError("select the controls to change, then the mesh (last).")
+    return nodes, sel[-1], float(settings()["gap"]) / 100.0
+
+
+def fit_body(*_):
+    nodes, mesh, gap = _ctrls_and_mesh()
+    got, missed = shape_edit.fit_to_body(nodes, mesh, gap)
+    cmds.select(got, replace=True)
+    utils.info(TOOL, "%d control(s) fit to %s%s." % (len(got), naming.short_name(mesh),
+                                                      (" - %d point(s) found no skin and stayed" % missed)
+                                                      if missed else ""))
+    return got
+
+
+def lie_skin(*_):
+    nodes, mesh, gap = _ctrls_and_mesh()
+    got = shape_edit.lie_on_skin(nodes, mesh, gap)
+    cmds.select(got, replace=True)
+    utils.info(TOOL, "%d control(s) on the skin of %s." % (len(got), naming.short_name(mesh)))
+    return got
+
+
+def edges_shape(*_):
+    sel = cmds.ls(selection=True, flatten=True) or []
+    edges = [e for e in sel if ".e[" in e]
+    nodes = shape_edit.controls(utils.selected_transforms())           # the mesh itself is never one
+    got = shape_edit.from_edges(edges, nodes, float(settings()["gap"]) / 100.0)
+    cmds.select(got, replace=True)
+    utils.info(TOOL, ("%d control(s) took the loop's shape." % len(got)) if nodes else
+               "a new control on the loop: %s." % naming.short_name(got[0]))
+    return got
 
 
 def edit_in_front(*_):
@@ -546,6 +631,25 @@ def _edit_page(s):
     cmds.button(N("HandlesDone"), label="Done", enable=False, command=_w(_guard(handles_done)))
     cmds.button(N("HandlesCancel"), label="Cancel", enable=False, command=_w(_guard(handles_cancel)))
     cmds.setParent("..")
+    ui.end_section()
+    ui.section("On the body (select the controls, then the mesh)")
+    cmds.rowLayout(numberOfColumns=3, columnWidth3=(70, 56, 120), columnAttach=[(1, "right", 4), (2, "both", 2),
+                                                                                 (3, "left", 4)])
+    cmds.text(label="Gap %")
+    cmds.floatField(N("Gap"), value=float(s["gap"]), precision=0, minValue=0.0, step=5, changeCommand=_w(_save),
+                    annotation="How far off the skin: Fit - % of the distance from the pivot to the skin; Lie and "
+                               "Edges - % of the shape's size.")
+    cmds.text(label="off the skin", align="left")
+    cmds.setParent("..")
+    cmds.button(label="Fit to the body", command=_w(_guard(fit_body)),
+                annotation="Each point goes out (or in) from the pivot to the skin, plus the gap - a bracelet "
+                           "around the wrist. Select the controls, then the mesh.")
+    cmds.button(label="Lie on the skin", command=_w(_guard(lie_skin)),
+                annotation="Each point pressed onto the nearest skin, lifted by the gap - face controls. Select "
+                           "the controls, then the mesh.")
+    cmds.button(label="Shape from edges", command=_w(_guard(edges_shape)),
+                annotation="Select an edge loop (and, in the Outliner, the controls to change): they take its "
+                           "shape. Only edges: a new control on the loop.")
     ui.end_section()
     ui.section("Size and turn")
     ui.row(5, 46)

@@ -8,7 +8,7 @@ import sys
 
 import maya.cmds as cmds
 
-from gus_rigtool.core.report import INFO, NOTE, OK
+from gus_rigtool.core.report import FAIL, INFO, NOTE, OK
 
 APPENDIX = {}                            # extra text for the end of the results file (your scene's report)
 TOL = 1e-3
@@ -873,6 +873,61 @@ def shape_editing(rep):
     rep.expect("a new shape, keep size: the same size and place", abs(h0 - h1) < 1e-3 and _diff(c0, c1) < 1e-3)
 
 
+def body_shapes(rep):
+    """o. Shapes on the body (5.6.48), measured on real meshes: fit to the body (a sphere of radius 2 around the
+    control), lie on the skin, shape from an edge loop (a cylinder's middle ring), a new control on a control, a
+    locked control's shape changed in place."""
+    from gus_rigtool.core import curves, make_controls as MC, shape_data, shape_edit as SE
+    from gus_rigtool.tools import controls_tab as CT
+    rep.start("o. Shapes on the body: fit, lie on the skin, from edges, a control on a control, locked controls")
+    dist = lambda p, c=(0, 0, 0): sum((p[i] - c[i]) ** 2 for i in range(3)) ** 0.5
+    ball = cmds.polySphere(name="Check_ball_geo", radius=2.0, subdivisionsX=40, subdivisionsY=40,
+                           constructionHistory=False)[0]
+    cmds.select(clear=True)
+    j = cmds.joint(name="Check_ball_jnt", position=(0, 0, 0))
+    ctrl = MC.make([j], shape="circle", size=0.5)[0][1]
+    got, missed = SE.fit_to_body([ctrl], ball, 0.2)
+    ds = [dist(p) for s in curves.world_positions(ctrl) for p in s]
+    rep.expect("fit to the body, gap 20%: every point 2.4 from the centre (the skin at 2)", not missed and
+               all(abs(d - 2.4) < 0.05 for d in ds), "%.3f to %.3f, %d missed" % (min(ds), max(ds), missed))
+    cmds.select(clear=True)
+    j2 = cmds.joint(name="Check_cheek_jnt", position=(3, 0, 0))
+    cheek = MC.make([j2], shape="circle", size=0.5, face="X")[0][1]
+    SE.lie_on_skin([cheek], ball, 0.2)
+    ds = [dist(p) for s in curves.world_positions(cheek) for p in s]
+    rep.expect("lie on the skin, gap 20%: every point just off the skin (about 2.1)",
+               all(2.02 < d < 2.2 for d in ds), "%.3f to %.3f" % (min(ds), max(ds)))
+    can = cmds.polyCylinder(name="Check_can_geo", radius=1.0, height=2.0, subdivisionsAxis=20,
+                            subdivisionsHeight=2, constructionHistory=False)[0]
+    ring = []
+    for e in cmds.ls(can + ".e[*]", flatten=True):
+        vs = cmds.ls(cmds.polyListComponentConversion(e, toVertex=True), flatten=True)
+        if all(abs(cmds.pointPosition(v, world=True)[1]) < 1e-4 for v in vs):
+            ring.append(e)
+    made = SE.from_edges(ring, [], 0.2)
+    pts = [p for s in curves.world_positions(made[0]) for p in s]
+    rs = [(p[0] ** 2 + p[2] ** 2) ** 0.5 for p in pts]
+    rep.expect("shape from edges (the can's middle ring, gap 20%): a new control around the can, about 1.2 out",
+               len(ring) == 20 and all(1.05 < r < 1.35 for r in rs) and all(abs(p[1]) < 0.05 for p in pts),
+               "%d edges; radius %.3f to %.3f" % (len(ring), min(rs), max(rs)))
+    new = CT.on_controls([ctrl], dict(CT.DEFAULTS))
+    rep.expect("Make on a selected control: a new control at its place, the old one unchanged",
+               len(new) == 1 and new[0] != ctrl and _diff(_pos(new[0]), _pos(ctrl)) < TOL and cmds.objExists(ctrl)
+               and not cmds.listConnections(ctrl, source=True, destination=False, type="constraint"), str(new))
+    shape = curves.curve_shapes(cheek)[0]
+    cmds.lockNode(shape, lock=True)
+    try:
+        SE.use_shape([cheek], shape_data.builtin_shapes()[0][1][2][1], keep_size=True)        # a square
+        n_cv = len(cmds.ls(curves.curve_shapes(cheek)[0] + ".cv[*]", flatten=True) or [])
+        rep.expect("a locked control (lockNode): its shape changed in place to the square", n_cv in (4, 5),
+                   "%d CVs" % n_cv)
+    except Exception as e:
+        rep.add(FAIL, "a locked control (lockNode): its shape changed", "%s: %s" % (type(e).__name__, e))
+    finally:
+        for sh in curves.curve_shapes(cheek):
+            cmds.lockNode(sh, lock=False)
+
+
 def A_rel(n, holder):
     """n's world position in holder's space (what 'follows exactly' keeps)."""
     import maya.api.OpenMaya as om
@@ -923,6 +978,7 @@ CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftov
          ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
          ("k. add / remove inbetween", inbetween_case), ("n. shape editing", shape_editing),
+         ("o. shapes on the body", body_shapes),
          ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

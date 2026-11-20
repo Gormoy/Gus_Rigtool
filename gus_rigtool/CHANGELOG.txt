@@ -1,3 +1,53 @@
+Gus_Rigtool 5.6.48 - shapes on the body (fit to the body, lie on the skin, shape from edges); one click makes the
+controls again; a new control on any rig's control; other rigs' controls change shape
+
+Gus tried the try-it script ('the circle going to the point works'), found that Make wouldn't add a control on a
+control he'd selected (other rigs; the old Shapes tab did), and his Animtool's title still said 5.6.42.
+
+Controls > Controls > Edit shape > On the body (select the controls, then the mesh last):
+- Fit to the body: each point of the shape goes along the line from the control's pivot to the skin, then the
+  gap further out - a bracelet around the wrist; a shape bigger than the body comes in to it.
+- Lie on the skin: each point pressed onto the nearest skin, lifted by the gap - face controls.
+- Shape from edges: select an edge loop (and, in the Outliner, the controls to change): they take the loop's
+  shape, lifted by the gap, their pivot where it was. Only edges selected: a new control on the loop.
+- Gap %: Fit - % of the distance from the pivot to the skin; Lie and Edges - % of the shape's size. 20 to start.
+- Each one is one undo; only the curve points change (keys, constraints, connections stay).
+
+Make:
+- One click: on the Make page, clicking a shape makes the controls at once, like the old Shapes tab. On Edit
+  shape, a click puts it on the selected controls (as before).
+- A control selected (any rig, referenced or locked): a NEW control at its place - its pivot and turn, a bit
+  bigger so you can click both, named after it without the namespace. The selected control isn't changed, driven
+  or parented. Joints / objects selected with it: they get their controls as before.
+
+Fixes:
+- Other rigs' controls didn't change shape: the tool deleted the old curve and put a new one, and Maya won't
+  delete a curve from a referenced or locked rig. Those curves are now rebuilt where they are. A control with a
+  helper shape next to its curve (a locator, as some rigs have) counts as a control now.
+- The Animtool window's title said 5.6.42 after a restart: Maya reopens the window with the title it saved. The
+  title is set to this version whenever the window is built. (The tool inside was already 5.6.47.)
+- Test this release's click-away check: it looked before Maya had done the work (Maya runs it when it's idle);
+  it now waits for Maya's idle queue, and if Maya still hasn't done it, it says 'try it by hand' instead of FAIL.
+- The fake Maya: ls([], type=...) lists nothing, as your Maya does (facts 5.6.47).
+
+Real-Maya case o (new): fit to the body (a sphere), lie on the skin, an edge loop (a cylinder's middle ring), a
+new control on a control, a locked control's shape. Maya facts: curve -replace on a plain, a history, a locked
+and a referenced curve. Test this release: the Animtool window's title.
+
+Only tested against the fake Maya here: everything above. The mesh tools are worked out on an exact sphere in the
+tests; case o measures them on real meshes - please run it.
+
+Decisions I made:
+- Fit hugs the body (in or out to the skin), as in the try-it you liked; the 'only grow' variant left out.
+- The gap is a %, not a distance, so one value suits a wrist and a whole body: Fit - of the distance to the skin;
+  Lie / Edges - of the shape's size. Default 20%.
+- A new control on a control: placed only (no constraint, no parent, no lock on the other rig's control) - so it
+  works on rigs you can't change; its colour is the centre colour when 'colour by side' is on.
+- From edges with no control selected: the new control is named <mesh>_loop_ctrl, at the loop's centre, not
+  turned (world axes).
+- A referenced / locked control whose new shape has fewer curves than it had: the extra curves are hidden (they
+  can't be deleted).
+
 Gus_Rigtool 5.6.47 - the Controls tab (Make controls + Shapes in one), a more customizable shape editor; fixes from
 your Test this release
 

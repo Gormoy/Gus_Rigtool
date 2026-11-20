@@ -181,7 +181,61 @@ def node_types(rep):
     rep.add(INFO, "matrix / pin nodes this Maya has", ", ".join(have))
 
 
-FACTS = [zero_threshold, empty_ls, undo_state, key_moves, mesh_points, controllers, bookmarks, node_types]
+def curve_replace(rep):
+    """5.6.48 (other rigs' controls, referenced or locked): can a control's curve be deleted, and can it be rebuilt in
+    place with 'curve -replace' - plain, with history, locked (lockNode), from a referenced file?"""
+    import os
+    import tempfile
+    square = dict(degree=1, point=[(-1, 0, -1), (1, 0, -1), (1, 0, 1), (-1, 0, 1), (-1, 0, -1)])
+
+    def try_it(label, ctrl):
+        shape = cmds.listRelatives(ctrl, shapes=True, fullPath=True)[0]
+        try:
+            cmds.curve(shape, replace=True, **square)
+            got = "rebuilt: %d CVs now" % len(cmds.ls(shape + ".cv[*]", flatten=True) or [])
+        except Exception as e:
+            got = "REFUSED (%s)" % str(e).strip().splitlines()[0]
+        try:
+            cmds.delete(cmds.listRelatives(ctrl, shapes=True, fullPath=True)[0])
+            gone = "can be deleted"
+        except Exception as e:
+            gone = "can't be deleted (%s)" % str(e).strip().splitlines()[0]
+        rep.add(INFO, "curve -replace: " + label, "%s; the curve %s" % (got, gone))
+
+    plain = cmds.circle(constructionHistory=False)[0]
+    try_it("a plain control", plain)
+    hist = cmds.circle(constructionHistory=True)[0]
+    try_it("a control with history (makeNurbCircle)", hist)
+    locked = cmds.circle(constructionHistory=False)[0]
+    cmds.lockNode(cmds.listRelatives(locked, shapes=True, fullPath=True)[0], lock=True)
+    try_it("a locked curve (lockNode)", locked)
+    for sh in cmds.listRelatives(locked, shapes=True, fullPath=True) or []:
+        cmds.lockNode(sh, lock=False)
+    for n in (plain, hist, locked):
+        if cmds.objExists(n):
+            cmds.delete(n)
+    folder = tempfile.mkdtemp()
+    path = os.path.join(folder, "gus_fact_ctrl.ma").replace("\\", "/")
+    try:
+        c = cmds.circle(name="factRef_ctrl", constructionHistory=False)[0]
+        cmds.select(c, replace=True)
+        cmds.file(path, exportSelected=True, type="mayaAscii", force=True)
+        cmds.delete(c)
+        cmds.file(path, reference=True, namespace="gusFact")
+        try_it("a control from a referenced file", "gusFact:factRef_ctrl")
+        cmds.file(path, removeReference=True)
+    except Exception as e:
+        rep.add(INFO, "curve -replace: a control from a referenced file", "%s: %s" % (type(e).__name__, e))
+    finally:
+        try:
+            os.remove(path)
+            os.rmdir(folder)
+        except OSError:
+            pass
+
+
+FACTS = [zero_threshold, empty_ls, undo_state, key_moves, mesh_points, controllers, bookmarks, node_types,
+         curve_replace]
 
 
 def facts(rep):

@@ -9,6 +9,11 @@ the control's own channels stay at zero, keys / constraints / connections stay.
   an undo step until it's kept.
 - handles_start(nodes) / handles_done() / handles_cancel(): a temporary handle on each control's shape - move /
   turn / size it; Done (or clicking something else) puts that into the curve, Cancel throws it away.
+- On the body (5.6.48): fit_to_body(nodes, mesh, gap) - each point pushed / pulled along the line from the pivot
+  to where it meets the skin, plus a gap (a bracelet on the wrist); lie_on_skin(nodes, mesh, gap) - each point
+  pressed onto the nearest skin, lifted along its normal (face controls); from_edges(edges, nodes, gap) - the
+  control takes the shape of an edge loop, lifted off the skin (or a new control on the loop when none is
+  selected). gap: a fraction (0.2 = 20%) of the distance to the skin / of the shape's size.
 """
 
 import maya.cmds as cmds
@@ -22,9 +27,14 @@ _preview = {}                       # control -> its shape and style before the 
 _handles = {"pairs": [], "job": None}
 
 
+GEOMETRY = ("mesh", "nurbsSurface", "subdiv")
+
+
 def controls(nodes):
-    """The controls among nodes (transforms with curve shapes only)."""
-    return [n for n in nodes or [] if curves.curve_shapes(n) and not curves.other_shapes(n)]
+    """The controls among nodes: transforms with curve shapes and no geometry (5.6.48: other rigs' controls with a
+    locator or another helper shape count too - only their curves change)."""
+    return [n for n in nodes or [] if curves.curve_shapes(n) and
+            not any(cmds.nodeType(o) in GEOMETRY for o in curves.other_shapes(n))]
 
 
 def _need(nodes):
@@ -230,3 +240,151 @@ def handles_cancel():
         if pairs:
             cmds.delete([h for _n, h in pairs])
     return len(pairs)
+
+
+# --------------------------------------------------------------------------- on the body (5.6.48)
+def _mesh_tools(mesh):
+    """(closest(p) -> (point, normal), ray(source, direction) -> hit point or None), world space, for this mesh."""
+    import maya.api.OpenMaya as om
+    sel = om.MSelectionList()
+    sel.add(mesh)
+    dag = sel.getDagPath(0)
+    dag.extendToShape()
+    fn = om.MFnMesh(dag)
+
+    def closest(p):
+        pt, n, _face = fn.getClosestPointAndNormal(om.MPoint(*p), om.MSpace.kWorld)
+        n = n.normal()
+        return (pt.x, pt.y, pt.z), (n.x, n.y, n.z)
+
+    def ray(src, d):
+        hit = fn.closestIntersection(om.MFloatPoint(*src), om.MFloatVector(*d), om.MSpace.kWorld, 1e9, False)
+        if not hit or hit[2] < 0:
+            return None
+        return (hit[0].x, hit[0].y, hit[0].z)
+    return closest, ray
+
+
+def _sub(a, b):
+    return [a[i] - b[i] for i in range(3)]
+
+
+def _len(v):
+    return (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5
+
+
+def _mesh_of(mesh):
+    if not mesh or not cmds.objExists(mesh) or not (
+            cmds.nodeType(mesh) == "mesh" or cmds.listRelatives(mesh, shapes=True, type="mesh")):
+        raise RuntimeError("select the controls, then the mesh (last).")
+    return mesh
+
+
+def fit_to_body(nodes, mesh, gap=0.2):
+    """Each point moved along the line from the control's pivot to where that line meets the skin, then `gap`
+    further (0.2: 20% of that distance) - the shape wraps the body. Points whose line meets no skin stay.
+    Returns (controls changed, points that met no skin)."""
+    got = _need(nodes)
+    _closest, ray = _mesh_tools(_mesh_of(mesh))
+    missed = 0
+    with utils.undo_chunk("gusrigShapeFit"):
+        for n in got:
+            c = cmds.xform(n, query=True, worldSpace=True, rotatePivot=True)
+            out = []
+            for pts in curves.world_positions(n):
+                new = []
+                for p in pts:
+                    d = _sub(p, c)
+                    length = _len(d)
+                    hit = ray(c, [x / length for x in d]) if length > 1e-9 else None
+                    if hit is None:
+                        missed += 1
+                        new.append(p)
+                        continue
+                    new.append([hit[i] + (hit[i] - c[i]) * gap for i in range(3)])
+                out.append(new)
+            curves.set_world_positions(n, out)
+    return got, missed
+
+
+def lie_on_skin(nodes, mesh, gap=0.2):
+    """Each point pressed onto the nearest skin, then lifted along the skin's normal by `gap` x the shape's size."""
+    got = _need(nodes)
+    closest, _ray = _mesh_tools(_mesh_of(mesh))
+    with utils.undo_chunk("gusrigShapeLie"):
+        for n in got:
+            pts = curves.world_positions(n)
+            flat = [p for c in pts for p in c]
+            lo = [min(p[i] for p in flat) for i in range(3)]
+            hi = [max(p[i] for p in flat) for i in range(3)]
+            lift = max((hi[i] - lo[i]) / 2.0 for i in range(3)) * gap
+            out = []
+            for c in pts:
+                new = []
+                for p in c:
+                    q, nrm = closest(p)
+                    new.append([q[i] + nrm[i] * lift for i in range(3)])
+                out.append(new)
+            curves.set_world_positions(n, out)
+    return got
+
+
+def _loop_curve(edges):
+    """The picked edges as one curve (Maya's polyToCurve, degree 3; closed when they make a loop): shape data in
+    world space."""
+    keep = cmds.ls(selection=True, long=True) or []
+    cmds.select(edges, replace=True)
+    try:
+        made = cmds.polyToCurve(form=2, degree=3)
+    finally:
+        if keep:
+            cmds.select(keep, replace=True)
+        else:
+            cmds.select(clear=True)
+    crv = made[0]
+    try:
+        data = curves.read_shape(crv)
+    finally:
+        cmds.delete(crv)
+    if not data:
+        raise RuntimeError("Maya made no curve from those edges.")
+    return data
+
+
+def _world_to_object(node):
+    m = cmds.getAttr(node + ".worldInverseMatrix[0]")
+    return lambda p: list(_apply_matrix(m, p))
+
+
+def from_edges(edges, nodes=None, gap=0.2, name="loop"):
+    """The edge loop's shape, lifted off the skin by `gap` x its size: on each selected control (its pivot stays),
+    or - no control selected - on a new control at the loop's centre. Returns the controls."""
+    edges = [e for e in edges or [] if ".e[" in e]
+    if not edges:
+        raise RuntimeError("select an edge loop on the mesh (and the controls to change, if any).")
+    mesh = edges[0].split(".")[0]
+    closest, _ray = _mesh_tools(mesh)
+    data = _loop_curve(edges)
+    centre, half = shape_data.bounds(data)
+    lift = half * gap
+    for c in data:
+        new = []
+        for p in c["points"]:
+            _q, nrm = closest(p)
+            new.append([p[i] + nrm[i] * lift for i in range(3)])
+        c["points"] = new
+    got = controls(nodes)
+    with utils.undo_chunk("gusrigShapeEdges"):
+        if not got:
+            from gus_rigtool.core import control_maker, naming
+            local = shape_data.map_points(data, lambda p: tuple(p[i] - centre[i] for i in range(3)))
+            base = naming.split_namespace(mesh.split("|")[-1])[1] + "_" + name
+            ctrl_name, offset_name = naming.ctrl_names(base)
+            matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, centre[0], centre[1], centre[2], 1]
+            _top, ctrl = control_maker.new(ctrl_name, local, {}, groups=[offset_name], matrix=matrix)
+            got = [ctrl]
+        else:
+            for n in got:
+                to_obj = _world_to_object(n)
+                curves.set_shape(n, shape_data.map_points(data, to_obj))
+    return got

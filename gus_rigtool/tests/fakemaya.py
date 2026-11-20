@@ -163,9 +163,9 @@ def ls(*args, **k):
         nodes = [n for n in S.nodes if n.parent is None and n.type in DAG_TYPES and n.type not in SHAPE_TYPES]
     elif k.get("selection") or k.get("sl") or k.get("orderedSelection"):
         nodes = [n for n in S.sel if n in S.nodes]
-    elif args and isinstance(args[0], (list, tuple)) and not args[0] and not (set(k) - {"long", "l"}):
-        nodes = []                     # Maya (Gus's Mac, 5.6.46 facts): ls([]) lists nothing; with a type: see facts
-    elif args and not (isinstance(args[0], (list, tuple)) and not args[0]):    # ls([], type=...): still everything
+    elif args and isinstance(args[0], (list, tuple)) and not args[0]:
+        nodes = []                     # Maya (Gus's Mac, 5.6.47 facts): ls([]) lists nothing, whatever the flags
+    elif args:
         names = args[0] if isinstance(args[0], (list, tuple)) else list(args)
         nodes = []
         for nm in names:
@@ -567,7 +567,9 @@ def skinCluster(*args, **k):
     return [S.create("skinCluster", k.get("name", "skinCluster1")).name]
 
 
-def curve(degree=1, point=None, editPoint=None, name=None, **k):
+def curve(*args, degree=1, point=None, editPoint=None, name=None, **k):
+    if k.get("replace") and args:      # curve -replace (5.6.48): the same curve rebuilt in place
+        return args[0]
     t = S.create("transform", name or "curve1")
     S.create("nurbsCurve", t.name + "Shape", t)
     return t.name

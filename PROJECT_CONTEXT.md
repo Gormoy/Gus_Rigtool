@@ -264,6 +264,14 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   styling out of undo; Arcs break / join handles; shelf rebuilt once per version; a shape is a LIST of curves (the
   fake refuses one on its own); fake ls([]) -> []. Next: shape ideas 3-5 (fit to body, lie on the skin, shape
   from edges) once the mesh facts are back.
+- **5.6.48**: shape_edit.fit_to_body / lie_on_skin / from_edges (Edit shape > On the body, Gap %); controls_tab:
+  one click on Make makes the controls; Make on a selected control = a NEW control at its place (on_controls, any
+  rig); curves.set_shape rebuilds referenced / locked curves in place (curve -replace, facts pending);
+  shape_edit.controls allows helper shapes (not geometry); Animtool title fixed in build(); click-away check
+  flushes Maya's idle queue (NOTE if still not done). Case o; fact curve_replace. Next: 5.7 UI redesign (Qt) -
+  look 'version 2' approved (a colour per area: Build orange, Skin pink, Controls green, Connect purple, Check
+  yellow, Toolbox blue; X/Y/Z red/green/blue; selection chips; shapes as pictures; drawings for hard fields),
+  same functionality as 5.6.48, sub-pages remembered, an inventory test per area (nothing lost, nothing twice).
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

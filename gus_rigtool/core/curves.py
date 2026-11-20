@@ -89,6 +89,8 @@ def set_shape(node, curves, style=None):
     if style is None:
         style = read_style(node)
     old = curve_shapes(node)
+    if old and any(_fixed(n) for n in [node] + old):
+        return _set_in_place(node, curves, old, style)
     base = naming.split_namespace(node)[1]
 
     new_shapes = []
@@ -107,6 +109,40 @@ def set_shape(node, curves, style=None):
         name = base + "Shape" + ("" if i == 0 else str(i))
         cmds.rename(cmds.ls(sid, long=True)[0], name)
     final = [cmds.ls(sid, long=True)[0] for sid in shape_ids]
+    apply_style(final, style)
+    return final
+
+
+def _fixed(node):
+    """A node Maya won't let us delete or rename: from a referenced file, or locked (lockNode)."""
+    try:
+        if cmds.referenceQuery(node, isNodeReferenced=True):
+            return True
+    except RuntimeError:
+        pass
+    try:
+        return bool((cmds.lockNode(node, query=True, lock=True) or [False])[0])
+    except RuntimeError:
+        return False
+
+
+def _set_in_place(node, curves, old, style):
+    """5.6.48: a control from a referenced or locked rig - its curves can't be deleted, so each one is rebuilt where
+    it is (curve -replace). A new shape with more curves than the control has: the extra ones are added; fewer: the
+    curves left over are hidden. Returns the shapes."""
+    final = []
+    for i, data in enumerate(curves):
+        if i < len(old):
+            cmds.curve(old[i], replace=True, degree=data["degree"], point=[tuple(p) for p in data["points"]],
+                       knot=data["knots"], periodic=data["form"] == 2)
+            final.append(old[i])
+        else:
+            temp = _make_curve(data)
+            shape = cmds.listRelatives(temp, shapes=True, fullPath=True)[0]
+            final.append(cmds.parent(shape, node, relative=True, shape=True)[0])
+            cmds.delete(temp)
+    for extra in old[len(curves):]:
+        cmds.setAttr(extra + ".visibility", False)
     apply_style(final, style)
     return final
 

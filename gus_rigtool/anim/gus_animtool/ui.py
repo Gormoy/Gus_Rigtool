@@ -491,6 +491,10 @@ def build():
         return
     if cmds.workspaceControl(WINDOW, exists=True):
         cmds.setParent(WINDOW)
+        try:                     # 5.6.48: Maya reopens the window at start-up with the title it saved (the old version)
+            cmds.workspaceControl(WINDOW, edit=True, label="Gus Animtool %s" % gus_animtool.__version__)
+        except (RuntimeError, TypeError):
+            pass
     root = cmds.formLayout(P + "Root")
     top = cmds.columnLayout(P + "Top", adjustableColumn=True, rowSpacing=4)
     head = cmds.formLayout(height=34, backgroundColor=A.HEADER_BG)
