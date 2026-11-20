@@ -211,7 +211,7 @@ def new_window(rep):
     import time
     import gus_rigtool
     from gus_rigtool.newui import window as W
-    from gus_rigtool.newui.qt import QtWidgets
+    from gus_rigtool.newui.qt import QtCore, QtWidgets
     rep.start("The new window (5.7)")
     W.close()
     t0 = time.time()
@@ -221,6 +221,10 @@ def new_window(rep):
     rep.expect("it's open and visible", f is not None and f.isVisible())
     label = cmds.workspaceControl(W.WS, query=True, label=True)
     rep.expect("its title says this version", gus_rigtool.__version__ in (label or ""), label)
+    from gus_rigtool.newui.qt import maya_widget
+    host = maya_widget(W.WS, "control")
+    n = len([x for x in host.findChildren(W.Frame) if W.alive(x)]) if host is not None else -1
+    rep.expect("one window inside it (5.7.0 had two, one under the other)", n == 1, "%d inside" % n)
     cut = {}
     for width in (330, 700):
         try:
@@ -235,12 +239,17 @@ def new_window(rep):
             got = W.cut_off(f.areas["controls"])
             if got:
                 cut["%s at %d" % (sub[0], f.width())] = got[:2]
-    rep.expect("nothing cut off: every Controls page, narrow and wide", not cut, str(list(cut.items())[:3]))
+    rep.expect("nothing cut off: every Controls page, narrow and wide - no button text cut either", not cut,
+               str(list(cut.items())[:3]))
     try:
         cmds.workspaceControl(W.WS, edit=True, tabToControl=("ChannelBoxLayerEditor", -1))
-        QtWidgets.QApplication.processEvents()
-        rep.expect("docked next to the Channel Box: still there", W._frame["w"] is not None and
-                   W._frame["w"].isVisible())
+        cmds.workspaceControl(W.WS, edit=True, restore=True)         # its tab in front (5.7.0: it was behind)
+        for _i in range(3):
+            QtWidgets.QApplication.processEvents()
+        host = maya_widget(W.WS, "control")
+        n = len([x for x in host.findChildren(W.Frame) if W.alive(x)]) if host is not None else -1
+        rep.expect("docked next to the Channel Box (its tab in front): there, still one window",
+                   W.alive(W._frame["w"]) and W._frame["w"].isVisible() and n == 1, "%d inside" % n)
         cmds.workspaceControl(W.WS, edit=True, floating=True)
         QtWidgets.QApplication.processEvents()
         rep.expect("...floating again", W._frame["w"].isVisible())
@@ -269,6 +278,24 @@ def new_window(rep):
     old = f.areas["toolbox"].widgets.get(("settings", None))
     rep.expect("Toolbox > Settings: today's page shows inside the new window (the Window switch on it)",
                old is not None and old.layout().count() > 0 and old.isVisible())
+    f.go(("behaviour", None))
+    pop = f.pop_out()
+    QtWidgets.QApplication.processEvents()
+    rep.expect("Pop out: Behaviour in its own panel (the new look), the main window still open",
+               W.alive(pop) and pop.isVisible() and cmds.workspaceControl(W.pop_name("behaviour"), exists=True) and
+               W.alive(W._frame["w"]))
+    if cmds.workspaceControl(W.pop_name("behaviour"), exists=True):
+        cmds.deleteUI(W.pop_name("behaviour"))
+    from gus_rigtool.newui import favourites as FV
+    bar = FV.show_bar()
+    QtWidgets.QApplication.processEvents()
+    rep.expect("the favourites bar: open, in front of Maya, one square per favourite",
+               bar.isVisible() and bool(bar.windowFlags() & QtCore.Qt.Tool) and list(bar.buttons) == FV.keys(),
+               ", ".join(bar.buttons))
+    rep.expect("the favourites row at the top of the window: the same favourites",
+               [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
+               FV.keys())
+    FV.close_bar()
     rep.add(INFO, "look at the new window", "the sidebar, the green Controls pages; drag it narrow - nothing is cut "
             "off, the sidebar becomes icons")
     f.go(("controls_tab", 1))

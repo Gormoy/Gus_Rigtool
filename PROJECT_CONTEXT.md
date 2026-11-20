@@ -280,6 +280,11 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   areas = today's pages embedded (OldPage, in Maya only). main.new_window() / use_window(); Settings > Window.
   core/ui: STATUS_HOOKS, REBUILD_HOOKS, _to_new_window in go_to_tool. Next: 5.7.1 Skin (preview first), then
   Build, Connect, Check, Toolbox (then the old window can go); 5.8 one look for the Animtool / bar / Arcs / Attach.
+- **5.7.1**: window filled once (uiScript runs at creation; restore() reuses a Frame already in the host); Pop out
+  (PopFrame, Area(only=[tool], prefix="q7p_"), workspaceControl gusRigtool57Pop_<tool>); header buttons (Favourite,
+  Pop out, Guide, Simple/Full, What's new, Update), tool description, Copy error report, Simple view while
+  recording (ui._view); favourites.py (FavRow under the search, FavBar floating, myTools list, badges = initials
+  in the area colour); cut_off also checks button text (_fits). Next: 5.7.2 Skin.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

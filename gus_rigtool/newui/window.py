@@ -103,12 +103,14 @@ class OldPage(QtWidgets.QWidget):
 class Area(QtWidgets.QWidget):
     """An area's pages (one shown at a time) under its header."""
 
-    def __init__(self, frame, key):
+    def __init__(self, frame, key, only=None, prefix="q7_"):
         super(Area, self).__init__()
         from gus_rigtool import registry
-        self.frame, self.key = frame, key
+        self.frame, self.key, self.pfx = frame, key, prefix
         self.accent = theme.colour(key)
         self.tools = dict((c, k) for c, _l, k in registry.CATEGORIES).get(CATEGORY[key], [])
+        if only:
+            self.tools = [t for t in self.tools if t in only]
         self.subs = []                          # [(tool key, page or None, label)]
         for t in self.tools:
             if t == "controls_tab" and key in NEW_LOOK:
@@ -162,9 +164,14 @@ class Area(QtWidgets.QWidget):
 
     def _build_new(self, tool):
         from gus_rigtool import registry
+        from gus_rigtool.core import ui
         mod = registry.module(tool)
-        prefix = "q7_%s_" % tool
-        rec = record.record(mod.build, prefix)
+        prefix = self.prefix(tool)
+        ui._view["tool"] = tool                 # Simple view: the tool's advanced sections start closed, as before
+        try:
+            rec = record.record(mod.build, prefix)
+        finally:
+            ui._view["tool"] = None
         page = render.Page(tool, rec, self.accent)
         self.pages[tool] = page
         if tool == "controls_tab":
@@ -220,6 +227,9 @@ class Area(QtWidgets.QWidget):
             self.widgets[("controls_tab", i + 1)] = w
             self.body.addWidget(w)
 
+    def prefix(self, tool):
+        return "%s%s_" % (self.pfx, tool)
+
     def _mark_all(self, name):
         for g in getattr(self, "grids", []):
             g.mark(name)
@@ -234,7 +244,7 @@ class Area(QtWidgets.QWidget):
         self.current = sub
         page = self.pages.get(sub[0])
         if page is not None and sub[0] == "controls_tab" and sub[1]:
-            name = "q7_controls_tab_Pages"
+            name = self.prefix("controls_tab") + "Pages"
             if page.tab_current.get(name) != sub[1]:
                 page.tab_current[name] = sub[1]
                 try:
@@ -327,6 +337,114 @@ class Area(QtWidgets.QWidget):
         return None
 
 
+def selection():
+    """(kinds, short names, edges) of what's selected."""
+    try:
+        import maya.cmds as mc
+        from gus_rigtool.core import utils
+        nodes = utils.selected_transforms()
+        edges = len([e for e in mc.ls(selection=True, flatten=True) or [] if ".e[" in e])
+    except Exception:
+        return [], [], 0
+    return [widgets.kind_of(n) for n in nodes], [n.split("|")[-1] for n in nodes], edges
+
+
+def _subtitle(tool):
+    from gus_rigtool import registry
+    try:
+        return registry.get(tool)[3] if tool else ""
+    except KeyError:
+        return ""
+
+
+def _head_buttons(owner):
+    """The old window's header buttons: Guide, Simple / Full view, What's new, Update..., and Pop out."""
+    from gus_rigtool.core import ui
+    box = widgets.flow_box(4)
+    simple = ui.view_mode() == "simple"
+    items = [("☆ Favourite", "Add this page to your favourites (the row at the top, and the floating bar) - "
+              "click again to take it off.", lambda: _star(owner)),
+             ("Pop out", "Open this page in its own panel (several can be open side by side).",
+              lambda: owner.pop_out()),
+             ("Guide", "A step-by-step guide to rigging with Gus_Rigtool.", lambda: ui._guide()),
+             ("Full view" if simple else "Simple view", "Simple: advanced sections folded away. Full: everything "
+              "as you left it.", lambda: _toggle_view(owner)),
+             ("What's new", "What changed in this version.", lambda: ui.whats_new()),
+             ("Update...", "Install a newer Gus_Rigtool zip (it restarts by itself).", lambda: ui._update())]
+    for text, tip, fn in items:
+        b = QtWidgets.QPushButton(text)
+        b.setToolTip(tip)
+        b.setCursor(Qt.PointingHandCursor)
+        b.setStyleSheet("QPushButton { background: rgba(0,0,0,0.25); padding: 3px 8px; font-size: 12px; }")
+        b.clicked.connect(lambda _=False, fn=fn: fn())
+        box.layout().addWidget(b)
+    box.setMaximumWidth(330)
+    return box
+
+
+def _star(owner):
+    from gus_rigtool.newui import favourites
+    a = owner.areas.get(owner.area) if hasattr(owner, "areas") else None
+    tool = a.current[0] if a is not None and a.current else None
+    if not tool:
+        return
+    on = favourites.toggle(tool)
+    _set_status(owner, "%s %s your favourites." % (favourites.label(tool), "added to" if on else "taken off"),
+                "ok")
+    _star_label(owner)
+
+
+def _star_label(owner):
+    from gus_rigtool.newui import favourites
+    a = owner.areas.get(owner.area) if hasattr(owner, "areas") else None
+    tool = a.current[0] if a is not None and a.current else None
+    for b in owner.head_buttons.findChildren(QtWidgets.QPushButton):
+        if "Favourite" in b.text():
+            b.setText("★ Favourite" if tool in favourites.keys() else "☆ Favourite")
+
+
+def _toggle_view(owner):
+    from gus_rigtool.core import ui, utils
+    utils.save_setting("viewMode", "full" if ui.view_mode() == "simple" else "simple")
+    _set_status(owner, "%s view: the pages open that way from now on (reopen the window to see it)." % (
+        "Simple" if ui.view_mode() == "simple" else "Full"), "info")
+
+
+def _status_bar(owner):
+    """The status line, with 'Copy error report' after an error (as in the old window)."""
+    from gus_rigtool.core import ui
+    bar = QtWidgets.QWidget()
+    h = QtWidgets.QHBoxLayout(bar)
+    h.setContentsMargins(0, 0, 0, 0)
+    h.setSpacing(0)
+    owner.status = QtWidgets.QLabel("  Ready.")
+    owner.status.setObjectName("gusStatus")
+    owner.status.setWordWrap(True)
+    h.addWidget(owner.status, 1)
+    owner.copy_error = QtWidgets.QPushButton("Copy error report")
+    owner.copy_error.setToolTip("Copy what went wrong - paste it in your message to get it fixed.")
+    owner.copy_error.clicked.connect(lambda _=False: ui.copy_error())
+    owner.copy_error.setVisible(bool(ui._last_error["text"]))
+    h.addWidget(owner.copy_error)
+    return bar
+
+
+def _set_status(owner, message, level):
+    from gus_rigtool.core import ui
+    owner.status.setText("  " + message)
+    owner.status.setStyleSheet("QLabel { background: %s; padding: 4px 8px; }" % theme.LEVEL.get(level,
+                                                                                         theme.LEVEL["info"]))
+    owner.copy_error.setVisible(bool(ui._last_error["text"]))
+
+
+def alive(w):
+    try:
+        from gus_rigtool.newui.qt import shiboken
+        return w is not None and shiboken.isValid(w)
+    except Exception:
+        return w is not None
+
+
 def cut_off(area):
     """What sticks out past the right edge of an area's page (the 'nothing is cut off' check): [(kind, text)]."""
     vp = area.scroll.viewport()
@@ -335,10 +453,26 @@ def cut_off(area):
         if not w.isVisibleTo(area.scroll.widget()) or w.width() <= 0:
             continue
         p = w.mapTo(vp, QtCore.QPoint(w.width(), 0))
+        text = w.text() if hasattr(w, "text") and callable(w.text) else ""
         if p.x() > vp.width() + 1:
-            text = w.text() if hasattr(w, "text") and callable(w.text) else w.objectName()
-            bad.append((type(w).__name__, str(text)[:40]))
+            bad.append((type(w).__name__, str(text or w.objectName())[:40]))
+        elif isinstance(w, QtWidgets.QAbstractButton) and text and not _fits(w, text):
+            bad.append((type(w).__name__ + " text", str(text)[:40]))
     return bad
+
+
+def _fits(w, text):
+    """A button's text isn't cut off: its longest word fits on it (a wrapping one), or all of it (the others)."""
+    lb = getattr(w, "_lb", None)
+    fm = (lb or w).fontMetrics()
+    adv = (lambda t: fm.horizontalAdvance(t)) if hasattr(fm, "horizontalAdvance") else (lambda t: fm.width(t))
+    if lb is not None:
+        room = lb.width()
+        return all(adv(word) <= room + 1 for word in str(text).replace("\n", " ").split())
+    if isinstance(w, QtWidgets.QToolButton):
+        return True                                  # the shape tiles: two lines, their own size
+    room = w.contentsRect().width() - 8
+    return all(adv(line) <= room + 1 for line in str(text).replace("&&", "&").split("\n"))
 
 
 def _walk(n):
@@ -381,6 +515,10 @@ class Frame(QtWidgets.QWidget):
         th.addWidget(self.search, 1)
         self._search_setup()
         root.addWidget(top)
+        from gus_rigtool.newui import favourites
+        self.favs = favourites.FavRow()
+        self.favs.setStyleSheet("background: #24272b;")
+        root.addWidget(self.favs)
         body = QtWidgets.QHBoxLayout()
         body.setContentsMargins(0, 0, 0, 0)
         body.setSpacing(0)
@@ -409,6 +547,8 @@ class Frame(QtWidgets.QWidget):
         self.head_title = QtWidgets.QLabel("")
         self.head_title.setObjectName("gusTitle")
         trow.addWidget(self.head_title, 1)
+        self.head_buttons = _head_buttons(self)
+        trow.addWidget(self.head_buttons, 0, Qt.AlignTop)
         hv.addLayout(trow)
         self.head_why = widgets.label("", "dim")
         hv.addWidget(self.head_why)
@@ -416,19 +556,19 @@ class Frame(QtWidgets.QWidget):
         self.tabs.layout().setContentsMargins(0, 8, 0, 0)
         hv.addWidget(self.tabs)
         main.addWidget(self.head)
+        self.subtitle = widgets.label("", "dim")
+        self.subtitle.setContentsMargins(14, 6, 14, 0)
+        self.subtitle.setStyleSheet("QLabel { background: %s; }" % theme.PANEL)
+        main.addWidget(self.subtitle)
         self.stack = QtWidgets.QStackedWidget()
         main.addWidget(self.stack, 1)
-        self.status = QtWidgets.QLabel("  Ready.")
-        self.status.setObjectName("gusStatus")
-        self.status.setWordWrap(True)
-        main.addWidget(self.status)
+        main.addWidget(_status_bar(self))
         body.addLayout(main, 1)
         root.addLayout(body, 1)
         self.setWindowTitle("Gus_Rigtool %s" % gus_rigtool.__version__)
         from gus_rigtool.core import ui
-        ui.STATUS_HOOKS[:] = [h for h in ui.STATUS_HOOKS if getattr(h, "__self__", None) is not None and
-                              getattr(h, "__self__", None) is not _frame.get("w")] + [self.set_status]
-        ui.REBUILD_HOOKS[:] = [self.rebuild]
+        ui.STATUS_HOOKS.append(self.set_status)
+        ui.REBUILD_HOOKS.append(self.rebuild)
         s = _state()
         self.go((s.get("area") or "controls", None))
 
@@ -559,6 +699,8 @@ class Frame(QtWidgets.QWidget):
         if sub[0]:
             area_obj.show_sub(sub)
         self._fill_tabs(area_obj, sub)
+        self.subtitle.setText(_subtitle(sub[0]))
+        _star_label(self)
         s = _state()
         s["area"] = area
         if sub[0]:
@@ -615,15 +757,7 @@ class Frame(QtWidgets.QWidget):
 
     # -------------------------------------------------- selection, status, size
     def selection(self):
-        """(kinds, short names, edges) of what's selected."""
-        try:
-            import maya.cmds as mc
-            from gus_rigtool.core import utils
-            nodes = utils.selected_transforms()
-            edges = len([e for e in mc.ls(selection=True, flatten=True) or [] if ".e[" in e])
-        except Exception:
-            return [], [], 0
-        return [widgets.kind_of(n) for n in nodes], [n.split("|")[-1] for n in nodes], edges
+        return selection()
 
     def on_selection(self, *_):
         a = self.areas.get(self.area)
@@ -631,9 +765,18 @@ class Frame(QtWidgets.QWidget):
             a.refresh_selection()
 
     def set_status(self, message, level="info"):
-        self.status.setText("  " + message)
-        self.status.setStyleSheet("QLabel { background: %s; padding: 4px 8px; }" % theme.LEVEL.get(level,
-                                                                                                theme.LEVEL["info"]))
+        _set_status(self, message, level)
+
+    def pop_out(self):
+        """The page shown, in its own panel (several can be open side by side) - like the old window's Pop out."""
+        a = self.areas.get(self.area)
+        if a is None or not a.current:
+            return
+        tool = a.current[0]
+        if self.area in NEW_LOOK:
+            return show_pop(tool, a.current[1])
+        from gus_rigtool.core import ui
+        ui.open_panel(tool)                   # pages not redone yet: their own panel, as before
 
     def rebuild(self, key):
         """A tool asked for its page again (My shapes changed...): drawn again."""
@@ -659,6 +802,7 @@ class Frame(QtWidgets.QWidget):
     def _apply_slim(self):
         slim = self.width() < SLIM
         self.slim = slim
+        self.favs.set_slim(slim)
         self.side.setFixedWidth(54 if slim else 196)
         for b in list(self.nav.values()) + [self.mine]:
             b.setText("" if slim else b.property("full"))
@@ -742,7 +886,7 @@ def show(key=None, section=None):
     """Open (or bring forward) the new window; key: a tool to show."""
     import maya.cmds as mc
     import gus_rigtool
-    if mc.workspaceControl(WS, exists=True) and _frame.get("w") is not None:
+    if mc.workspaceControl(WS, exists=True) and alive(_frame.get("w")):
         try:
             mc.workspaceControl(WS, edit=True, restore=True, label="Gus_Rigtool %s" % gus_rigtool.__version__)
         except RuntimeError:
@@ -750,10 +894,12 @@ def show(key=None, section=None):
     else:
         if mc.workspaceControl(WS, exists=True):
             mc.deleteUI(WS)
+        _frame["w"] = None
         mc.workspaceControl(WS, label="Gus_Rigtool %s" % gus_rigtool.__version__, retain=False, floating=True,
                             initialWidth=640, initialHeight=820, minimumWidth=260, widthProperty="preferred",
                             uiScript="import gus_rigtool.newui.window as _w; _w.restore()")
-        restore()
+        if not alive(_frame.get("w")):        # 5.7.1: Maya fills it itself (the uiScript) - only when it didn't
+            restore()
     w = _frame.get("w")
     if w is not None and key:
         w.go_key(key, section)
@@ -772,6 +918,13 @@ def restore():
     host = maya_widget(WS, "control")
     if host is None:
         return None
+    have = [f for f in host.findChildren(Frame) if alive(f)]
+    if have:                                   # 5.7.1: already filled (it opened twice in 5.7.0)
+        for extra in have[1:]:
+            extra.setParent(None)
+            extra.deleteLater()
+        _frame["w"] = have[0]
+        return have[0]
     frame = Frame()
     if host.layout() is None:
         QtWidgets.QVBoxLayout(host)
@@ -783,6 +936,13 @@ def restore():
     except RuntimeError:
         pass
     frame.on_selection()
+    try:                                       # the favourites bar, if you left it open
+        from gus_rigtool.core import utils
+        from gus_rigtool.newui import favourites
+        if (utils.load_setting(favourites.BAR_KEY, {}) or {}).get("open"):
+            favourites.show_bar()
+    except Exception:
+        pass
     return frame
 
 
@@ -791,3 +951,113 @@ def close():
     if mc.workspaceControl(WS, exists=True):
         mc.deleteUI(WS)
     _frame["w"] = None
+
+
+# --------------------------------------------------------------------------- Pop out (5.7.1)
+class PopFrame(QtWidgets.QWidget):
+    """One page in its own panel - several can be open side by side (the old window's Pop out)."""
+
+    def __init__(self, tool, page=None, parent=None):
+        super(PopFrame, self).__init__(parent)
+        from gus_rigtool import registry
+        self.setObjectName("gusFrame")
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        area_key, tool, _p = area_of(tool)
+        self.tool, self.area = tool, area_key
+        v = QtWidgets.QVBoxLayout(self)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(0)
+        self.head = QtWidgets.QFrame()
+        self.head.setObjectName("gusHead")
+        hv = QtWidgets.QVBoxLayout(self.head)
+        hv.setContentsMargins(12, 8, 12, 0)
+        title = QtWidgets.QLabel(registry.get(tool)[1])
+        title.setObjectName("gusTitle")
+        hv.addWidget(title)
+        hv.addWidget(widgets.label(_subtitle(tool), "dim"))
+        self.tabs = widgets.flow_box(2)
+        self.tabs.layout().setContentsMargins(0, 6, 0, 0)
+        hv.addWidget(self.tabs)
+        v.addWidget(self.head)
+        self.body = Area(self, area_key, only=[tool], prefix="q7p_")
+        v.addWidget(self.body, 1)
+        v.addWidget(_status_bar(self))
+        self.setStyleSheet(theme.stylesheet(self.body.accent))
+        from gus_rigtool.core import ui
+        ui.STATUS_HOOKS.append(self.set_status)
+        self.go((tool, page or (1 if tool == "controls_tab" else None)))
+
+    def go(self, where, section=None):
+        tool, page = where
+        if tool != self.tool:                    # another tool: the main window
+            w = _frame.get("w")
+            if alive(w):
+                w.go(where, section)
+            return
+        sub = (tool, page)
+        self.body.show_sub(sub)
+        _clear(self.tabs.layout())
+        if len(self.body.subs) > 1:
+            for t, p, label in self.body.subs:
+                b = QtWidgets.QPushButton(label)
+                b.setProperty("role", "tab")
+                b.setCheckable(True)
+                b.setChecked((t, p) == sub)
+                b.clicked.connect(lambda _=False, t=t, p=p: self.go((t, p)))
+                self.tabs.layout().addWidget(b)
+
+    def selection(self):
+        return selection()
+
+    def on_selection(self, *_):
+        self.body.refresh_selection()
+
+    def set_status(self, message, level="info"):
+        _set_status(self, message, level)
+
+
+def pop_name(tool):
+    return "gusRigtool57Pop_" + tool
+
+
+def show_pop(tool, page=None):
+    """A tool's page in its own panel (the new look). Several can be open."""
+    import maya.cmds as mc
+    from gus_rigtool import registry
+    name = pop_name(tool)
+    if mc.workspaceControl(name, exists=True):
+        mc.deleteUI(name)
+    _pops.pop(tool, None)
+    mc.workspaceControl(name, label="%s - Gus_Rigtool" % registry.get(tool)[1], retain=False, floating=True,
+                        initialWidth=460, initialHeight=760, minimumWidth=260,
+                        uiScript="import gus_rigtool.newui.window as _w; _w.restore_pop(%r, %r)" % (tool, page))
+    if not alive(_pops.get(tool)):
+        restore_pop(tool, page)
+    return _pops.get(tool)
+
+
+_pops = {}
+
+
+def restore_pop(tool, page=None):
+    import maya.cmds as mc
+    from gus_rigtool.newui.qt import maya_widget
+    host = maya_widget(pop_name(tool), "control")
+    if host is None:
+        return None
+    have = [f for f in host.findChildren(PopFrame) if alive(f)]
+    if have:
+        _pops[tool] = have[0]
+        return have[0]
+    pop = PopFrame(tool, page)
+    if host.layout() is None:
+        QtWidgets.QVBoxLayout(host)
+    host.layout().setContentsMargins(0, 0, 0, 0)
+    host.layout().addWidget(pop)
+    _pops[tool] = pop
+    try:
+        mc.scriptJob(event=["SelectionChanged", pop.on_selection], parent=pop_name(tool))
+    except RuntimeError:
+        pass
+    pop.on_selection()
+    return pop

@@ -1,3 +1,45 @@
+Gus_Rigtool 5.7.1 - the new window fixed (it opened twice), Pop out, your favourites (a row at the top and a
+floating bar), and the old window's good parts back
+
+Gus's first look at 5.7.0 in Maya: it opened twice (one under the other), Pop out was gone, some buttons' text was
+cut (Delete, Load), and the docking check failed. He asked for the same options as the old window - an update
+that keeps all its good parts - and for his favourite tools one click away (a bar, or icons).
+
+Fixes:
+- One window: Maya fills the window itself when it makes it (and when it reopens it at start-up); the tool filled
+  it again - two, one under the other. Now it's filled once (a test makes the window the way Maya does).
+- Button text never cut: buttons ask for room in the window's own font (Maya's is wider than the test machine's),
+  a word can't be squeezed; the 'nothing cut off' check looks at the text inside buttons too, also in a wider font.
+- Test this release's docking check: docked as a tab next to the Channel Box, the window was behind it; the check
+  brings its tab to the front, then checks it's there - and still one window.
+
+Back from the old window:
+- Pop out (on the header): the page you're on in its own panel - the new look, its own fields (what you type in
+  one doesn't change the other), several side by side. Pages not redone yet pop out as before.
+- Guide, Simple / Full view, What's new, Update... (on the header).
+- Each tool's one-line description, under its sub-pages.
+- Copy error report on the status line after an error.
+- Simple view: a tool's advanced sections start closed, as before.
+- Map (where everything is) - on the favourites row.
+
+Your favourites (the old window's My tools, the same list - your choices carried over):
+- The row at the top of the window: each favourite with its coloured square (its area's colour, its initials)
+  and its name; narrow, only the squares (the name on hover). Click: go there. Right-click: Pop out, move left /
+  right, remove. '+' chooses them; Map; Bar opens the floating bar.
+- ☆ Favourite on the header: this page in (★) or out.
+- The floating bar: the same favourites as squares in a small bar in front of Maya (like the Animtool bar) - drag
+  it by its handle, a row or a column (≡ menu), it reopens with the window if you left it open, where you left it.
+
+Only tested here off-screen (PySide6) and with the fake Maya; Test this release checks it in Maya: one window,
+docked, Pop out, the bar and the row, no text cut off.
+
+Decisions I made:
+- The favourites are one list for the row, the bar and the old window's My tools (myTools) - change it anywhere.
+- A favourite's icon is a coloured square with its initials (its area's colour), not a picture per tool: one look,
+  readable at any size; the name is beside it in the row, on hover on the bar.
+- Pop out of the Controls tab takes its two pages (Make / Edit shape) with it.
+- Skin (the next area) moves to 5.7.2.
+
 Gus_Rigtool 5.7.0 - the new window: a sidebar with your rig's steps, a colour per area, nothing cut off at any
 width; the Controls area in the new look
 

@@ -154,13 +154,18 @@ class WrapButton(QtWidgets.QPushButton):
 
     def sizeHint(self):
         px, py = self._pad()
+        self._lb.ensurePolished()                  # 5.7.1: measured in the window's font (Maya's is wider)
         fm = self._lb.fontMetrics()
         w = fm.horizontalAdvance(self._lb.text()) if hasattr(fm, "horizontalAdvance") else fm.width(self._lb.text())
-        return QtCore.QSize(w + px + 6, max(fm.height() + py + 6, 28 if self.property("role") != "big" else 40))
+        return QtCore.QSize(w + px + 18, max(fm.height() + py + 6, 28 if self.property("role") != "big" else 40))
 
     def minimumSizeHint(self):
+        """Never narrower than its longest word (a word can't wrap)."""
         px, py = self._pad()
-        return QtCore.QSize(min(self.sizeHint().width(), 60), self.sizeHint().height())
+        fm = self._lb.fontMetrics()
+        adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
+        word = max([adv(x) for x in self._lb.text().split()] or [0])
+        return QtCore.QSize(min(self.sizeHint().width(), word + px + 12), self.sizeHint().height())
 
     def hasHeightForWidth(self):
         return True
@@ -197,6 +202,7 @@ class WrapCheckBox(QtWidgets.QCheckBox):
         return self.rect().contains(pos)
 
     def sizeHint(self):
+        self._lb.ensurePolished()
         fm = self._lb.fontMetrics()
         t = self._lb.text()
         w = fm.horizontalAdvance(t) if hasattr(fm, "horizontalAdvance") else fm.width(t)
