@@ -206,12 +206,14 @@ def controls_tab(rep):
 
 
 def new_window(rep):
-    """5.7.0: the new window - opens, its title, docked and floating, nothing cut off when narrow, a Controls action
-    and its Ctrl+Z, today's pages inside it, how long it takes to open."""
+    """5.7: the new window - opens, its title, one window inside, nothing cut off narrow or wide, docked and
+    floating, a Controls action and its Ctrl+Z, Settings, Pop out, the favourites, Skin, profiles.
+    5.7.2.1: each part runs on its own - one that crashes is reported and the others still run."""
     import time
     import gus_rigtool
     from gus_rigtool.newui import window as W
-    from gus_rigtool.newui.qt import QtCore, QtWidgets
+    from gus_rigtool.newui import favourites as FV
+    from gus_rigtool.newui.qt import QtCore, QtWidgets, maya_widget
     rep.start("The new window (5.7)")
     W.close()
     t0 = time.time()
@@ -219,115 +221,126 @@ def new_window(rep):
     QtWidgets.QApplication.processEvents()
     rep.add(INFO, "it opened in", "%.2f s" % (time.time() - t0))
     rep.expect("it's open and visible", f is not None and f.isVisible())
+    if f is None:
+        return
     label = cmds.workspaceControl(W.WS, query=True, label=True)
     rep.expect("its title says this version", gus_rigtool.__version__ in (label or ""), label)
-    from gus_rigtool.newui.qt import maya_widget
-    host = maya_widget(W.WS, "control")
-    n = len([x for x in host.findChildren(W.Frame) if W.alive(x)]) if host is not None else -1
-    rep.expect("one window inside it (5.7.0 had two, one under the other)", n == 1, "%d inside" % n)
-    cut = {}
-    for width in (330, 700):
-        try:
-            cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
-        except RuntimeError:
-            pass
-        for sub in [("controls_tab", 1), ("controls_tab", 2), ("behaviour", None), ("attrs", None),
-                    ("channels", None), ("spaces", None), ("follow", None), ("stick", None)]:
-            f.go(sub)
-            for _i in range(3):
-                QtWidgets.QApplication.processEvents()
-            got = W.cut_off(f.areas["controls"])
-            if got:
-                cut["%s at %d" % (sub[0], f.width())] = got[:2]
-    rep.expect("nothing cut off: every Controls page, narrow and wide - no button text cut either", not cut,
-               str(list(cut.items())[:3]))
-    try:
-        cmds.workspaceControl(W.WS, edit=True, tabToControl=("ChannelBoxLayerEditor", -1))
-        cmds.workspaceControl(W.WS, edit=True, restore=True)         # its tab in front (5.7.0: it was behind)
+
+    def settle():
         for _i in range(3):
             QtWidgets.QApplication.processEvents()
+
+    def inside():
         host = maya_widget(W.WS, "control")
-        n = len([x for x in host.findChildren(W.Frame) if W.alive(x)]) if host is not None else -1
+        return len([x for x in host.findChildren(W.Frame) if W.alive(x)]) if host is not None else -1
+
+    def cut_pages(area, subs):
+        cut = {}
+        for width in (330, 700):
+            try:
+                cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
+            except RuntimeError:
+                pass
+            for sub in subs:
+                f.go(sub[:2])
+                settle()
+                got = W.cut_off(area)
+                if got:
+                    cut["%s at %d" % (sub[-1], f.width())] = got[:2]
+        return cut
+
+    def one_window():
+        n = inside()
+        rep.expect("one window inside it (5.7.0 had two, one under the other)", n == 1, "%d inside" % n)
+
+    def controls_cut():
+        cut = cut_pages(f._area("controls"), f._area("controls").subs)
+        rep.expect("nothing cut off: every Controls page, narrow and wide - no button text cut either", not cut,
+                   str(list(cut.items())[:3]))
+
+    def docking():
+        cmds.workspaceControl(W.WS, edit=True, tabToControl=("ChannelBoxLayerEditor", -1))
+        cmds.workspaceControl(W.WS, edit=True, restore=True)         # its tab in front (5.7.0: it was behind)
+        settle()
+        n = inside()
         rep.expect("docked next to the Channel Box (its tab in front): there, still one window",
                    W.alive(W._frame["w"]) and W._frame["w"].isVisible() and n == 1, "%d inside" % n)
         cmds.workspaceControl(W.WS, edit=True, floating=True)
-        QtWidgets.QApplication.processEvents()
+        settle()
         rep.expect("...floating again", W._frame["w"].isVisible())
-    except RuntimeError as e:
-        rep.add(NOTE, "docking", str(e))
-    c = _circle("Check_limit_ctrl")
-    cmds.select(c, replace=True)
-    f.go(("behaviour", None))
-    page = f.areas["controls"].pages["behaviour"]
-    page.fields["q7_behaviour_LimMin"].widget.setText("-45")
-    page.fields["q7_behaviour_LimMax"].widget.setText("90")
-    page.fields["q7_behaviour_LimCh"].widget.setCurrentIndex(5)
-    for b in page.cards[0].findChildren(QtWidgets.QPushButton):
-        if b.text() == "Apply to the selected controls":
-            b.click()
-            break
-    lim = cmds.transformLimits(c, query=True, rotationZ=True)
-    rep.expect("Behaviour > Limits in the new window: rotate Z -45 .. 90 on the control", lim == [-45.0, 90.0],
-               str(lim))
-    cmds.undo()
-    rep.expect("...one Ctrl+Z takes it off", not any(cmds.transformLimits(c, query=True,
-                                                                         enableRotationZ=True) or []))
-    f.go(("settings", None))
-    for _i in range(3):
-        QtWidgets.QApplication.processEvents()
-    old = f.areas["toolbox"].widgets.get(("settings", None))
-    rep.expect("Toolbox > Settings: today's page shows inside the new window (the Window switch on it)",
-               old is not None and old.layout().count() > 0 and old.isVisible())
-    f.go(("behaviour", None))
-    pop = f.pop_out()
-    QtWidgets.QApplication.processEvents()
-    rep.expect("Pop out: Behaviour in its own panel (the new look), the main window still open",
-               W.alive(pop) and pop.isVisible() and cmds.workspaceControl(W.pop_name("behaviour"), exists=True) and
-               W.alive(W._frame["w"]))
-    if cmds.workspaceControl(W.pop_name("behaviour"), exists=True):
-        cmds.deleteUI(W.pop_name("behaviour"))
-    from gus_rigtool.newui import favourites as FV
-    bar = FV.show_bar()
-    QtWidgets.QApplication.processEvents()
-    rep.expect("the favourites bar: open, in front of Maya, one square per favourite",
-               bar.isVisible() and bool(bar.windowFlags() & QtCore.Qt.Tool) and list(bar.buttons) == FV.keys(),
-               ", ".join(bar.buttons))
-    rep.expect("the favourites row at the top of the window: the same favourites",
-               [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
-               FV.keys())
-    FV.close_bar()
-    # 5.7.2: Skin in the new look, Settings its own button, favourites profiles
-    sk = f._area("skin")
-    cut = {}
-    for width in (330, 700):
+
+    def limits():
+        c = _circle("Check_limit_ctrl")
+        cmds.select(c, replace=True)
+        f.go(("behaviour", None))
+        page = f.areas["controls"].pages["behaviour"]
+        page.fields["q7_behaviour_LimMin"].widget.setText("-45")
+        page.fields["q7_behaviour_LimMax"].widget.setText("90")
+        page.fields["q7_behaviour_LimCh"].widget.setCurrentIndex(5)
+        for b in page.cards[0].findChildren(QtWidgets.QPushButton):
+            if b.text() == "Apply to the selected controls":
+                b.click()
+                break
+        lim = cmds.transformLimits(c, query=True, rotationZ=True)
+        rep.expect("Behaviour > Limits in the new window: rotate Z -45 .. 90 on the control", lim == [-45.0, 90.0],
+                   str(lim))
+        cmds.undo()
+        rep.expect("...one Ctrl+Z takes it off", not any(cmds.transformLimits(c, query=True,
+                                                                             enableRotationZ=True) or []))
+
+    def settings():                            # 5.7.2: its own button (5.7.2's check still looked in the Toolbox)
+        f.go(("settings", None))
+        settle()
+        st = f.areas["settings"].widgets.get(("settings", None))
+        rep.expect("Settings: its own button at the bottom of the sidebar; today's Settings page in it (the "
+                   "Window switch on it)", list(f.nav)[-1] == "settings" and st is not None and
+                   st.layout().count() > 0 and st.isVisible())
+
+    def pop_out():
+        f.go(("behaviour", None))
+        pop = f.pop_out()
+        settle()
+        rep.expect("Pop out: Behaviour in its own panel (the new look), the main window still open",
+                   W.alive(pop) and pop.isVisible() and cmds.workspaceControl(W.pop_name("behaviour"), exists=True)
+                   and W.alive(W._frame["w"]))
+        if cmds.workspaceControl(W.pop_name("behaviour"), exists=True):
+            cmds.deleteUI(W.pop_name("behaviour"))
+
+    def favourites():
+        bar = FV.show_bar()
+        settle()
+        rep.expect("the favourites bar: open, in front of Maya, one square per favourite",
+                   bar.isVisible() and bool(bar.windowFlags() & QtCore.Qt.Tool) and list(bar.buttons) == FV.keys(),
+                   ", ".join(bar.buttons))
+        rep.expect("the favourites row at the top of the window: the same favourites",
+                   [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
+                   FV.keys())
+        FV.close_bar()
+
+    def skin():
+        sk = f._area("skin")
+        cut = cut_pages(sk, sk.subs)
+        rep.expect("Skin: its 7 sub-pages, nothing cut off narrow or wide", len(sk.subs) == 7 and not cut,
+                   str(list(cut.items())[:3]))
+
+    def profiles():
+        was = FV.current()
         try:
-            cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
-        except RuntimeError:
-            pass
-        for sub in sk.subs:
-            f.go(sub[:2])
-            for _i in range(3):
-                QtWidgets.QApplication.processEvents()
-            got = W.cut_off(sk)
-            if got:
-                cut["%s at %d" % (sub[2], f.width())] = got[:2]
-    rep.expect("Skin: its 7 sub-pages, nothing cut off narrow or wide", len(sk.subs) == 7 and not cut,
-               str(list(cut.items())[:3]))
-    f.go(("settings", None))
-    for _i in range(3):
-        QtWidgets.QApplication.processEvents()
-    st = f.areas["settings"].widgets.get(("settings", None))
-    rep.expect("Settings: its own button at the bottom of the sidebar; today's Settings page in it",
-               list(f.nav)[-1] == "settings" and st is not None and st.layout().count() > 0)
-    was = FV.current()
-    FV.set_current("Skin")
-    QtWidgets.QApplication.processEvents()
-    rep.expect("favourites profile 'Skin': the row shows Skin and Fixes",
-               [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")] ==
-               ["skin", "fixes"])
-    FV.set_current(was)
-    rep.add(INFO, "look at the new window", "the sidebar, the green Controls pages; drag it narrow - nothing is cut "
-            "off, the sidebar becomes icons")
+            FV.set_current("Skin")
+            settle()
+            rep.expect("favourites profile 'Skin': the row shows Skin and Fixes",
+                       [b.property("fav") for b in f.favs.findChildren(QtWidgets.QToolButton) if b.property("fav")]
+                       == ["skin", "fixes"])
+        finally:
+            FV.set_current(was)
+
+    for name, part in (("one window", one_window), ("Controls pages, narrow and wide", controls_cut),
+                       ("docking", docking), ("Limits + Ctrl+Z", limits), ("Settings", settings),
+                       ("Pop out", pop_out), ("favourites bar and row", favourites), ("Skin", skin),
+                       ("favourites profiles", profiles)):
+        rep.guard("new window: " + name, part)
+    rep.add(INFO, "look at the new window", "the sidebar, the coloured areas; drag it narrow - nothing is cut off, "
+            "the sidebar becomes icons")
     f.go(("controls_tab", 1))
 
 

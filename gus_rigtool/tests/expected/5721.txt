@@ -1,0 +1,7 @@
+[info] rz limited -45 .. 90 on 1 control(s).
+PASS the 'new window' check runs through every part, none crashes (5.7.2's stopped at Settings)
+PASS ...Settings is looked for in its own place now
+PASS ...and the parts after it ran: Pop out, the favourites, Skin, profiles
+  [info] rz limited -45 .. 90 on 1 control(s).
+PASS a part that crashes (Pop out here) is reported, and the rest still run
+4/4 passed

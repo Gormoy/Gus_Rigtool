@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.2's Test this release crashed in my check (Settings looked for in the Toolbox) - fix release
+  5.7.2.1 approved; Build in the new look stays 5.7.3.
+
 - 2026-11-20: 5.7.2 test outputs accepted; next is 5.7.3 Build in the new look (Build, Face, Ribbon, Joints) -
   preview first (Gus: "yes").
 
@@ -58,7 +61,8 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.2: outputs accepted (Gus: "yes"), committed + zipped; waiting for his Maya tests, then the push.
+- 5.7.2.1 (fix of Test this release's check, Gus: "yes for both" - the name 5.7.2.1 too): waiting for his
+  Test this release; then push 5.7.2 + 5.7.2.1 to main. 5.7.2's Real Maya tests passed (104 ok).
 - Next after 5.7.2: 5.7.3 Build area (preview first), then Connect, Check, Toolbox.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 

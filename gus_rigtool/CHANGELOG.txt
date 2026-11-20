@@ -1,3 +1,18 @@
+Gus_Rigtool 5.7.2.1 - Test this release's 'new window' check fixed (it stopped at Settings)
+
+Gus's Test this release on 5.7.2: the 'new window' check crashed - an older line still looked for Settings in the
+Toolbox, where 5.7.2 took it out (Settings has its own button). The parts after it never ran (Pop out, the
+favourites, Skin, profiles). Only the check was wrong; nothing in the tool changes.
+
+- The check looks for Settings in its own place.
+- Each part of the 'new window' check runs on its own now: one that crashes is reported (which part, why) and the
+  others still run.
+- A new test runs the whole 'new window' check here against a stand-in for Maya's window, so a check that can't
+  run is caught before it reaches you.
+
+Decisions I made:
+- A fix this small is 5.7.2.1 (Gus agreed); Build in the new look stays 5.7.3.
+
 Gus_Rigtool 5.7.2 - Skin in the new look (7 sub-pages), Settings its own button, favourites profiles you edit
 
 Gus approved the 5.7.2 preview: Settings out of the Toolbox onto its own button, the favourites edited like the
