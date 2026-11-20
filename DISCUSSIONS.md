@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.3 results: Real Maya 104 ok; Test this release 2 FAIL (Build cut off at 326 px - closed cards'
+  peek never shrank; the module check took "(no modules yet)" for a module). Fixed in 5.7.3.1. Gus: "the face and
+  ribbon build aren't with the updates I approved" - they are 5.7.4 (the split he OKed); my 5.7.3 message didn't
+  say so. LESSON: always say in the release message what is NOT in it yet. Next: 5.7.4 Face/Ribbon steps.
+
 - 2026-11-20: Gus: "yes to all" - split into 5.7.3 (Build area in the new look: colour pickers, no cut
   drop-downs, inner sections, live refill of the module settings, two rows of tabs for Build and Skin) and 5.7.4
   (Face and Ribbon as steps + two curves, plus a real-Maya case for lofting from two curves). 5.7.3 built and sent

@@ -274,6 +274,28 @@ class Segmented(QtWidgets.QWidget):
 
 
 # --------------------------------------------------------------------------- the card
+class Peek(QtWidgets.QLabel):
+    """A closed card's hint of what's inside: one line that gives way when the window is narrow (ends in ...; the
+    whole hint on hover) - 5.7.3, the header of a closed card made a narrow window too wide in Maya."""
+
+    def minimumSizeHint(self):
+        return QtCore.QSize(0, super(Peek, self).minimumSizeHint().height())
+
+    def sizeHint(self):
+        return QtCore.QSize(min(super(Peek, self).sizeHint().width(), 260), super(Peek, self).sizeHint().height())
+
+    def setText(self, text):
+        super(Peek, self).setText(text)
+        self.setToolTip(text)
+
+    def paintEvent(self, e):
+        p = QtGui.QPainter(self)
+        p.setPen(self.palette().color(self.foregroundRole()))
+        r = self.contentsRect()
+        p.drawText(r, int(Qt.AlignLeft | Qt.AlignVCenter), self.fontMetrics().elidedText(self.text(), Qt.ElideRight,
+                                                                                          r.width()))
+
+
 class Card(QtWidgets.QFrame):
     """A numbered section: title, '?', pin; closed it shows what's inside in one line."""
     toggled = QtCore.Signal(bool)
@@ -302,9 +324,8 @@ class Card(QtWidgets.QFrame):
         t.setObjectName("gusCardTitle")
         t.setWordWrap(True)
         h.addWidget(t, 1)
-        self.peek = QtWidgets.QLabel(peek)
+        self.peek = Peek(peek)
         self.peek.setObjectName("gusPeek")
-        self.peek.setWordWrap(True)
         h.addWidget(self.peek, 2)
         self.pin = QtWidgets.QToolButton()
         self.pin.setIcon(icons.icon("pin", 14, theme.FAINT))

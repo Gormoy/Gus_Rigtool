@@ -82,6 +82,15 @@ check("nothing cut off: every Build page, 300 / 420 / 700 px, normal and wider f
 if crops:
     print("  ", list(crops.items())[:4])
 f.resize(700, 1100)
+widest = []
+for sub in subs:
+    f.go(sub); app.processEvents()
+    bd = f.areas["build"]
+    widest.append((bd.widgets[tuple(bd.current)].minimumSizeHint().width(), sub))
+check("every Build page fits a narrow window (Gus's Maya at 326 px cut Rig builder and Ribbon: a closed card's "
+      "hint never gave way) - no page needs more room than Controls > Behaviour, which fits", max(widest)[0] <= 230)
+if max(widest)[0] > 230:
+    print("  ", sorted(widest, reverse=True)[:3])
 c = QtWidgets.QComboBox(); c.addItems(["One per span, both directions"]); c.setFixedWidth(60)
 c.show(); app.processEvents()
 check("...the check sees a drop-down that cuts its text", not W._combo_fits(c))

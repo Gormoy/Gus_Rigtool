@@ -348,7 +348,8 @@ def new_window(rep):
         f.go(("build", 1))
         settle()
         lists = [w for w in bd.findChildren(QtWidgets.QListWidget) if w.isVisible()]
-        if not lists or not lists[0].count():
+        from gus_rigtool.tools import build_tab as B
+        if not lists or not B._rows.get(B._P["p"]):         # 5.7.3: '(no modules yet)' is a row, not a module
             rep.add(INFO, "Build > Settings of the picked module", "no modules in this scene: not checked (open a "
                     "scene with guides and run it again to check it)")
             return

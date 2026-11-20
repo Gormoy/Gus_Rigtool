@@ -1,3 +1,23 @@
+Gus_Rigtool 5.7.3.1 - Build fits a narrow window in Maya; Test this release's module check fixed
+
+Gus's Test this release on 5.7.3 (Real Maya: 104 ok):
+- Build > Rig builder and Ribbon were cut off in a narrow window (326 px) in Maya. The cause: a closed card shows
+  a short hint of what's inside next to its title ("Body_Ctrls · Face_Ctrls · ..."), and that hint never gave
+  way. Now it gives way and ends in "..." (the whole hint when you hover it). Every Build page now needs less room
+  than Controls > Behaviour, which already fitted in your Maya (Rig builder needed 295, now 215).
+- "Pick a module - its settings appear" failed in a scene with no guides: the list's "(no modules yet)" row was
+  taken for a module. Only the check was wrong: with no modules it now says it couldn't check.
+
+Not in 5.7.3 (Gus asked): Face and Ribbon as steps and the two-curve loft. They were split into 5.7.4 when Gus
+said "yes to all" to the plan; the 5.7.3 message didn't say so. 5.7.4 is next.
+
+Only tested here off-screen (PySide6) and with the fake Maya.
+
+Decisions I made:
+- A fix this small is 5.7.3.1, like 5.7.2.1.
+- The test measures how much room each Build page needs and keeps it at most what Behaviour needs (230 px here) -
+  the off-screen window can't be made as narrow as Maya's docked panel.
+
 Gus_Rigtool 5.7.3 - Build in the new look, two rows of tabs
 
 Gus approved the 5.7.3 plan (window work only; Face and Ribbon as steps and the two-curve loft come in 5.7.4).
