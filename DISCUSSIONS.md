@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Gus: "ok lets go for the connect". Preview sent (design/screens575: now_* = today's 4 tools in the
+  new look, idea_* = Nodes in 3 pages). Found: the Connections tool's key 'connect' = the area's key (its tab goes
+  to the area). 5.7.5 plan sent; waiting for his OK.
+
 - 2026-11-20: Gus "yes to all": test outputs 570/571/573/574 accepted; 5.7.3.1 + 5.7.4 pushed to main; "two
   curves" as built is what he wanted (ends meet = one loop, side by side = loft between). Next: Connect, Check,
   Toolbox areas in the new look (preview first), then 5.8 Animtool.
