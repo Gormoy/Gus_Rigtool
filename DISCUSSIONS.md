@@ -17,6 +17,12 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.3 plan OK (colour pickers, no cut drop-downs, inner sections, parts that rebuild, Build area two
+  rows of tabs). Skin gets the two rows too, later. Gus on Face: "just a button is not intuitive... isn't it
+  repetitive?" - splitting Face into 7 one-button pages is bad. Proposed instead (mock face_mock.py): ONE page
+  'Build the face' = face map (made / ready / on / not yet) + steps that say what to select and check the
+  selection + options with their part; then 'Ribbons & groups' and 'Squash & expressions'. Waiting for his OK.
+
 - 2026-11-20: 5.7.2 + 5.7.2.1 pushed to main (Gus: "yes to all"); he wants the 5.7.3 Build preview + plan.
 
 - 2026-11-20: 5.7.2's Test this release crashed in my check (Settings looked for in the Toolbox) - fix release
