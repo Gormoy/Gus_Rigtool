@@ -604,9 +604,16 @@ def arcs(rep):
                  ask=False)
     rep.expect("the hand's curves are weighted now (were not)", before == [False] and n == 2 and
                cmds.keyTangent(curves, query=True, weightedTangents=True) == [True])
+    undo_on = cmds.undoInfo(query=True, state=True)
+    rep.add(INFO, "Ctrl+Z here: undo on / what Ctrl+Z would undo",
+            "%s / %r" % (undo_on, cmds.undoInfo(query=True, undoName=True)))
     cmds.undo()
-    rep.expect("Ctrl+Z: not weighted again", cmds.keyTangent(curves, query=True, weightedTangents=True) == [False],
-               bad=NOTE)
+    if undo_on:
+        rep.expect("Ctrl+Z: not weighted again", cmds.keyTangent(curves, query=True, weightedTangents=True) == [False],
+                   bad=NOTE)
+    else:
+        rep.add(INFO, "Ctrl+Z not tried", "Maya without a window has undo off - try it in Maya (Arcs panel > Timing "
+                                          "beads, then Ctrl+Z)")
     arctrail.clear()
     rep.expect("Clear: the arcs are gone", not cmds.ls(arctrail.GROUP))
 
@@ -650,12 +657,14 @@ def attach_case(rep):
                str(src))
     cmds.currentTime(20)
     AT.attach(lhand, prop)                                        # the hand follows the stick (the way Gus needs it)
-    rel_h = A_rel(lhand, prop)
+    # 5.6.44: the hand has keys of its own - they keep working on top (by design: 'you can still move it'), so
+    # what follows the stick exactly is the space it's held in (offset parent x parent), not the hand itself
+    rel_h = _held_rel(lhand, prop)
     worst = 0.0
     for f in range(20, 60):
         cmds.currentTime(f)
-        worst = max(worst, _diff(A_rel(lhand, prop), rel_h))
-    rep.expect("the IK hand follows the stick exactly, frames 20-59 (and the box and cup in it follow too)",
+        worst = max(worst, _diff(_held_rel(lhand, prop), rel_h))
+    rep.expect("the IK hand's held space follows the stick exactly, frames 20-59 (its own keys work on top)",
                worst < TOL, "%.5f" % worst)
     for n in (lhand,):
         AT.remove(n)
@@ -680,7 +689,11 @@ def attach_case(rep):
     rep.add(INFO, "where the box is held", AT.describe(box))
     marks = [b for b in (cmds.ls(type="timeSliderBookmark") or [])
              if (cmds.getAttr(b + ".name") or "").startswith("gusAttach_Box")]
-    rep.expect("coloured stretches on the Time Slider for the box", len(marks) >= 2, str(len(marks)), bad=NOTE)
+    if cmds.about(batch=True):
+        rep.add(INFO, "coloured stretches on the Time Slider", "%d here - they need the Maya window (Maya without a "
+                "window has no Time Slider): look at them in Maya" % len(marks))
+    else:
+        rep.expect("coloured stretches on the Time Slider for the box", len(marks) >= 2, str(len(marks)), bad=NOTE)
     n = len(AT.events(box))
     AT.delete_change(box, 50)
     rep.expect("delete the 'both' change: one change fewer", len(AT.events(box)) == n - 1)
@@ -763,6 +776,60 @@ def attach_quiet(rep):
                 pass
 
 
+def _held_rel(n, holder):
+    """The space n is held in (its offset parent matrix x its parent's world), in holder's space."""
+    import maya.api.OpenMaya as om
+    held = om.MMatrix(cmds.getAttr(n + ".offsetParentMatrix"))
+    parent = cmds.listRelatives(n, parent=True, fullPath=True)
+    if parent:
+        held = held * om.MMatrix(_wm(parent[0]))
+    m = held * om.MMatrix(_wm(holder)).inverse()
+    return [m[12], m[13], m[14], m[0], m[1], m[2]]
+
+
+def inbetween_case(rep):
+    """k. Add / Remove inbetween (5.6.44): Gus got "Cannot move keys" and nothing moved. Two keyed controls, one
+    curve locked (Maya refuses to move it): the others move, the locked one is named."""
+    _animtool()
+    from gus_animtool import anim as A
+    from gus_animtool import keys as K
+    rep.start("k. Add / Remove inbetween (Animtool): moves, and one refused curve doesn't stop the rest")
+    cmds.playbackOptions(minTime=1, maxTime=40)
+    arm = _ctrl("Arm_ctrl")
+    leg = _ctrl("Leg_ctrl")
+    for n in (arm, leg):
+        for f, v in ((1, 0.0), (10, 2.0), (20, 5.0), (30, 1.0)):
+            cmds.setKeyframe(n, attribute="translateX", time=f, value=v)
+    times = lambda n: cmds.keyframe(n + ".translateX", query=True, timeChange=True)
+    cmds.select([arm, leg])
+    cmds.currentTime(10)
+    n = rep.step("Add inbetween at frame 10 (selection)", K.inbetween, 1, "selection")
+    rep.expect("the keys after 10 moved one later", times(arm) == [1, 10, 21, 31] and times(leg) == [1, 10, 21, 31],
+               "%s / %s" % (times(arm), times(leg)))
+    n = rep.step("Remove inbetween at frame 10", K.inbetween, -1, "selection")
+    rep.expect("back where they were", times(arm) == [1, 10, 20, 30], str(times(arm)))
+    curve = cmds.listConnections(leg + ".translateX", source=True, destination=False)[0]
+    cmds.lockNode(curve, lock=True)
+    said = []
+    real = A.message
+    A.message = lambda t, level="ok": said.append((t, level))
+    try:
+        try:
+            n = K.inbetween(1, "selection")
+            err = ""
+        except RuntimeError as e:
+            n, err = 0, str(e)
+    finally:
+        A.message = real
+        cmds.lockNode(curve, lock=False)
+    rep.add(INFO, "a locked curve: what Maya and the tool said", "%s | %s" % (err or "-", said[-1][0] if said else "-"))
+    rep.expect("one curve locked: the other still moves", times(arm) == [1, 10, 21, 31], str(times(arm)))
+    if times(leg) == [1, 10, 20, 30]:
+        rep.expect("...and the locked one is named", said and curve.split("|")[-1] in said[-1][0], str(said))
+    else:
+        rep.add(INFO, "Maya moved the locked curve anyway (lockNode doesn't stop key edits here)", str(times(leg)))
+
+
 def A_rel(n, holder):
     """n's world position in holder's space (what 'follows exactly' keeps)."""
     import maya.api.OpenMaya as om
@@ -773,6 +840,7 @@ def A_rel(n, holder):
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
-         ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet)]
+         ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
+         ("k. add / remove inbetween", inbetween_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

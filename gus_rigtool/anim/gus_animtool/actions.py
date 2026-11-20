@@ -311,7 +311,7 @@ def _call(key):
     if key in ("inbetween_add", "inbetween_remove"):
         step = int(A.opt("inbetween_step", 1)) * (1 if key == "inbetween_add" else -1)
         n = K.inbetween(step)
-        return "%s %d frame(s) after this one (%d curves)" % ("added" if step > 0 else "removed", abs(step), n)
+        return "%s %d frame(s) after this one (%d curve(s) moved)" % ("added" if step > 0 else "removed", abs(step), n)
     if key.startswith("scope_"):
         A.set_opt("inbetween_scope", int(key[6:]))
         return "inbetweens now on: %s" % K.SCOPE_LABELS[int(key[6:]) - 1].lower()

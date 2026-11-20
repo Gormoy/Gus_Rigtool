@@ -436,13 +436,34 @@ def inbetween(frames, scope=None):
     if not curves:
         raise RuntimeError("no keys to move (%s)." % (scope or "selection"))
     t = cmds.currentTime(query=True)
+    after = (t + 0.001, BIG)
+    moved, refused = 0, []
     with A.Undo("gusAnimtoolInbetween"):
-        if frames < 0:
-            gone = (t + 0.001, t - frames)
-            if cmds.keyframe(curves, query=True, time=gone, keyframeCount=True):
-                cmds.cutKey(curves, time=gone, clear=True)
-        cmds.keyframe(curves, edit=True, relative=True, timeChange=frames, time=(t + 0.001, BIG))
-    return len(curves)
+        # 5.6.44: one curve at a time - Maya's "Cannot move keys" on one curve (locked, from a reference...) used to
+        # stop all of them; now the others move and the refused ones are named
+        for c in curves:
+            try:
+                if not cmds.keyframe(c, query=True, time=after, keyframeCount=True):
+                    continue
+                if frames < 0:
+                    gone = (t + 0.001, t - frames)
+                    if cmds.keyframe(c, query=True, time=gone, keyframeCount=True):
+                        cmds.cutKey(c, time=gone, clear=True)
+                cmds.keyframe(c, edit=True, relative=True, timeChange=frames, time=after, option="over")
+                moved += 1
+            except RuntimeError as e:
+                refused.append((c, str(e).strip()))
+    if refused:
+        why = refused[0][1] or "Maya refused"
+        names = ", ".join(c.split("|")[-1] for c, _w in refused[:4]) + (" ..." if len(refused) > 4 else "")
+        print("Gus Animtool - inbetween: these curves didn't move:\n" + "\n".join(
+            "  %s: %s" % (c, w) for c, w in refused))
+        if not moved:
+            raise RuntimeError("no keys moved - Maya refused %d curve(s) (%s: %s). Details in the Script Editor."
+                               % (len(refused), names, why))
+        A.message("%d curve(s) didn't move (%s: %s) - the rest did. Details in the Script Editor."
+                  % (len(refused), names, why), "warn")
+    return moved
 
 
 # ---------------------------------------------------------------------------

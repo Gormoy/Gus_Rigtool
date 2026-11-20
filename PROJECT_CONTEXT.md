@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.43). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.43`; `main` holds only the licence so far). It covers what the
+session (5.6.28 - 5.6.44). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.44`; `main` holds only the licence so far). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.43, about 163 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.44, about 164 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -245,6 +245,11 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   nothing held it, and the wrong place there); Repair fixes 5.6.41-42 attaches. The floating Animtool bar
   (`bar.py`: every tool, the Attach window / Arcs panel, row or column, opens with the window). Shelf buttons never
   vanish silently. Face kit tab: deleted ribbons skipped. Real-Maya test j.
+- **5.6.44**: the toolbar under the Time Slider off once (the bar replaces it), the bar's buttons chosen. Gus's first
+  real-Maya run (5.6.43, Mac, --no-scene): 82 ok; case i's FAIL was the test (a keyed hand: its own keys work on top
+  of the attach - now checks the held space); bookmarks / undo need the Maya window (info, not notes). Add / Remove inbetween: one curve at a
+  time ("Cannot move keys" on one stopped all), refused curves named; real-Maya case k.
+  Next (Gus chose): Stage 2a - one control maker, Shapes + Make controls merged, every control a Maya controller.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

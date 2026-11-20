@@ -43,7 +43,7 @@ def _maya_window():
         return None
 
 
-def keys():
+def all_keys():
     """Every tool, in the toolbar's order, the windows right after their tool; the bar's own button left out."""
     out = []
     for k, _l, _t, _g in AC.ACTIONS:
@@ -53,6 +53,23 @@ def keys():
         if k in EXTRA:
             out.append(EXTRA[k])
     return out
+
+
+def keys():
+    """What the bar shows: your choice (Options > Choose buttons...), else every tool."""
+    every = all_keys()
+    got = A.opt("bar_keys", "")
+    if not got:
+        return every
+    chosen = set(k for k in got.split(",") if k)
+    return [k for k in every if k in chosen] or every
+
+
+def set_keys(chosen):
+    """Keep this choice (empty or all: every tool, so new tools show up too)."""
+    every = all_keys()
+    chosen = [k for k in every if k in set(chosen)]
+    A.set_opt("bar_keys", "" if not chosen or len(chosen) == len(every) else ",".join(chosen))
 
 
 def group_of(key):
@@ -290,7 +307,16 @@ class Bar(QtWidgets.QWidget):
         auto.toggled.connect(lambda on: A.set_opt("bar_auto", int(bool(on))))
         m.addAction("The Animtool window").triggered.connect(lambda *_: AC.run("main"))
         m.addAction("A row / a column").triggered.connect(lambda *_: self.flip())
+        m.addAction("Choose buttons...").triggered.connect(lambda *_: self.choose())
         m.exec_(QtGui.QCursor.pos())
+
+    def choose(self):
+        """A tick per tool; OK keeps the choice and rebuilds the bar."""
+        d = Chooser(self)
+        if d.exec_():
+            set_keys(d.chosen())
+            self._build()
+        return d
 
     # ------------------------------------------------------------------ moving
     def mousePressEvent(self, e):
@@ -314,3 +340,52 @@ class Bar(QtWidgets.QWidget):
     def closeEvent(self, e):
         self._remember()
         super(Bar, self).closeEvent(e)
+
+
+class Chooser(QtWidgets.QDialog):
+    """Which tools the bar shows: a tick per tool (its icon and name), All / None, OK."""
+
+    def __init__(self, parent=None):
+        super(Chooser, self).__init__(parent)
+        self.setWindowTitle("Bar buttons")
+        self.resize(300, 560)
+        lay = QtWidgets.QVBoxLayout(self)
+        note = QtWidgets.QLabel("Tick the tools the bar shows.")
+        lay.addWidget(note)
+        area = QtWidgets.QScrollArea()
+        area.setWidgetResizable(True)
+        inner = QtWidgets.QWidget()
+        col = QtWidgets.QVBoxLayout(inner)
+        col.setSpacing(1)
+        shown = set(keys())
+        self.boxes = []
+        for k in all_keys():
+            label, tip = label_tip(k)
+            b = QtWidgets.QCheckBox(label)
+            b.setToolTip(tip)
+            path = AC.icon(k)
+            if not path.endswith("pythonFamily.png"):
+                b.setIcon(QtGui.QIcon(path))
+            b.setChecked(k in shown)
+            col.addWidget(b)
+            self.boxes.append((k, b))
+        col.addStretch(1)
+        area.setWidget(inner)
+        lay.addWidget(area)
+        row = QtWidgets.QHBoxLayout()
+        for text, on in (("All", True), ("None", False)):
+            btn = QtWidgets.QPushButton(text)
+            btn.clicked.connect(lambda *_, v=on: [b.setChecked(v) for _k, b in self.boxes])
+            row.addWidget(btn)
+        row.addStretch(1)
+        ok = QtWidgets.QPushButton("OK")
+        ok.setDefault(True)
+        ok.clicked.connect(self.accept)
+        cancel = QtWidgets.QPushButton("Cancel")
+        cancel.clicked.connect(self.reject)
+        row.addWidget(ok)
+        row.addWidget(cancel)
+        lay.addLayout(row)
+
+    def chosen(self):
+        return [k for k, b in self.boxes if b.isChecked()]

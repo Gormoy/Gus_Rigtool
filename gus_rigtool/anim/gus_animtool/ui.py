@@ -409,6 +409,17 @@ def _make_shelf(*_):
     _done("'Gus_Animtool' shelf: %d buttons." % toolbar.make_shelf())
 
 
+def _bar_open(*_):
+    from gus_animtool import actions as AC
+    AC.run("bar")
+
+
+def _bar_pick(*_):
+    """The bar's own chooser (a tick per tool), the bar opened first."""
+    from gus_animtool import bar
+    return bar.show().choose()
+
+
 def _toolbar_pick(*_):
     """A small window: a checkbox per tool."""
     from gus_animtool import actions as AC
@@ -1060,10 +1071,15 @@ def _settings_tab():
     cmds.checkBox(P + "Hotkeys", label="Hotkeys on", value=bool(A.opt("hotkeys", 0)),
                   changeCommand=A.guard(lambda v: _hotkeys(v)))
     end()
-    section("Toolbar, shelf and window", "Toolbar: the everyday tools as icons under the Time Slider (drag its "
-            "tab to move it; Maya remembers). Shelf: a 'Gus_Animtool' shelf with every tool (right-click a button "
-            "for more). Window: floating (drag its tab onto Maya's side to dock it) or docked next to the Channel "
-            "Box; the icon row at the top.")
+    section("Bar, toolbar, shelf and window", "Bar: every tool in a small strip that floats over Maya (its = "
+            "menu: choose buttons, a row or a column). Toolbar: the older strip docked under the Time Slider - off "
+            "unless you want it. Shelf: a 'Gus_Animtool' shelf with every tool (right-click a button for more). "
+            "Window: floating (drag its tab onto Maya's side to dock it) or docked next to the Channel Box; the "
+            "icon row at the top.")
+    cmds.checkBox(P + "BarAuto", label="The bar opens with this window", value=bool(A.opt("bar_auto", 1)),
+                  changeCommand=A.guard(lambda v: A.set_opt("bar_auto", int(bool(v)))))
+    buttons([("Open the bar", _bar_open, "The floating bar (every tool)."),
+             ("Bar buttons...", _bar_pick, "Which tools the bar shows.")])
     cmds.checkBox(P + "Toolbar", label="Toolbar under the Time Slider", value=bool(A.opt("toolbar", 0)),
                   changeCommand=A.guard(_toolbar_toggle))
     buttons([("Toolbar buttons...", _toolbar_pick, "Which tools the toolbar shows."),
@@ -1126,6 +1142,14 @@ def show():
                           uiScript="import gus_animtool.ui as _u; _u.build()", **flags)
     if not cmds.formLayout(P + "Root", exists=True):
         build()
+    if not A.opt("bar_replaces_toolbar", 0):                  # 5.6.44: the bar does its job - the toolbar off once
+        A.set_opt("bar_replaces_toolbar", 1)                  # (Settings > Toolbar under the Time Slider brings it)
+        A.set_opt("toolbar", 0)
+        try:
+            from gus_animtool import toolbar
+            toolbar.hide()
+        except Exception:
+            pass
     if A.opt("toolbar", 0):
         from gus_animtool import toolbar
         toolbar.show()

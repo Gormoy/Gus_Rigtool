@@ -1,3 +1,40 @@
+Gus_Rigtool 5.6.44 - the bar replaces the toolbar, choose the bar's buttons; your real-Maya results
+
+Gus: the bar does the toolbar's job; the attach and the Attach / Arcs windows work. His first real-Maya run of
+5.6.43: 82 ok, 1 FAIL, 2 notes (case j, his shot's divide by zero: all ok).
+
+The bar and the toolbar (Animtool):
+- The toolbar under the Time Slider is turned off once with this update (the bar has every tool). Settings >
+  Bar, toolbar, shelf and window > "Toolbar under the Time Slider" brings it back, and then it stays.
+- The bar's = menu > Choose buttons...: a tick per tool (its icon and name), All / None, OK. Also in Settings
+  ("Bar buttons..."), with "The bar opens with this window" and "Open the bar".
+
+Add / Remove inbetween (Animtool): it stopped with "Cannot move keys" and nothing moved. Maya refuses to move
+some curves (a locked one, for example) and one refusal stopped them all. Now each curve moves on its own, the
+safe way Offset uses (keys can't land on top of each other), and the ones Maya refuses are named (warning + the
+Script Editor) while the rest move. The message counts the curves that really moved.
+
+Real-Maya tests - what your results showed:
+- i. FAIL "the IK hand follows the stick exactly" (4.76): the test was wrong, not the attach. The test's hand has
+  keys of its own, and they keep working on top of the attach (that's the design - you asked to still move the
+  hand after attaching). The test now checks the space the hand is held in, which follows the stick exactly. Your
+  shot's case (j: a wrist with no keys of its own) follows exactly.
+- i. note "coloured stretches on the Time Slider: 0": Maya without a window has no Time Slider, so the bookmarks
+  can't be made there. Now an info line; look at them in Maya.
+- h. note "Ctrl+Z: not weighted again": the test now says whether undo is on in Maya without a window; if it's
+  off, it says to try it in Maya instead of a false note.
+
+Decisions I made:
+- The toolbar is turned off only once (a flag), so turning it back on in Settings sticks.
+- Ticking every tool keeps "every tool" (not a list), so tools added later show up on the bar by themselves.
+- The toolbar's own "Toolbar buttons..." stays for the toolbar; the bar has its own choice.
+- Inbetween: I couldn't see which curve Maya refused in your scene; real-Maya test k (new) locks a curve on
+  purpose, and if "Cannot move keys" shows again, the warning names the curve - send me that line.
+
+Tested against the fake Maya (tests/test_5644.py, the full suite) and the bar's chooser with real Qt (offscreen,
+outside the suite). Not tested in real Maya: run the real-Maya tests again (all cases; h and i changed, k is
+new), and try Add / Remove inbetween in your shot.
+
 Gus_Rigtool 5.6.43 - Attach without 'divide by zero', the floating Animtool bar, the shelf's Attach, the Face kit tab
 
 Gus's log: thousands of "basicExpression has encountered a divide by zero" warnings after Attach, the IK wrist in

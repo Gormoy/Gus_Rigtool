@@ -1,0 +1,18 @@
+PASS the update: the toolbar turned off and hidden once
+PASS ...only once: turned on again in Settings, it stays on
+PASS the window still shows the toolbar when you want it
+PASS Settings: the bar opens with the window / Open the bar / Bar buttons...
+PASS the bar: Choose buttons... in its menu, a tick per tool
+PASS all ticked = every tool (new tools show up too)
+PASS case i: the keyed hand's held space follows the stick (its own keys on top)
+PASS case i: Time Slider stretches only checked with a window
+PASS case h: Ctrl+Z only checked when undo is on
+Gus Animtool - inbetween: these curves didn't move:
+  Locked_rotateY: Cannot move keys
+PASS Remove inbetween: the other curves still move (one refused)
+PASS ...moved the safe way (like Offset)
+PASS ...and it says which curve didn't move and why
+Gus Animtool - inbetween: these curves didn't move:
+  Locked_rotateY: Cannot move keys
+PASS every curve refused: says so plainly (nothing moved)
+13/13 passed
