@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.2 plan approved (Settings ⚙ button; favourites profiles + editing on the row and the bar; Skin
+  in the new look, 7 sub-pages Bind / Copy & mirror / Save / load / Clean / Weights / Cloth & jiggle / Fixes -
+  Fixes stays a Skin sub-page "as in the picture"). 5.7.1 pushed to main (Gus: "push it").
+
 - 2026-11-20: Animtool pitch answers: style A Studio is the default (B / C not asked for - keep as options to
   show again later); bar variants 1 row with labels, 2 compact row, 3 grid AND 4 the pie on a hotkey - in the pie
   each tool's NAME UNDER its icon; the bar needs a profile with ALL the tools too. Release order 5.8.0-5.8.5 OK.
@@ -51,8 +55,7 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.2: preview of the Skin area + the Settings button + favourites editing, then the plan, then build.
-- Push 5.7.1 to main (needs his explicit "push 5.7.1").
+- 5.7.2: being built (plan approved 2026-11-20).
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
 ## Ideas parked (not now)
