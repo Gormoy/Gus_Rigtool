@@ -1,0 +1,27 @@
+PASS nothing lost: every named control of today's Build, Face, Ribbon and Joints is on the new pages (over 500 controls)
+PASS nothing twice
+PASS every kind of control is drawn - the colour pickers too (Ribbon's control and mirror colours)
+PASS Build: the tools on top (Build, Face, Ribbon, Joints), Build's own pages under them
+PASS ...the same pages as the old window's tabs (1 Rig builder ... 4 Advanced)
+PASS ...click Animation: its page, the choice remembered as in the old window
+PASS ...Joints on the top row: no second row (it has one page)
+PASS Skin: Skin and Fixes on top, Skin's 6 pages under them
+PASS ...Fixes, then Skin on the top row: back on the Skin page you were on
+PASS nothing cut off: every Build page, 300 / 420 / 700 px, normal and wider font (buttons, boxes, drop-downs)
+PASS every Build page fits a narrow window (Gus's Maya at 326 px cut Rig builder and Ribbon: a closed card's hint never gave way) - no page needs more room than Controls > Behaviour, which fits
+PASS ...the check sees a drop-down that cuts its text
+PASS Ribbon: the control colour is a colour square (click it to choose)
+PASS ...the colour you choose is the one Ribbon builds with
+PASS a number you type (Make a plane > Length) is the one the tool reads (was the starting value)
+PASS sections inside a card: lighter panels, no number, not pinnable (Ribbon > Surface > Make a plane)
+  [info] added root (C). Place its guides.
+PASS pick a module (Root): its settings appear in the card, in the new look
+PASS ...change one: the tool sees it isn't applied yet
+  [info] C:root: root joint False -> True. Build picked to see it on the rig.
+PASS ...Apply: the tool's own Apply, and nothing left to apply
+PASS ...pick nothing: the card says to pick a module, the old fields gone (not left behind)
+  [info] rig built. Next: Build > Build (Home shows every step).
+PASS Build > Rig builder > Build: the builder's Build
+PASS Ribbon > Create: builds the ribbon with the page's settings (the colour you chose)
+PASS Joints > Create joints: makes the joints with the page's settings
+23/23 passed

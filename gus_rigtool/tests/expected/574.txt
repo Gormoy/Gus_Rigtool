@@ -1,0 +1,37 @@
+PASS the line above and below the lid (their ends meet at the corners): one loop round the eye, on the left
+PASS ...the lower one drawn the other way: still one loop (it's turned)
+PASS two curves along a cheek: side by side (lofted between them), same direction
+PASS ...one drawn the other way: it's turned before the loft
+PASS two rings round the eye: side by side, closed, the outer one turning the other way - turned
+PASS which side: left / right / the middle (the mouth)
+PASS the curves among the selection (not other things)
+PASS one curve selected: refused, saying how many - 'select the two curves the ribbon goes between (1 selected).'
+PASS lid lines: one closed curve through both (the corners once), then the thin band either side, as from an edge loop
+PASS side by side: copies lofted (the one drawn the other way turned first); your curves are kept
+  [info] cheek: L_cheek_Ribbon.
+PASS Make strip from two curves: the ribbon between your two curves
+PASS ...it remembers the curves it was made from (for Redo)
+  [info] facial made again:  (control shapes and skin weights kept).
+PASS ...Redo: made again from the same two curves
+PASS Face's own pages: Build the face · Ribbons & groups · Squash & expressions
+PASS Build the face: Setup, Eyes, Eyelids, Mouth, Brows, Facial strips - in order
+PASS ...the face map on top (only on this page)
+PASS each part: Make it from Two curves | Edges - Two curves first
+PASS ...Edges on the eyelids: remembered (for next time), the others still Two curves
+PASS Strips: two curves on the left selected - the light says they fit (side by side) and the step gets a yellow dot
+PASS ...the RIGHT side's curves: says to select the left (the right is mirrored)
+PASS ...one curve: says to select two
+PASS Mouth: the lines above and below the lips - their ends meet: one loop
+PASS Eyelids on Edges: 12 edges selected - ready
+PASS a part that's made: 'Made: L_cheek_Ribbon, R_cheek_Ribbon' and a tick on its step
+PASS ...the face map: strips green (made)
+PASS Make strip (Two curves): the tool's own Make, from the two selected curves
+PASS Ribbons & groups: Face ribbons, Group controls - no face map
+PASS Ribbon's own pages: Make a ribbon · Builds in the scene
+PASS ...the steps strip on top: Surface, Joints, Controls, Create
+PASS Surface: two curves selected, one drawn the other way - the light says so (Loft fixes it on copies)
+PASS ...the same way, 8 spans each: ready (a yellow dot on Surface, on the strip too)
+PASS Surface: Two curves (check, fix, loft) first and open; Make a plane, Edge to curve folded under it
+PASS Create and mirror: the rarer buttons under More (every one kept)
+PASS Builds in the scene: its own page (no steps strip)
+34/34 passed

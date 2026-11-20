@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Gus "yes to all": test outputs 570/571/573/574 accepted; 5.7.3.1 + 5.7.4 pushed to main; "two
+  curves" as built is what he wanted (ends meet = one loop, side by side = loft between). Next: Connect, Check,
+  Toolbox areas in the new look (preview first), then 5.8 Animtool.
+
 - 2026-11-20: 5.7.4 results: Real Maya 112 ok - case p (face from two curves) 8 ok, curve facts as expected (loft
   uses world positions, reverseCurve flips the start, periodic curve form 2). Test this release: 36 ok, 1 FAIL -
   the Gus_Animtool shelf is there but has none of its buttons (no Animtool code changed since 5.7.2.1, which
@@ -99,8 +103,7 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.4 (Face and Ribbon as steps, two curves) sent: waiting for his results (case p: face from two curves) and his
-  OK to push 5.7.3.1 + 5.7.4 to main. Test outputs 570/571/573/574 waiting for his OK too.
+- Next: Connect, Check, Toolbox areas in the new look (preview first); then the old window can go; then 5.8.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
