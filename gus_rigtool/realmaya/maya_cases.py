@@ -928,6 +928,63 @@ def body_shapes(rep):
             cmds.lockNode(sh, lock=False)
 
 
+def face_curves(rep):
+    """p. Face from two curves (5.7.4): the line above and below an eye (their ends meet) - one loop round it; two
+    curves along a cheek, one drawn the other way, under a moved group - the ribbon between them, where they are;
+    a strip made and mirrored from them; Redo from the same curves."""
+    import math
+    from gus_rigtool.core import face_kit as FK
+    rep.start("p. Face from two curves: the lid lines, a cheek strip, mirrored, Redo")
+    cmds.file(new=True, force=True)
+
+    def arc(name, sign):
+        return cmds.curve(degree=3, name=name, editPoint=[(4 + 2 * math.cos(a), 50 + sign * 1.0 * math.sin(a), 10)
+                                                          for a in [math.pi * i / 6 for i in range(7)]])
+    up, low = arc("Check_lid_up_crv", 1), arc("Check_lid_low_crv", -1)
+    how = FK.curve_pair([up, low])
+    rep.expect("the line above and below the eye: their ends meet - one loop, on the left", how["kind"] == "loop" and
+               how["side"] == "L", str(how))
+    srf, looped = FK.strip_from_curves([up, low], "Check_Eyelid_Ribbon")
+    box = cmds.exactWorldBoundingBox(srf)
+    rep.expect("...a ribbon round the eye: as wide as the lines (x 2 to 6), between them (y 49 to 51)",
+               1.6 < box[0] < 2.3 and 5.7 < box[3] < 6.4 and 48.7 < box[1] < 49.3 and 50.7 < box[4] < 51.3,
+               "x %.2f to %.2f, y %.2f to %.2f" % (box[0], box[3], box[1], box[4]))
+    rep.expect("...your two curves are still there", cmds.objExists(up) and cmds.objExists(low))
+    grp = cmds.group(empty=True, name="Check_curves_grp")
+    cmds.move(0, 0, 2, grp)
+    a = cmds.curve(degree=3, name="Check_cheek_a", editPoint=[(3 + 0.5 * i, 45 - 0.8 * i, 9) for i in range(5)])
+    b = cmds.curve(degree=3, name="Check_cheek_b", editPoint=[(3.6 + 0.5 * i, 45 - 0.8 * i, 9) for i in range(5)][::-1])
+    cmds.parent(a, b, grp, relative=True)
+    how = FK.curve_pair([a, b])
+    rep.expect("two curves along a cheek, one drawn the other way: side by side, it's turned", how["kind"] == "sides"
+               and how["reverse"], str(how))
+    srf2, _l = FK.strip_from_curves([a, b], "Check_cheek_Ribbon")
+    box = cmds.exactWorldBoundingBox(srf2)
+    rep.expect("...lofted between them where they are (the group moved them 2 forward: z 11)",
+               abs(box[2] - 11) < 0.05 and abs(box[5] - 11) < 0.05 and 2.9 < box[0] < 3.1 and 5.5 < box[3] < 5.7,
+               "x %.2f to %.2f, z %.2f to %.2f" % (box[0], box[3], box[2], box[5]))
+    try:
+        u = cmds.getAttr(cmds.listRelatives(srf2, shapes=True, fullPath=True)[0] + ".minMaxRangeU")[0]
+        p0 = cmds.pointOnSurface(srf2, parameterU=u[0], parameterV=0.5, position=True)
+        p1 = cmds.pointOnSurface(srf2, parameterU=u[1], parameterV=0.5, position=True)
+        rep.expect("...it runs along U, top to bottom of the cheek (no twist: one end at each end)",
+                   abs(p0[1] - p1[1]) > 2.5, "U ends at y %.2f / %.2f" % (p0[1], p1[1]))
+    except Exception as e:
+        rep.add(FAIL, "...it runs along U", "%s: %s" % (type(e).__name__, e))
+    for n in (srf, srf2):
+        cmds.delete(n)
+    try:
+        made = FK.facial(None, "check", "L", "cartoony", True, curves=[a, b])
+        ctrls = [c for m in made for _i, _o, c in FK.controls_of(m)]
+        rep.expect("Make strip from the two curves: L_ and R_check_Ribbon, controls on both sides",
+                   len(made) == 2 and len(ctrls) >= 4, "%s, %d controls" % (", ".join(made), len(ctrls)))
+        again = FK.redo(made[0])
+        rep.expect("Redo: made again from the same two curves", len(again) == 2,
+                   ", ".join(str(x) for x in again))
+    except Exception as e:
+        rep.add(FAIL, "Make strip from two curves", "%s: %s" % (type(e).__name__, e))
+
+
 def A_rel(n, holder):
     """n's world position in holder's space (what 'follows exactly' keeps)."""
     import maya.api.OpenMaya as om
@@ -979,6 +1036,7 @@ CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftov
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
          ("k. add / remove inbetween", inbetween_case), ("n. shape editing", shape_editing),
          ("o. shapes on the body", body_shapes),
+         ("p. face from two curves", face_curves),
          ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

@@ -90,6 +90,12 @@ def strip_from_edges(edges, name, width=None):
     """A thin NURBS ribbon along the edges (round them when they make a loop). Returns (ribbon, looped)."""
     cmds.select(_edges(edges), replace=True)
     curve = ribbon.edge_to_curve(degree=3, form="Best guess", name=name + "_crv")
+    return _band(curve, name, width)
+
+
+def _band(curve, name, width=None):
+    """A thin ribbon either side of one curve (inside / outside it when it's a loop); the curve is deleted.
+    Returns (ribbon, looped)."""
     shape = cmds.listRelatives(curve, shapes=True, fullPath=True)[0]
     looped = cmds.getAttr(shape + ".form") != 0
     cvs = cmds.ls(curve + ".cv[*]", flatten=True) or []
@@ -116,9 +122,120 @@ def strip_from_edges(edges, name, width=None):
     return _long(srf), looped
 
 
-def build_ribbon(name, edges, count, every, include_ends=True, ctrl_size=None):
-    """A ribbon rig on the edges (follicle joints, controls, the ribbon skinned to them). Returns the ribbon."""
-    srf, looped = strip_from_edges(edges, name)
+# ---------------------------------------------------------------------------
+# 5.7.4: from two curves (Gus: "for the eyelids and the facial part the best way is to select two curves and then
+# make the ribbon") - the edge way stays
+# ---------------------------------------------------------------------------
+
+def _curve_of(node):
+    """node (a curve, or its shape) as the curve's transform, else None."""
+    node = _long(node) or node
+    if not node or not cmds.objExists(node):
+        return None
+    if cmds.nodeType(node) == "nurbsCurve":
+        up = cmds.listRelatives(node, parent=True, fullPath=True) or []
+        return up[0] if up else None
+    if cmds.listRelatives(node, shapes=True, type="nurbsCurve", fullPath=True):
+        return node
+    return None
+
+
+def selected_curves(sel=None):
+    """The curves among sel (default: the selection), in order."""
+    out = []
+    for n in (sel if sel is not None else cmds.ls(selection=True, long=True) or []):
+        c = _curve_of(n)
+        if c and c not in out:
+            out.append(c)
+    return out
+
+
+def _curves(curves):
+    """The two curves to make a part from (given, else the selection)."""
+    got = selected_curves(curves if curves not in (None, True) else None)
+    if len(got) != 2:
+        raise RuntimeError("select the two curves the ribbon goes between (%d selected)." % len(got))
+    return got
+
+
+def _closed(curve):
+    shape = cmds.listRelatives(curve, shapes=True, type="nurbsCurve", fullPath=True)[0]
+    return cmds.getAttr(shape + ".form") != 0
+
+
+def _at(curve, t):
+    """The world position t (0..1) along the curve."""
+    return list(cmds.pointOnCurve(curve, parameter=t, turnOnPercentage=True, position=True))
+
+
+def _samples(curve, n=16):
+    return [_at(curve, i / float(n - 1 if not _closed(curve) else n)) for i in range(n)]
+
+
+def _turns(pts):
+    """Which way a loop of points turns (the sum of its cross products round its centre)."""
+    c = [sum(p[k] for p in pts) / len(pts) for k in range(3)]
+    tot = [0.0, 0.0, 0.0]
+    for i in range(len(pts)):
+        tot = [a + b for a, b in zip(tot, _cross(_sub(pts[i], c), _sub(pts[(i + 1) % len(pts)], c)))]
+    return tot
+
+
+def curve_pair(curves):
+    """How two curves make a ribbon: {'kind': 'loop' (their ends meet - the line above and below an eye, or round
+    the lips: one loop round it) or 'sides' (the ribbon's two long edges), 'reverse': the second runs the other
+    way, 'closed', 'side': 'L' / 'R' / 'C' (where their middle is), 'gap': how far apart they are}."""
+    a, b = curves
+    closed = _closed(a) and _closed(b)
+    pa, pb = _samples(a), _samples(b)
+    mid = [sum(p[k] for p in pa + pb) / len(pa + pb) for k in range(3)]
+    size = max(_len(_sub(p, mid)) for p in pa + pb) or 1.0
+    side = "C" if abs(mid[0]) < size * 0.25 else ("L" if mid[0] > 0 else "R")
+    if closed:
+        rev = sum(x * y for x, y in zip(_turns(pa), _turns(pb))) < 0
+        gap = min(_len(_sub(p, q)) for p in pa for q in pb)
+        return {"kind": "sides", "reverse": rev, "closed": True, "side": side, "gap": gap}
+    a0, a1, b0, b1 = pa[0], pa[-1], pb[0], pb[-1]
+    same = _len(_sub(a0, b0)) + _len(_sub(a1, b1))
+    other = _len(_sub(a0, b1)) + _len(_sub(a1, b0))
+    tol = size * 0.08
+    gap = min(same, other) / 2.0
+    if min(same, other) <= 2 * tol:
+        return {"kind": "loop", "reverse": other < same, "closed": False, "side": side, "gap": gap}
+    return {"kind": "sides", "reverse": other < same, "closed": False, "side": side, "gap": gap}
+
+
+def strip_from_curves(curves, name, width=None):
+    """The ribbon from two curves. Their ends meet (above and below an eye / the lips): one loop through both, the
+    ribbon a thin band either side of it (as from an edge loop). Side by side: lofted between them (the second one
+    turned when it runs the other way). The curves themselves are kept. Returns (ribbon, looped)."""
+    a, b = _curves(curves)
+    how = curve_pair([a, b])
+    if how["kind"] == "loop":
+        pts = _samples(a, 14)
+        back = list(reversed(_samples(b, 14))) if not how["reverse"] else _samples(b, 14)
+        pts += back[1:-1]                                       # the ends are where the two meet
+        n = len(pts)
+        loop = cmds.curve(degree=3, periodic=True, point=pts + pts[:3], knot=list(range(-2, n + 3)),
+                          name=name + "_crv")
+        return _band(loop, name, width)
+    ca = cmds.duplicate(a, name=name + "_crvA")[0]
+    cb = cmds.duplicate(b, name=name + "_crvB")[0]
+    for c in (ca, cb):
+        if cmds.listRelatives(c, parent=True):
+            cmds.parent(c, world=True)
+    if how["reverse"]:
+        cmds.reverseCurve(cb, constructionHistory=False, replaceOriginal=True)
+    srf = cmds.loft(ca, cb, degree=1, uniform=True, constructionHistory=False, name=name)[0]
+    cmds.delete(ca, cb)
+    ribbon.along_u(srf)
+    return _long(srf), how["closed"]
+
+
+def build_ribbon(name, edges, count, every, include_ends=True, ctrl_size=None, curves=None):
+    """A ribbon rig on the edges - or between two curves (curves) - (follicle joints, controls, the ribbon skinned
+    to them). Returns the ribbon."""
+    srf, looped = strip_from_curves(curves, name) if curves else strip_from_edges(edges, name)
     span = cmds.exactWorldBoundingBox(srf)
     size = max(span[3] - span[0], span[4] - span[1], span[5] - span[2]) or 1.0
     ribbon.build_rig(dict(ribbon.FACE_KIT), surface=srf, prefix=name, num_follicles=int(count),
@@ -244,18 +361,24 @@ def redo(srf, **changes):
         for n in extras + keys:
             if cmds.objExists(n):
                 cmds.delete(n)
-        edges = data.pop("edges")
+        edges = data.pop("edges", None) or []
+        crvs = [c for c in (data.pop("curves", None) or [])]
+        if crvs and len(selected_curves(crvs)) != 2:
+            raise RuntimeError("%s was made from two curves (%s): one is gone - make them again (or pick the "
+                               "part's edges and make it from edges)." % (part, ", ".join(crvs)))
+        crvs = crvs or None
         if part == "eyelids":
             made = eyelids(edges, data.pop("eye_ctrl"), side=data.get("side", "L"), style=data.get("style", "cartoony"),
-                           do_mirror=data.get("do_mirror", True))
+                           do_mirror=data.get("do_mirror", True), curves=crvs)
         elif part == "mouth":
-            made = [mouth(edges, data.pop("jaw"), data.get("style", "cartoony"), data.get("realistic_extras"))]
+            made = [mouth(edges, data.pop("jaw"), data.get("style", "cartoony"), data.get("realistic_extras"),
+                          curves=crvs)]
         elif part == "facial":
             made = facial(edges, data.get("name", "facial"), data.get("side", "L"), data.get("style", "cartoony"),
-                          data.get("do_mirror", True))
+                          data.get("do_mirror", True), curves=crvs)
         else:
             made = brows(edges, data.get("side", "L"), int(data.get("count", 3)), data.get("style", "cartoony"),
-                         data.get("do_mirror", True))
+                         data.get("do_mirror", True), curves=crvs)
         made = [m for m in (made or []) if m]
         for m in made:
             name = naming.short_name(m)
@@ -497,19 +620,32 @@ def blink_setup(srf, eye_ctrl, centre):
     return done
 
 
-def eyelids(edges, eye_ctrl, centre=None, side="L", style="cartoony", do_mirror=True):
-    """The eyelid ribbon round the eye (edges: the loop round the left eye), Blink on the eye control,
-    mirrored to the right eye control. Returns the ribbons."""
-    edges = _edges_now(edges)              # now: the selection changes while building
+def _source(edges, curves):
+    """(edges, curves) read now - the selection changes while building. curves=True: the two selected curves."""
+    if curves:
+        return [], _curves(curves)
+    return _edges_now(edges), None
+
+
+def _from(edges, curves):
+    """What a part remembers it was made from."""
+    return {"edges": _edge_list(edges), "curves": [naming.short_name(c) for c in curves] if curves else []}
+
+
+def eyelids(edges, eye_ctrl, centre=None, side="L", style="cartoony", do_mirror=True, curves=None):
+    """The eyelid ribbon round the eye (edges: the loop round the left eye; or curves: two curves - the line above
+    and below the lid, or two rings), Blink on the eye control, mirrored to the right eye control. Returns the
+    ribbons."""
+    edges, curves = _source(edges, curves)
     eye_ctrl = _long(eye_ctrl)
     if not eye_ctrl:
         raise RuntimeError("make the eyes first (or pick the eye control).")
     st = STYLES[style]
     name = "%s_Eyelid_Ribbon" % side
     with utils.undo_chunk("gusrigFaceEyelids"):
-        srf = build_ribbon(name, edges, st["eyelid"], st["eyelid_every"], include_ends=False)
-        _remember(srf, "eyelids", edges=_edge_list(edges), eye_ctrl=naming.short_name(eye_ctrl), side=side,
-                  style=style, do_mirror=do_mirror)
+        srf = build_ribbon(name, edges, st["eyelid"], st["eyelid_every"], include_ends=False, curves=curves)
+        _remember(srf, "eyelids", eye_ctrl=naming.short_name(eye_ctrl), side=side, style=style,
+                  do_mirror=do_mirror, **_from(edges, curves))
         centre = centre or _eye_centre(eye_ctrl)
         _float(eye_ctrl, "Blink", 0.0, 0.0, 1.0)
         _float(eye_ctrl, "Blink_Height", 0.5, 0.0, 1.0)
@@ -543,9 +679,10 @@ def _eye_centre(eye_ctrl):
 # mouth
 # ---------------------------------------------------------------------------
 
-def mouth(edges, jaw, style="cartoony", realistic_extras=None):
-    """One ribbon round the lips (centre), each control following the jaw by its height. Returns the ribbon."""
-    edges = _edges_now(edges)              # now: the selection changes while building
+def mouth(edges, jaw, style="cartoony", realistic_extras=None, curves=None):
+    """One ribbon round the lips (centre) - from the edge loop, or two curves (above and below the lips) - each
+    control following the jaw by its height. Returns the ribbon."""
+    edges, curves = _source(edges, curves)
     from gus_rigtool.core import follow
     jaw = _long(jaw)
     if not jaw:
@@ -553,9 +690,9 @@ def mouth(edges, jaw, style="cartoony", realistic_extras=None):
     st = STYLES[style]
     extras = style == "realistic" if realistic_extras is None else realistic_extras
     with utils.undo_chunk("gusrigFaceMouth"):
-        srf = build_ribbon("Mouth_ribbon", edges, st["mouth"], st["mouth_every"], include_ends=False)
-        _remember(srf, "mouth", edges=_edge_list(edges), jaw=naming.short_name(jaw), style=style,
-                  realistic_extras=realistic_extras)
+        srf = build_ribbon("Mouth_ribbon", edges, st["mouth"], st["mouth_every"], include_ends=False, curves=curves)
+        _remember(srf, "mouth", jaw=naming.short_name(jaw), style=style, realistic_extras=realistic_extras,
+                  **_from(edges, curves))
         try:                                                    # right half: mirror axes of the left half
             ribbon.mirror_sides(srf)
         except RuntimeError:
@@ -615,13 +752,15 @@ def _lip_extras(srf, ctrls, mid):
 # facial strips, brows
 # ---------------------------------------------------------------------------
 
-def facial(edges, name="facial", side="L", style="cartoony", do_mirror=True):
-    """A strip of the face (cheek, nasolabial line, round the eye) as a ribbon with controls; mirrored."""
-    edges = _edges_now(edges)              # now: the selection changes while building
+def facial(edges, name="facial", side="L", style="cartoony", do_mirror=True, curves=None):
+    """A strip of the face (cheek, nasolabial line, round the eye) as a ribbon with controls - from edges, or
+    between two curves; mirrored."""
+    edges, curves = _source(edges, curves)
     st = STYLES[style]
     with utils.undo_chunk("gusrigFaceStrip"):
-        srf = build_ribbon("%s_%s_Ribbon" % (side, name), edges, st["strip"], st["strip_every"], include_ends=True)
-        _remember(srf, "facial", edges=_edge_list(edges), name=name, side=side, style=style, do_mirror=do_mirror)
+        srf = build_ribbon("%s_%s_Ribbon" % (side, name), edges, st["strip"], st["strip_every"], include_ends=True,
+                           curves=curves)
+        _remember(srf, "facial", name=name, side=side, style=style, do_mirror=do_mirror, **_from(edges, curves))
         out = [srf]
         if do_mirror:
             twin = mirror(srf)
@@ -631,14 +770,14 @@ def facial(edges, name="facial", side="L", style="cartoony", do_mirror=True):
     return out
 
 
-def brows(edges, side="L", count=3, style="cartoony", do_mirror=True):
-    """A ribbon along the brow with count controls, under L_Brow_main_ctrl, under Brows_ctrl - a plain
-    hierarchy (moving a parent moves its children; nothing pins them)."""
-    edges = _edges_now(edges)              # now: the selection changes while building
+def brows(edges, side="L", count=3, style="cartoony", do_mirror=True, curves=None):
+    """A ribbon along the brow (edges, or between two curves) with count controls, under L_Brow_main_ctrl, under
+    Brows_ctrl - a plain hierarchy (moving a parent moves its children; nothing pins them)."""
+    edges, curves = _source(edges, curves)
     from gus_rigtool.builder import controls as BC
     with utils.undo_chunk("gusrigFaceBrows"):
-        srf = build_ribbon("%s_Brow_Ribbon" % side, edges, max(count * 3, 9), 3, include_ends=True)
-        _remember(srf, "brows", edges=_edge_list(edges), side=side, count=count, style=style, do_mirror=do_mirror)
+        srf = build_ribbon("%s_Brow_Ribbon" % side, edges, max(count * 3, 9), 3, include_ends=True, curves=curves)
+        _remember(srf, "brows", side=side, count=count, style=style, do_mirror=do_mirror, **_from(edges, curves))
         made = [srf]
         if do_mirror:
             twin = mirror(srf)

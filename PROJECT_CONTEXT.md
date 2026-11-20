@@ -299,6 +299,13 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   value1..4); nested frameLayouts = inner cards (property inner, no number/pin, not in page.cards); combos
   AdjustToContents + window._combo_fits in cut_off. build_tab, build_form, build_existing, face_kit_tool,
   ribbon_tool, joint_chain use the proxy cmds. Next: 5.7.4 Face/Ribbon steps + two curves.
+- **5.7.3.1**: widgets.Peek (a closed card's hint gives way: Maya at 326 px cut Rig builder / Ribbon).
+- **5.7.4**: face_kit: selected_curves, curve_pair (loop = ends meet / sides; reverse; side L/R/C), strip_from_curves
+  (loop -> periodic curve -> _band; sides -> loft of world-parented copies), parts take curves= and remember them
+  (redo). face_kit_tool: from_<part> settings, _part_light / part_states, ui.step_status lights (levels made /
+  ready). ui.step_light / set_light (both windows). Card.set_state -> tick / dot. window.SPLITS face + ribbon,
+  FaceMap card (Build the face), StepStrip (Make a ribbon), Area._update_steps on selection. ribbon_tool:
+  _curves_check, step_states, loft panel first, Loft options, More. realmaya case p + fact loft_curves.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

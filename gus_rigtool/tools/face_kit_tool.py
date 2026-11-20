@@ -15,7 +15,19 @@ DEFAULTS = {"style": "cartoony", "head": "", "jaw": "", "mirror": True, "extras"
             "strip_name": "facial", "mouth_ribbon": "", "face_ribbons": "", "group_weight": 0.5,
             "squash_meshes": "", "squash_fade": 0.0, "squash_curves": True,
             "pose_holder": "Mouth_main_ctrl", "pose_name": "Smile", "pose_split": True,
-            "pose_keep_on": True}
+            "pose_keep_on": True,
+            # 5.7.4: each part made from two curves (Gus's way) or edges - remembered
+            "from_eyelids": "curves", "from_mouth": "curves", "from_brows": "curves", "from_strip": "curves"}
+FROM = ("curves", "edges")
+PARTS = ("eyelids", "mouth", "brows", "strip")
+# what to select for each part, both ways
+NEED = {"eyelids": ("two curves: the line above and below the LEFT eye (their ends meet at the corners), or two "
+                    "rings round it", "the edge loop round the LEFT eye"),
+        "mouth": ("two curves: the line above and below the lips (their ends meet at the corners)",
+                  "the edge loop round the lips"),
+        "brows": ("two curves along the LEFT brow, one each side of it", "the edges along the LEFT brow"),
+        "strip": ("two curves along the strip, one each side of it (LEFT side)", "the edges along the strip "
+                  "(LEFT side)")}
 _P, N, _w, _guard = ui.tool_helpers("p_face_", TOOL)
 
 
@@ -31,8 +43,112 @@ def _save(*_):
     s["mirror"] = cmds.checkBox(N("Mirror"), query=True, value=True)
     s["extras"] = cmds.checkBox(N("Extras"), query=True, value=True)
     s["brow_count"] = cmds.intField(N("BrowCount"), query=True, value=True)
+    for part in PARTS:
+        if cmds.radioButtonGrp(N("From_" + part), exists=True):
+            s["from_" + part] = FROM[cmds.radioButtonGrp(N("From_" + part), query=True, select=True) - 1]
     utils.save_setting(SETTINGS_KEY, s)
+    ui.refresh_light(N("Light"))
+    for part in PARTS:
+        ui.refresh_light(N("Step_" + part))
     return s
+
+
+def _curves_or_edges(s, part):
+    """curves=True (the two selected curves) or None (edges) - how this part is made (its 'Make it from')."""
+    return True if s.get("from_" + part, "curves") == "curves" else None
+
+
+# ---------------------------------------------------------------------------
+# 5.7.4: each part's state (the face map, the steps' lights)
+# ---------------------------------------------------------------------------
+
+def _made_parts():
+    """{part: [ribbon short names]} the Face tab made in this scene."""
+    out = {}
+    try:
+        nodes = cmds.ls("*." + face_kit.PART_ATTR, objectsOnly=True, long=True) or []
+    except (RuntimeError, TypeError):
+        nodes = []
+    for n in nodes:
+        data = face_kit.part_of(n) or {}
+        part = {"facial": "strip"}.get(data.get("part"), data.get("part"))
+        if part:
+            out.setdefault(part, []).append(naming.short_name(n))
+    return out
+
+
+def _eyes_made():
+    from gus_rigtool.builder import names
+    return bool(cmds.ls(names.make("L", "Eye", "ctrl")))
+
+
+def part_states():
+    """{'setup' | 'eyes' | 'eyelids' | 'mouth' | 'brows' | 'strip': 'made' | 'ready' | 'todo'}."""
+    s = _s()
+    made = _made_parts()
+    out = {"setup": "made" if s.get("head") and cmds.objExists(s["head"]) else "todo",
+           "eyes": "made" if _eyes_made() else "todo"}
+    for part in PARTS:
+        level, _t = _part_light(part)
+        out[part] = "made" if made.get(part) else ("ready" if level == "ready" else "todo")
+    return out
+
+
+def _part_light(part):
+    """(level, text) of a part's step: made, ready (the selection fits), warn (it doesn't), idle (what to select)."""
+    s = _s()
+    how = s.get("from_" + part, "curves")
+    need = NEED[part][0 if how == "curves" else 1]
+    made = _made_parts().get(part, [])
+    if part == "eyelids" and not _eyes_made():
+        return "idle", "Make the eyes first (step 2) - the lids close on the eye control's Blink."
+    sel = cmds.ls(selection=True, long=True, flatten=True) or []
+    again = "  (made already: %s - Redo it in Ribbons & groups)" % ", ".join(made) if made else ""
+    if how == "curves":
+        crvs = face_kit.selected_curves([x for x in sel if "." not in x])
+        if len(crvs) == 2:
+            names = ", ".join(naming.short_name(c) for c in crvs)
+            try:
+                how2 = face_kit.curve_pair(crvs)
+            except Exception:
+                return "ready", "2 curves selected: %s.%s" % (names, again)
+            if part != "mouth" and how2["side"] == "R":
+                return "warn", "2 curves on the RIGHT side - select the LEFT side's (the right one is mirrored)."
+            if part == "mouth" and how2["side"] != "C":
+                return "warn", "the mouth's two curves go across the middle (above and below the lips)."
+            what = ("their ends meet: one loop round it" if how2["kind"] == "loop" else
+                    "two rings" if how2["closed"] else "side by side: the ribbon between them")
+            turn = " (the second runs the other way - turned for you)" if how2["reverse"] and \
+                how2["kind"] == "sides" else ""
+            return "ready", "2 curves: %s - %s%s.%s" % (names, what, turn, again)
+        if crvs:
+            return "warn", "%d curve selected - select %s." % (len(crvs), need)
+    else:
+        edges = [e for e in sel if ".e[" in e]
+        if len(edges) >= 3:
+            return "ready", "%d edges selected.%s" % (len(edges), again)
+        if edges:
+            return "warn", "%d edges - select %s." % (len(edges), need)
+    if made:
+        return "made", "Made: %s." % ", ".join(made)
+    return "idle", "Select %s." % need
+
+
+def _eyes_light():
+    from gus_rigtool.builder import names
+    if _eyes_made():
+        return "made", "Made: %s, %s (Blink on each)." % (names.make("L", "Eye", "ctrl"), names.make("R", "Eye", "ctrl"))
+    sel = [x for x in cmds.ls(selection=True) or [] if "." not in x]
+    if sel:
+        return "ready", "%s selected - the LEFT eye mesh?" % naming.short_name(sel[0])
+    return "idle", "Select the LEFT eye mesh."
+
+
+def _setup_light():
+    s = _s()
+    if s.get("head") and cmds.objExists(s["head"]):
+        return "made", "Head: %s  ·  Jaw: %s  ·  %s" % (s["head"], s.get("jaw") or "(none)", s["style"].title())
+    return "idle", "Pick the head joint (select it, press <)."
 
 
 def _pick(key, kind):
@@ -46,12 +162,16 @@ def _pick(key, kind):
 def _light():
     sel = cmds.ls(selection=True, flatten=True) or []
     edges = [e for e in sel if ".e[" in e]
+    crvs = face_kit.selected_curves([x for x in sel if "." not in x])
+    if len(crvs) == 2:
+        return "ok", "2 curves selected: make the eyelids, mouth, brows or a strip between them (each step says if "
+        "they fit)."
     if edges:
         return "ok", "%d edges selected: make the eyelids, mouth, brows or a strip from them." % len(edges)
     s = _s()
     if not s.get("head"):
         return "warn", "Pick the head joint first (select it, press < next to Head)."
-    return "idle", "Select the edges round the LEFT eye / the lips / along the LEFT brow, then the matching button."
+    return "idle", "Each step says what to select: two curves (or edges) for the eyelids, mouth, brows, strips."
 
 
 def make_eyes(*_):
@@ -430,25 +550,28 @@ def _eye_ctrl():
 def make_eyelids(*_):
     s = _save()
     face_kit.group(s["head"] or None)
-    face_kit.eyelids(None, _eye_ctrl(), side="L", style=s["style"], do_mirror=s["mirror"])
+    face_kit.eyelids(None, _eye_ctrl(), side="L", style=s["style"], do_mirror=s["mirror"],
+                     curves=_curves_or_edges(s, "eyelids"))
 
 
 def make_mouth(*_):
     s = _save()
     face_kit.group(s["head"] or None)
-    face_kit.mouth(None, s["jaw"], style=s["style"], realistic_extras=s["extras"] or s["style"] == "realistic")
+    face_kit.mouth(None, s["jaw"], style=s["style"], realistic_extras=s["extras"] or s["style"] == "realistic",
+                   curves=_curves_or_edges(s, "mouth"))
 
 
 def make_brows(*_):
     s = _save()
     face_kit.group(s["head"] or None)
-    face_kit.brows(None, "L", s["brow_count"], s["style"], s["mirror"])
+    face_kit.brows(None, "L", s["brow_count"], s["style"], s["mirror"], curves=_curves_or_edges(s, "brows"))
 
 
 def make_strip(*_):
     s = _save()
     face_kit.group(s["head"] or None)
-    face_kit.facial(None, naming.short_name(s["strip_name"] or "facial"), "L", s["style"], s["mirror"])
+    face_kit.facial(None, naming.short_name(s["strip_name"] or "facial"), "L", s["style"], s["mirror"],
+                    curves=_curves_or_edges(s, "strip"))
 
 
 _ribbon_rows = {}
@@ -511,6 +634,13 @@ def select_ribbon_controls(*_):
     cmds.select(ctrls, replace=True)
 
 
+def _from_row(s, part):
+    """'Make it from: Two curves | Edges' (remembered per part)."""
+    cmds.radioButtonGrp(N("From_" + part), label="Make it from", labelArray2=["Two curves", "Edges"],
+                        numberOfRadioButtons=2, select=FROM.index(s.get("from_" + part, "curves")) + 1,
+                        columnWidth3=(90, 100, 70), changeCommand=_w(_save))
+
+
 def build(prefix="p_face_"):
     _P["p"] = prefix
     s = _s()
@@ -531,11 +661,13 @@ def build(prefix="p_face_"):
         cmds.setParent("..")
     cmds.checkBox(N("Mirror"), label="Mirror the left side to the right", value=bool(s["mirror"]),
                   changeCommand=_w(_save))
+    ui.step_status(N("Step_setup"), _setup_light, _w)
     ui.end_section()
 
     ui.section("Eyes", step=2, help_text="Select the LEFT eye mesh: L / R_Eye joints at the eye centres (under the "
                "head), aimed at L / R_Eye_ctrl under Eyes_ctrl (head / world space). Blink and Blink_Height go on "
                "each eye control.")
+    ui.step_status(N("Step_eyes"), _eyes_light, _w)
     ui.main_button("Make eyes", _w(_guard(make_eyes)), "From the selected left eye mesh.")
     cmds.button(label="Aim existing eye joints", height=26, command=_w(_guard(aim_eyes)),
                 annotation="Your rig has eye joints already (skinned): select the two - they get aimed at L / "
@@ -543,39 +675,54 @@ def build(prefix="p_face_"):
                            "joints and the skin stay as they are.")
     ui.end_section()
 
-    ui.section("Eyelids", step=3, help_text="Select the edge loop round the LEFT eye: a ribbon with follicle joints "
-               "and controls (L_Eyelid_Ribbon). Blink on L_Eye_ctrl closes the lids (set driven keys on each "
-               "control's _driven group - edit them in the Graph Editor); Blink_Height moves where they meet. "
-               "Mirrored to the right eye.")
-    ui.main_button("Make eyelids", _w(_guard(make_eyelids)), "From the selected edge loop round the left eye.")
+    ui.section("Eyelids", step=3, help_text="Two curves (you place them): the line above and below the LEFT eye - "
+               "their ends meet at the corners - or two rings round it; or the edge loop round the LEFT eye. A "
+               "ribbon with follicle joints and controls (L_Eyelid_Ribbon). Blink on L_Eye_ctrl closes the lids "
+               "(set driven keys on each control's _driven group - edit them in the Graph Editor); Blink_Height "
+               "moves where they meet. Mirrored to the right eye.")
+    _from_row(s, "eyelids")
+    ui.step_status(N("Step_eyelids"), lambda: _part_light("eyelids"), _w)
+    ui.main_button("Make eyelids", _w(_guard(make_eyelids)), "From your two curves (or the edge loop) round the "
+                   "left eye; mirrored to the right. One undo.")
     ui.end_section()
 
-    ui.section("Mouth", step=4, help_text="Select the edge loop round the lips: one ribbon (Mouth_ribbon) with "
+    ui.section("Mouth", step=4, help_text="Two curves: the line above and below the lips (their ends meet at the "
+               "corners); or the edge loop round the lips. One ribbon (Mouth_ribbon) with "
                "controls all round. Each control follows the jaw by its height: lower lip 1, corners 0.5, upper lip "
                "0 (a 'follow' attribute on each - Follow groups, no constraints on the controls). Realistic (or the "
                "box): Mouth_ctrl with upper_roll, lower_roll and sticky.")
     cmds.checkBox(N("Extras"), label="Lip roll and sticky lips (always on for Realistic)", value=bool(s["extras"]),
                   changeCommand=_w(_save))
-    ui.main_button("Make mouth", _w(_guard(make_mouth)), "From the selected edge loop round the lips.")
+    _from_row(s, "mouth")
+    ui.step_status(N("Step_mouth"), lambda: _part_light("mouth"), _w)
+    ui.main_button("Make mouth", _w(_guard(make_mouth)), "From your two curves (or the edge loop) round the lips.")
     ui.end_section()
 
-    ui.section("Brows", step=5, help_text="Select the edges along the LEFT brow: a ribbon with this many controls, "
+    ui.section("Brows", step=5, help_text="Two curves along the LEFT brow, one each side of it (or its edges): a "
+               "ribbon with this many controls, "
                "under L_Brow_main_ctrl, under Brows_ctrl - a plain hierarchy: moving the main moves the "
                "others (nothing pins them). Mirrored.")
     cmds.rowLayout(numberOfColumns=2, columnWidth2=(110, 50))
     cmds.text(label="Controls per brow", align="right")
     cmds.intField(N("BrowCount"), value=int(s["brow_count"]), minValue=2, maxValue=9, step=1, changeCommand=_w(_save))
     cmds.setParent("..")
-    ui.main_button("Make brows", _w(_guard(make_brows)), "From the selected edges along the left brow.")
+    _from_row(s, "brows")
+    ui.step_status(N("Step_brows"), lambda: _part_light("brows"), _w)
+    ui.main_button("Make brows", _w(_guard(make_brows)), "From your two curves (or the edges) along the left "
+                   "brow; mirrored.")
     ui.end_section()
 
     ui.section("Facial strips", step=6, help_text="Any strip of the face as a ribbon with controls: cheek, "
-               "nasolabial line, under the eye... Select the edges on the LEFT side, name it, make it. Mirrored.")
+               "nasolabial line, under the eye... Select two curves along it, one each side (or its edges) on the "
+               "LEFT side, name it, make it. Mirrored.")
     cmds.rowLayout(numberOfColumns=2, adjustableColumn=2, columnWidth2=(60, 200))
     cmds.text(label="Name", align="right")
     cmds.textField(N("strip_name"), text=s["strip_name"], changeCommand=_w(_save))
     cmds.setParent("..")
-    ui.main_button("Make strip", _w(_guard(make_strip)), "From the selected edges on the left side.")
+    _from_row(s, "strip")
+    ui.step_status(N("Step_strip"), lambda: _part_light("strip"), _w)
+    ui.main_button("Make strip", _w(_guard(make_strip)), "From your two curves (or the edges) on the left side; "
+                   "mirrored.")
     ui.end_section()
 
     ui.section("Face ribbons", step=7, help_text="Every ribbon the Face tab made. Open in Ribbon tab: the Ribbon tab "
@@ -588,7 +735,7 @@ def build(prefix="p_face_"):
     cmds.button(label="Select controls", command=_w(_guard(select_ribbon_controls)))
     cmds.setParent("..")
     cmds.button(label="Redo this part (Style / brow count from above)", height=26, command=_w(_guard(redo_part)),
-                annotation="Make the picked part again from the edges it was made on - e.g. Cartoony -> Realistic, "
+                annotation="Make the picked part again from the curves or edges it was made on - e.g. Cartoony -> Realistic, "
                            "or more brow controls. Control shapes and skin weights are kept. One undo.")
     ui.end_section()
     refresh_ribbons()

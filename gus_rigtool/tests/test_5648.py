@@ -170,7 +170,7 @@ check("Test this release: click away waits for Maya's idle queue; if Maya still 
 sys.path.insert(0, os.path.join(ROOT, ".."))
 from gus_rigtool.realmaya import maya_facts as MF
 check("Maya facts: curve -replace on plain / history / locked / referenced controls",
-      MF.FACTS[-1].__name__ == "curve_replace")
+      "curve_replace" in [x.__name__ for x in MF.FACTS])
 cases = open(os.path.join(ROOT, "realmaya", "maya_cases.py")).read()
 check("real-Maya case o: shapes on the body", '("o. shapes on the body", body_shapes)' in cases)
 check("the fake Maya: ls([], type=...) lists nothing, like Maya (5.6.47 facts)",

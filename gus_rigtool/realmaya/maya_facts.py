@@ -234,8 +234,44 @@ def curve_replace(rep):
             pass
 
 
+def loft_curves(rep):
+    """5.7.4 (Face and Ribbon from two curves): the curve commands the tool uses - a point a fraction along a curve,
+    a closed curve made from points, turning a curve round, a loft between two curves under a moved group."""
+    import math
+    arc = cmds.curve(degree=3, editPoint=[(math.cos(a), math.sin(a), 0) for a in (0, 0.8, 1.6, 2.4, 3.14159)],
+                     name="gusFact_arc")
+    try:
+        mid = cmds.pointOnCurve(arc, parameter=0.5, turnOnPercentage=True, position=True)
+        rep.add(INFO, "pointOnCurve: half way along a half circle (percentage on)",
+                "[%.3f, %.3f, %.3f] - expected about [0, 1, 0]" % tuple(mid))
+        start = cmds.pointOnCurve(arc, parameter=0.0, turnOnPercentage=True, position=True)
+        cmds.reverseCurve(arc, constructionHistory=False, replaceOriginal=True)
+        start2 = cmds.pointOnCurve(arc, parameter=0.0, turnOnPercentage=True, position=True)
+        rep.add(INFO, "reverseCurve -replaceOriginal: where it starts, before / after",
+                "[%.2f, %.2f, %.2f] / [%.2f, %.2f, %.2f]" % (tuple(start) + tuple(start2)))
+        pts = [(math.cos(2 * math.pi * i / 8), math.sin(2 * math.pi * i / 8), 0) for i in range(8)]
+        loop = cmds.curve(degree=3, periodic=True, point=pts + pts[:3], knot=list(range(-2, 8 + 3)), name="gusFact_loop")
+        shape = cmds.listRelatives(loop, shapes=True, fullPath=True)[0]
+        rep.add(INFO, "a closed curve from 8 points (periodic, the first 3 again)",
+                "form %s (2 = periodic), %d spans" % (cmds.getAttr(shape + ".form"), cmds.getAttr(shape + ".spans")))
+        grp = cmds.group(empty=True, name="gusFact_moved")
+        cmds.move(0, 10, 0, grp)
+        a = cmds.curve(degree=1, point=[(0, 0, 0), (4, 0, 0)], name="gusFact_a")
+        b = cmds.curve(degree=1, point=[(0, 1, 0), (4, 1, 0)], name="gusFact_b")
+        cmds.parent(a, b, grp, relative=True)
+        srf = cmds.loft(a, b, degree=1, uniform=True, constructionHistory=False, name="gusFact_loft")[0]
+        box = cmds.exactWorldBoundingBox(srf)
+        rep.add(INFO, "loft of two curves under a group moved 10 up: the surface's height",
+                "%.2f to %.2f (10 to 11 = it uses where the curves are in the world)" % (box[1], box[4]))
+        for n in (srf, grp, loop):
+            cmds.delete(n)
+    finally:
+        if cmds.objExists(arc):
+            cmds.delete(arc)
+
+
 FACTS = [zero_threshold, empty_ls, undo_state, key_moves, mesh_points, controllers, bookmarks, node_types,
-         curve_replace]
+         curve_replace, loft_curves]
 
 
 def facts(rep):

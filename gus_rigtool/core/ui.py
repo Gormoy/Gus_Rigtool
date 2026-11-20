@@ -29,7 +29,10 @@ STATUS_BG = {
     "ok": (0.20, 0.36, 0.22),
     "warn": (0.52, 0.36, 0.10),
 }
-LIGHT_BG = {"ok": (0.20, 0.36, 0.22), "warn": (0.52, 0.36, 0.10), "idle": (0.26, 0.26, 0.26)}
+LIGHT_BG = {"ok": (0.20, 0.36, 0.22), "warn": (0.52, 0.36, 0.10), "idle": (0.26, 0.26, 0.26),
+            # 5.7.4 steps (Face, Ribbon): made (the step is done - its number becomes a tick in the new window),
+            # ready (what you selected fits: press its button - a yellow dot)
+            "made": (0.20, 0.36, 0.22), "ready": (0.45, 0.40, 0.12)}
 
 MAIN_KEY = "main"
 SPEED_LIMIT = 3000          # live counts / previews skip themselves above this many nodes
@@ -262,6 +265,41 @@ def row(count, width=80):
 # ---------------------------------------------------------------------------
 # status light (what the tool will act on, updated with the selection)
 # ---------------------------------------------------------------------------
+
+def step_light(name, height=20):
+    """A step's light inside its section (5.7.4: Face, Ribbon) - set it with set_light()."""
+    from gus_rigtool.newui import proxy
+    if proxy._REC["on"] is not None:                    # the new window: a light like status_light's
+        return cmds.text(name, label="", align="left", wordWrap=True, _light=True)
+    return cmds.text(name, label="", align="left", height=height, enableBackground=True, wordWrap=True, width=1,
+                     backgroundColor=LIGHT_BG["idle"])           # width 1: it wraps, the page doesn't grow
+
+
+def set_light(name, level, text):
+    """A light's level and text, in either window (level: ok, warn, idle, made, ready)."""
+    from gus_rigtool.newui import proxy
+    if proxy.short(name) in proxy.REGISTRY or proxy._REC["on"] is not None:
+        return cmds.text(name, edit=True, label="  " + text, _level=level)
+    if cmds.text(name, exists=True):
+        cmds.text(name, edit=True, label="  " + text, backgroundColor=LIGHT_BG.get(level, LIGHT_BG["idle"]))
+
+
+def step_status(name, compute, bind_fn):
+    """A step's light that updates on every selection change, like status_light (5.7.4)."""
+    ctrl = step_light(name)
+
+    def update(*_):
+        try:
+            level, text = compute()
+        except Exception as e:
+            level, text = "warn", "(%s)" % e
+        set_light(name, level, text)
+    bound = bind_fn(update)
+    _lights[name] = bound
+    on_selection(name, bound)
+    bound()
+    return ctrl
+
 
 def status_light(name, compute, bind_fn):
     """

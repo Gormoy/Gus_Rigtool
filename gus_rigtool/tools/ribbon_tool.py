@@ -129,9 +129,44 @@ def _light():
 
 
 def _set_step(name, level, text):
-    ctrl = N(name)
-    if cmds.text(ctrl, exists=True):
-        cmds.text(ctrl, edit=True, label="  " + text, backgroundColor=ui.LIGHT_BG.get(level, ui.LIGHT_BG["idle"]))
+    ui.set_light(N(name), level, text)          # 5.7.4: coloured in the new window too
+
+
+def _curves_check():
+    """(level, text) for the selected curves (2 or more: the loft's), or None. 5.7.4: Surface checks them."""
+    from gus_rigtool.core import face_kit
+    crvs = face_kit.selected_curves()
+    if len(crvs) < 2:
+        return None
+    names = ", ".join(naming.short_name(c) for c in crvs[:4]) + (" ..." if len(crvs) > 4 else "")
+    spans = []
+    for c in crvs:
+        shape = cmds.listRelatives(c, shapes=True, type="nurbsCurve", fullPath=True)[0]
+        spans.append(int(cmds.getAttr(shape + ".spans")))
+    problems = []
+    for a, b in zip(crvs, crvs[1:]):
+        try:
+            if face_kit.curve_pair([a, b])["reverse"]:
+                problems.append("%s runs the other way" % naming.short_name(b))
+        except Exception:
+            pass
+    if len(set(spans)) > 1:
+        problems.append("spans differ (%s)" % " / ".join(str(x) for x in spans))
+    if problems:
+        return "warn", "%d curves: %s - %s. Loft fixes it on copies when 'Check and fix the curves first' is on." % (
+            len(crvs), names, "; ".join(problems))
+    return "ready", "%d curves: %s - same direction, %d spans each. Loft them (below)." % (len(crvs), names, spans[0])
+
+
+def step_states():
+    """Surface, Joints, Controls, Create: made / ready / on / todo (the new window's step strip)."""
+    surf = _target_surface()
+    if not surf:
+        check = _curves_check()
+        return ["ready" if check and check[0] == "ready" else "on", "todo", "todo", "todo"]
+    info = ribbon.current_ribbon() or {}
+    built = bool(info.get("built")) and info.get("surface") == surf
+    return ["made", "made" if built else "todo", "made" if built else "todo", "made" if built else "on"]
 
 
 def refresh(*_):
@@ -150,7 +185,12 @@ def refresh(*_):
 
     # 1. surface
     if not surf:
-        _set_step("L1", "warn", "Select a NURBS ribbon, or make one below.")
+        check = _curves_check()
+        if check:
+            _set_step("L1", check[0], check[1])
+        else:
+            _set_step("L1", "idle", "Select a NURBS ribbon - or two curves to loft (below), or make one under "
+                                    "Make a plane / Edge to curve.")
         _set_step("L2", "idle", "")
         _set_step("L3", "idle", "")
         cmds.text(N("Summary"), edit=True, label="Select a ribbon to see what will be built.")
@@ -158,7 +198,7 @@ def refresh(*_):
         return
     try:
         level, lines = ribbon.surface_check(surf)
-        _set_step("L1", level, "%s: %s" % (naming.short_name(surf), " | ".join(lines)))
+        _set_step("L1", "made" if level == "ok" else level, "%s: %s" % (naming.short_name(surf), " | ".join(lines)))
     except Exception as e:
         _set_step("L1", "warn", "%s: %s" % (naming.short_name(surf), e))
         return
@@ -591,8 +631,7 @@ def _labeled(label, width=150):
 
 
 def _step_light(name):
-    cmds.text(N(name), label="", align="left", height=20, enableBackground=True,
-              backgroundColor=ui.LIGHT_BG["idle"])
+    ui.step_light(N(name))
 
 
 def build(prefix="p_ribbon_"):
@@ -609,8 +648,37 @@ def build(prefix="p_ribbon_"):
     # ------------------------------------------------------------ 1 surface
     ui.section("Surface", step=1, help_text="Select the NURBS ribbon. The light shows which way it runs (U "
                "must run along the length), whether it twists, and where its front faces. No ribbon yet? "
-               "Make a plane, or turn edges into curves and loft them below.")
+               "Select two curves (or more) and loft them below - the light checks they run the same way - or "
+               "make a plane, or turn edges into curves.")
     _step_light("L1")
+    cmds.frameLayout(label="Two curves: check, fix, loft", collapsable=True, collapse=False, marginWidth=6,
+                     marginHeight=4)
+    cmds.columnLayout(adjustableColumn=True, rowSpacing=3)
+    ui.note("Select the curves in loft order. Check reports problems; Fix changes the selected curves.")
+    ui.row(2, 170)
+    cmds.button(label="Check curves", command=_w(_surface_action(_check)))
+    cmds.button(label="Fix curves", command=_w(_surface_action(_fix)))
+    cmds.setParent("..")
+    report = cmds.scrollField(N("Report"), editable=False, wordWrap=True, height=80, text="")
+    ribbon.REPORT["ctrl"] = report
+    cmds.textFieldGrp(N("LfName"), label="Name", text="ribbon", columnWidth2=(150, 150))
+    cmds.button(label="Loft selected curves", height=28, command=_w(_surface_action(_loft)))
+    cmds.frameLayout(label="Loft options", collapsable=True, collapse=True, marginWidth=6, marginHeight=4)
+    cmds.columnLayout(adjustableColumn=True, rowSpacing=3)
+    cmds.checkBox(N("LfUniform"), label="Uniform", value=True)
+    cmds.checkBox(N("LfAuto"), label="Auto reverse", value=True)
+    cmds.checkBox(N("LfClose"), label="Close", value=False)
+    _menu_grp("LfDeg", "Surface degree", list(ribbon.DEGREES), "Linear")
+    cmds.intFieldGrp(N("LfSpans"), label="Section spans", value1=1, columnWidth2=(150, 80))
+    _menu_grp("LfRange", "Curve range", ["Complete", "Partial"], "Complete")
+    cmds.checkBox(N("LfAlongU"), label="Make the ribbon run along U (needed to build)", value=True)
+    cmds.checkBox(N("LfFlip"), label="Flip normals", value=False)
+    cmds.checkBox(N("LfFix"), label="Check and fix the curves first (on copies)", value=True,
+                  annotation="On copies of your curves: the originals are untouched.")
+    cmds.setParent("..")
+    cmds.setParent("..")
+    cmds.setParent("..")
+    cmds.setParent("..")
     cmds.frameLayout(label="Make a plane", collapsable=True, collapse=True, marginWidth=6, marginHeight=4)
     cmds.columnLayout(adjustableColumn=True, rowSpacing=3)
     cmds.textFieldGrp(N("PlName"), label="Name", text="ribbon", columnWidth2=(150, 150))
@@ -638,29 +706,6 @@ def build(prefix="p_ribbon_"):
     cmds.setParent("..")
     cmds.setParent("..")
 
-    cmds.frameLayout(label="Check / fix curves, loft", collapsable=True, collapse=True, marginWidth=6,
-                     marginHeight=4)
-    cmds.columnLayout(adjustableColumn=True, rowSpacing=3)
-    ui.note("Select the curves in loft order. Check reports problems; Fix changes the selected curves.")
-    ui.row(2, 170)
-    cmds.button(label="Check curves", command=_w(_surface_action(_check)))
-    cmds.button(label="Fix curves", command=_w(_surface_action(_fix)))
-    cmds.setParent("..")
-    report = cmds.scrollField(N("Report"), editable=False, wordWrap=True, height=80, text="")
-    ribbon.REPORT["ctrl"] = report
-    cmds.textFieldGrp(N("LfName"), label="Name", text="ribbon", columnWidth2=(150, 150))
-    cmds.checkBox(N("LfUniform"), label="Uniform", value=True)
-    cmds.checkBox(N("LfAuto"), label="Auto reverse", value=True)
-    cmds.checkBox(N("LfClose"), label="Close", value=False)
-    _menu_grp("LfDeg", "Surface degree", list(ribbon.DEGREES), "Linear")
-    cmds.intFieldGrp(N("LfSpans"), label="Section spans", value1=1, columnWidth2=(150, 80))
-    _menu_grp("LfRange", "Curve range", ["Complete", "Partial"], "Complete")
-    cmds.checkBox(N("LfAlongU"), label="Make the ribbon run along U (needed to build)", value=True)
-    cmds.checkBox(N("LfFlip"), label="Flip normals", value=False)
-    cmds.checkBox(N("LfFix"), label="Check and fix the curves first (on copies, originals untouched)", value=True)
-    cmds.button(label="Loft selected curves", height=28, command=_w(_surface_action(_loft)))
-    cmds.setParent("..")
-    cmds.setParent("..")
     ui.row(2, 170)
     cmds.button(label="Swap U/V", command=_w(_surface_action(ribbon.swap_uv)),
                 annotation="When the ribbon runs along V.")
@@ -817,10 +862,6 @@ def build(prefix="p_ribbon_"):
     cmds.button(label="Delete build", height=26, command=_w(_guard(delete)),
                 annotation="Deletes the current ribbon's build. The ribbon is kept.")
     cmds.setParent("..")
-    cmds.button(label="Organize existing builds (one _ribbon_grp each)", height=24,
-                command=_w(_guard(organize_existing)),
-                annotation="Builds made before (or without the option) get their own _ribbon_grp, under "
-                           "'Put it under' if set. Nothing moves in the viewport.")
     cmds.checkBox(N("RebuildMirror"), label="Rebuild also updates its mirror", value=s["rebuild_mirror"],
                   changeCommand=_w(_on_change),
                   annotation="Rebuilding the first side also rebuilds the ribbon mirrored from it, "
@@ -847,6 +888,10 @@ def build(prefix="p_ribbon_"):
                         columnWidth3=(150, 50, 120), changeCommand=_w(_on_change))
     cmds.button(label="Mirror build", height=28, backgroundColor=ui.MAIN_BG, command=_w(_guard(mirror)),
                 annotation="Mirror the current ribbon's build to the other side.")
+    # 5.7.4: the rarer ones under More (every one of them stays)
+    cmds.frameLayout(label="More: symmetric, constraints, replace the surface, organize", collapsable=True,
+                     collapse=True, marginWidth=6, marginHeight=4)
+    cmds.columnLayout(adjustableColumn=True, rowSpacing=3)
     cmds.button(label="Make the right side mirror the left (loops: mouth...)", height=26,
                 command=_w(_guard(mirror_sides)),
                 annotation="One ribbon round both sides (a mouth): the -X side controls get axes that mirror "
@@ -876,6 +921,12 @@ def build(prefix="p_ribbon_"):
                            "4.0.5, or with 'Scale controls too'): the joints go back on the ribbon, driven by point "
                            "+ orient constraints (scale back to 1). Nothing moves, weights stay. Controls at rest. "
                            "Select the ribbon or one of its controls.")
+    cmds.button(label="Organize existing builds (one _ribbon_grp each)", height=24,
+                command=_w(_guard(organize_existing)),
+                annotation="Builds made before (or without the option) get their own _ribbon_grp, under "
+                           "'Put it under' if set. Nothing moves in the viewport.")
+    cmds.setParent("..")
+    cmds.setParent("..")
     ui.end_section()
 
     ui.section("Builds in the scene", step=5, help_text="Every ribbon build, and who made it (the Ribbon tab, or the "

@@ -678,13 +678,15 @@ def lockNode(nodes, **k):
 cmds.lockNode = lockNode
 
 
-def duplicate(name, **k):
-    """Copy a node and everything under it (5.0.3): same types, attributes and local values."""
+def duplicate(node, **k):
+    """Copy a node and everything under it (5.0.3): same types, attributes and local values. name= (5.7.4): the
+    copy's name."""
     import copy as _copy
-    src = _n(name)
+    src = _n(node)
+    first = [k.get("name") or k.get("n")]
 
     def dup(n, parent):
-        c = S.create(n.type, n.name, parent)
+        c = S.create(n.type, first.pop() if first and first[0] and n is src else n.name, parent)
         c.attrs = _copy.deepcopy(n.attrs)
         c.user = _copy.deepcopy(n.user)
         for kid in list(n.children):

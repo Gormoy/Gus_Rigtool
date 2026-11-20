@@ -331,16 +331,26 @@ def new_window(rep):
     def build():                               # 5.7.3: the Build area in the new look, two rows of tabs
         bd = f._area("build")
         cut = cut_pages(bd, bd.subs)
-        rep.expect("Build: Build's 4 pages, Face, Ribbon, Joints - nothing cut off narrow or wide (drop-downs too)",
-                   len(bd.subs) == 7 and not cut, str(list(cut.items())[:3]))
+        rep.expect("Build: Build's 4 pages, Face's 3, Ribbon's 2, Joints - nothing cut off narrow or wide (drop-downs "
+                   "too)", len(bd.subs) == 10 and not cut, str(list(cut.items())[:3]))
         f.go(("build", 1))
         settle()
         top = [b.text() for b in f.tabs.findChildren(QtWidgets.QPushButton)]
         under = [b.text() for b in f.tabs2.findChildren(QtWidgets.QPushButton)] if f.tabs2.isVisible() else []
         rep.expect("two rows of tabs: Build Face Ribbon Joints, then Rig builder Animation Existing rig Advanced",
                    top == ["Build", "Face", "Ribbon", "Joints"] and len(under) == 4, "%s / %s" % (top, under))
-        f.go(("ribbon", None))
+        f.go(("face", "Build the face"))                   # 5.7.4: Face and Ribbon as steps
         settle()
+        steps = [c.title for c in bd.pages["face"].cards if c.isVisible()]
+        rep.expect("Face > Build the face: the face map, then Setup, Eyes, Eyelids, Mouth, Brows, Facial strips",
+                   bd.face_card.isVisible() and steps == ["Setup", "Eyes", "Eyelids", "Mouth", "Brows",
+                                                          "Facial strips"], str(steps))
+        f.go(("ribbon", "Make a ribbon"))
+        settle()
+        rep.expect("Ribbon > Make a ribbon: the steps strip on top (Surface, Joints, Controls, Create)",
+                   bd.strip.isVisible())
+        rep.add(INFO, "look at Face > Build the face", "select two curves (the line above and below the left eye): "
+                "the Eyelids step says they fit and gets a yellow dot; the face map shows the eyelids yellow")
         from gus_rigtool.tools import ribbon_tool as RT
         col = bd.pages["ribbon"].fields.get(RT.N("Color"))
         rep.expect("Ribbon: the control colour is a colour square", col is not None and

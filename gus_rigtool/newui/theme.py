@@ -29,7 +29,8 @@ AREAS = [
 ]
 AXIS = {"X": "#e2504a", "Y": "#5fbf4f", "Z": "#4c8fe0"}
 KIND = {"joint": "#f0c85a", "control": "#6fd6b0", "mesh": "#9ec3f0", "other": "#cfd2d6"}
-LEVEL = {"ok": "#2f5a35", "warn": "#6b5016", "idle": "#2a2d32", "info": "#2a2d32", "error": "#6b2a28"}
+LEVEL = {"ok": "#2f5a35", "warn": "#6b5016", "idle": "#2a2d32", "info": "#2a2d32", "error": "#6b2a28",
+         "made": "#2f5a35", "ready": "#5c5418"}             # 5.7.4 steps: done / your selection fits
 
 
 def area(key):

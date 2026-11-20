@@ -319,6 +319,7 @@ class Card(QtWidgets.QFrame):
         self.num.setFixedSize(20, 20)
         self.num.setAlignment(Qt.AlignCenter)
         self.num.setVisible(bool(number))
+        self.number, self.state = number, None
         h.addWidget(self.num, 0, Qt.AlignTop)
         t = QtWidgets.QLabel(title)
         t.setObjectName("gusCardTitle")
@@ -373,6 +374,24 @@ class Card(QtWidgets.QFrame):
     def add(self, w):
         self.body_layout.addWidget(w)
         return w
+
+    # 5.7.4: a step's state on its number - made: a tick (green), ready (your selection fits): a yellow dot
+    def set_number(self, n):
+        self.number = n
+        self._badge()
+
+    def set_state(self, level):
+        self.state = level if level in ("made", "ready") else None
+        self._badge()
+
+    def _badge(self):
+        if not self.number:
+            return
+        mark = {"made": "✓", "ready": "●"}.get(self.state)
+        self.num.setText(mark or str(self.number))
+        colour = {"made": theme.OK, "ready": theme.WARN}.get(self.state)
+        self.num.setStyleSheet("QLabel#gusNum { background: %s; color: #111; }" % colour if colour else "")
+        self.num.setToolTip({"made": "Done", "ready": "Your selection fits: press its button"}.get(self.state, ""))
 
 
 # --------------------------------------------------------------------------- selection and next step
@@ -553,3 +572,128 @@ class ShapeGrid(QtWidgets.QWidget):
                 shown += ok
             head.setVisible(bool(shown))
             box.setVisible(bool(shown))
+
+
+# --------------------------------------------------------------------------- 5.7.4 steps: Face, Ribbon
+STATE_COLOUR = {"made": theme.OK, "ready": theme.WARN, "on": "#e0893a", "todo": "#5a6069"}
+STATE_WORD = {"made": "made", "ready": "ready - your selection fits", "todo": "not made yet"}
+
+
+class FaceMap(QtWidgets.QWidget):
+    """A face drawn with its parts coloured by state: green made, yellow ready (your selection fits), grey not yet.
+    The right side dashed: it's mirrored for you. Click a part: its step."""
+    clicked = QtCore.Signal(str)
+    PARTS = ("brows", "eyes", "eyelids", "mouth", "strip")
+
+    def __init__(self, parent=None):
+        super(FaceMap, self).__init__(parent)
+        self.states = dict((p, "todo") for p in self.PARTS)
+        self.setMinimumSize(140, 140)
+        self.setMaximumSize(200, 200)
+        self.setCursor(Qt.PointingHandCursor)
+        self._hit = {}
+
+    def sizeHint(self):
+        return QtCore.QSize(190, 190)
+
+    def set_states(self, states):
+        self.states.update(dict((k, v) for k, v in states.items() if k in self.PARTS))
+        self.setToolTip("\n".join("%s: %s" % (p.title(), STATE_WORD.get(self.states[p], "")) for p in self.PARTS))
+        self.update()
+
+    def paintEvent(self, e):
+        p = QtGui.QPainter(self)
+        p.setRenderHint(QtGui.QPainter.Antialiasing)
+        side = min(self.width(), self.height()) - 8
+        p.translate((self.width() - side) / 2.0, 4)
+        p.scale(side / 200.0, side / 200.0)
+        p.setPen(QtGui.QPen(QtGui.QColor("#6b7079"), 2))
+        p.setBrush(QtGui.QColor("#2a2d32"))
+        p.drawEllipse(QtCore.QRectF(28, 8, 144, 184))
+        self._hit = {}
+
+        def pen(part, width=5, right=False):
+            q = QtGui.QPen(QtGui.QColor(STATE_COLOUR[self.states.get(part, "todo")]), width)
+            q.setCapStyle(Qt.RoundCap)
+            if right:
+                q.setStyle(Qt.DashLine)
+            return q
+        for right in (False, True):
+            m = (lambda x: 200 - x) if right else (lambda x: x)
+            brow = QtGui.QPainterPath(QtCore.QPointF(m(52), 64))
+            brow.quadTo(QtCore.QPointF(m(72), 52), QtCore.QPointF(m(90), 60))
+            p.setPen(pen("brows", 6, right))
+            p.setBrush(Qt.NoBrush)
+            p.drawPath(brow)
+            p.setPen(pen("eyelids", 5, right))
+            p.drawEllipse(QtCore.QRectF(m(72) - 18, 80, 36, 20))
+            p.setPen(Qt.NoPen)
+            p.setBrush(QtGui.QColor(STATE_COLOUR[self.states.get("eyes", "todo")]))
+            p.drawEllipse(QtCore.QPointF(m(72), 90), 5, 5)
+            p.setBrush(Qt.NoBrush)
+            strip = QtGui.QPainterPath(QtCore.QPointF(m(56), 112))
+            strip.quadTo(QtCore.QPointF(m(62), 132), QtCore.QPointF(m(74), 142))
+            p.setPen(pen("strip", 5, right))
+            p.drawPath(strip)
+        mouth = QtGui.QPainterPath(QtCore.QPointF(74, 152))
+        mouth.quadTo(QtCore.QPointF(100, 140), QtCore.QPointF(126, 152))
+        mouth.quadTo(QtCore.QPointF(100, 170), QtCore.QPointF(74, 152))
+        p.setPen(pen("mouth", 5))
+        p.drawPath(mouth)
+        s = side / 200.0
+        ox = (self.width() - side) / 2.0
+        for part, (x, y, w, h) in (("brows", (48, 46, 46, 22)), ("eyelids", (50, 76, 44, 30)),
+                                   ("strip", (48, 108, 32, 38)), ("mouth", (70, 138, 60, 34))):
+            self._hit[part] = QtCore.QRectF(ox + x * s, 4 + y * s, w * s, h * s)
+
+    def mousePressEvent(self, e):
+        pos = e.position() if hasattr(e, "position") else e.pos()
+        for part, r in self._hit.items():
+            if r.contains(QtCore.QPointF(pos)):
+                self.clicked.emit(part)
+                return
+
+
+class StepStrip(QtWidgets.QFrame):
+    """1 Surface -> 2 Joints -> 3 Controls -> 4 Create: each step's state (a tick when done, a yellow dot when your
+    selection fits, orange for the step you're on). Click one: its card."""
+    clicked = QtCore.Signal(int)
+
+    def __init__(self, labels, parent=None):
+        super(StepStrip, self).__init__(parent)
+        self.setObjectName("gusSel")
+        self.lay = FlowLayout(self, 8)
+        self.lay.setContentsMargins(9, 7, 9, 7)
+        self.items = []
+        for i, text in enumerate(labels):
+            b = QtWidgets.QToolButton()
+            b.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            b.setAutoRaise(True)
+            b.setCursor(Qt.PointingHandCursor)
+            b.clicked.connect(lambda _=False, i=i: self.clicked.emit(i))
+            self.lay.addWidget(b)
+            self.items.append((b, text))
+        self.set_states(["todo"] * len(labels))
+
+    def set_states(self, states):
+        self.states = list(states)
+        for i, ((b, text), st) in enumerate(zip(self.items, states)):
+            mark = {"made": "✓", "ready": "●"}.get(st, str(i + 1))
+            colour = STATE_COLOUR.get(st, STATE_COLOUR["todo"])
+            pm = QtGui.QPixmap(20, 20)
+            pm.fill(Qt.transparent)
+            q = QtGui.QPainter(pm)
+            q.setRenderHint(QtGui.QPainter.Antialiasing)
+            q.setPen(Qt.NoPen)
+            q.setBrush(QtGui.QColor(colour))
+            q.drawEllipse(0, 0, 20, 20)
+            q.setPen(QtGui.QColor("#111"))
+            f = q.font()
+            f.setBold(True)
+            f.setPixelSize(11)
+            q.setFont(f)
+            q.drawText(QtCore.QRect(0, 0, 20, 20), int(Qt.AlignCenter), mark)
+            q.end()
+            b.setIcon(QtGui.QIcon(pm))
+            b.setText(text + ("  →" if i < len(self.items) - 1 else ""))
+            b.setToolTip("%s: %s" % (text, STATE_WORD.get(st, "the step you're on" if st == "on" else "")))

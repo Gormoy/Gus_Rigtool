@@ -51,8 +51,8 @@ f.go(("build", 2)); app.processEvents()
 from gus_rigtool.tools import build_tab as B
 check("...click Animation: its page, the choice remembered as in the old window",
       f.areas["build"].current == ("build", 2) and utils.load_setting(B.SETTINGS_KEY, {}).get("sub_page2") == 2)
-f.go(("ribbon", None)); app.processEvents()
-check("...Ribbon on the top row: no second row (it has one page)", not f.tabs2.isVisibleTo(f))
+f.go(("joints", None)); app.processEvents()
+check("...Joints on the top row: no second row (it has one page)", not f.tabs2.isVisibleTo(f))
 f.go(("skin", "Bind")); app.processEvents()
 check("Skin: Skin and Fixes on top, Skin's 6 pages under them",
       [b.text() for b in f.tabs.findChildren(QtWidgets.QPushButton)] == ["Skin", "Fixes"] and
@@ -63,7 +63,7 @@ check("...Fixes, then Skin on the top row: back on the Skin page you were on", f
 
 # --- 3. nothing cut off - drop-downs too - at 300 / 420 / 700 px, normal and wider font
 crops = {}
-subs = [("build", i) for i in (1, 2, 3, 4)] + [("face", None), ("ribbon", None), ("joints", None)]
+subs = [tuple(x[:2]) for x in f.areas["build"].subs]           # 5.7.4: Face and Ribbon have their own pages
 for font in ("13px", "15px"):
     with mock.patch.object(theme, "stylesheet", (lambda real: lambda a: real(a).replace("font-size: 13px",
                                                                                          "font-size: " + font))(
@@ -86,7 +86,8 @@ widest = []
 for sub in subs:
     f.go(sub); app.processEvents()
     bd = f.areas["build"]
-    widest.append((bd.widgets[tuple(bd.current)].minimumSizeHint().width(), sub))
+    key = tuple(bd.current) if tuple(bd.current) in bd.widgets else (bd.current[0], None)
+    widest.append((bd.widgets[key].minimumSizeHint().width(), sub))
 check("every Build page fits a narrow window (Gus's Maya at 326 px cut Rig builder and Ribbon: a closed card's "
       "hint never gave way) - no page needs more room than Controls > Behaviour, which fits", max(widest)[0] <= 230)
 if max(widest)[0] > 230:

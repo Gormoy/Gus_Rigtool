@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: 5.7.3.1 results clean (Real 104 ok; Test this release 35 ok - module check skipped, no guides in his
+  test scene). Gus: "still not working" = 1a, Face and Ribbon aren't the approved steps -> 5.7.4 built (the
+  approved plan). "Two curves" read both ways: ends meet (lid/lip lines) = one loop, side by side = loft between.
+  He is "just testing new scenes" (answer to the guides question). 5.7.3.1 and 5.7.4 not pushed yet - waiting.
+
 - 2026-11-20: 5.7.3 results: Real Maya 104 ok; Test this release 2 FAIL (Build cut off at 326 px - closed cards'
   peek never shrank; the module check took "(no modules yet)" for a module). Fixed in 5.7.3.1. Gus: "the face and
   ribbon build aren't with the updates I approved" - they are 5.7.4 (the split he OKed); my 5.7.3 message didn't
@@ -88,7 +93,8 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.3 (Build in the new look) sent: waiting for his Real-Maya + Test this release results, then his OK to push.
+- 5.7.4 (Face and Ribbon as steps, two curves) sent: waiting for his results (case p: face from two curves) and his
+  OK to push 5.7.3.1 + 5.7.4 to main. Test outputs 570/571/573/574 waiting for his OK too.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).

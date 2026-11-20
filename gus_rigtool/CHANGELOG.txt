@@ -1,3 +1,47 @@
+Gus_Rigtool 5.7.4 - Face and Ribbon as steps; face parts from two curves
+
+The second half of the plan Gus approved ("yes to all"): Face and Ribbon as steps, and two curves as the way in.
+
+Face (Build > Face):
+- Three pages: Build the face · Ribbons & groups · Squash & expressions.
+- Build the face: a face map on top (each part green when made, yellow when what you selected fits, grey not made
+  yet; the right side dashed - it's mirrored for you; click a part: its step), then the steps Setup, Eyes, Eyelids,
+  Mouth, Brows, Facial strips. Each step has a light that says what to select and checks your selection ("2
+  curves: L_lid_up_crv, L_lid_low_crv - their ends meet: one loop round it"; "2 curves on the RIGHT side - select
+  the LEFT side's"), and its number becomes a yellow dot when the selection fits, a tick when the part is made.
+- Eyelids, Mouth, Brows and Strips: Make it from Two curves | Edges - Two curves first, remembered for each part.
+  Two curves:
+  - their ends meet (the line above and below the eye, or the lips): one loop through both, the ribbon a thin band
+    either side of it - as from an edge loop, but where you drew it;
+  - side by side (along a brow or a cheek, or two rings round the eye): the ribbon is lofted between them; one drawn
+    the other way is turned first.
+  Your curves are kept. The part remembers them: Redo makes it again from the same two curves.
+- The edge way is as before.
+
+Ribbon (Build > Ribbon):
+- Two pages: Make a ribbon · Builds in the scene.
+- Make a ribbon: a strip on top - Surface > Joints > Controls > Create (a yellow dot when what you selected fits, a
+  tick when done; click a step: its card).
+- Surface: Two curves (check, fix, loft) first and open; its options folded under Loft options; Make a plane and
+  Edge to curve folded under it. The Surface light checks the selected curves: the same direction? the same spans?
+- The step lights (Surface, Follicles, Controls) are coloured in the new window too.
+- Create and mirror: the rarer buttons under More (Make the right side mirror the left, Not symmetric, Make
+  symmetric, Replace the surface, Switch to copying / constraints, Organize existing builds). Every one is still
+  there.
+
+Only tested here off-screen (PySide6) and with the fake Maya (no curve geometry: the tests give the curves points).
+New real-Maya case p makes a strip from two curves in Maya and checks where the ribbon lands; a new Maya fact
+reports what Maya does with the curve commands used.
+
+Decisions I made:
+- "Two curves" means both ways Gus might draw them: the line above and below (ends meet: one loop, like the edge
+  loop) and two lines side by side (lofted between them). The tool tells which it sees before you press Make.
+- The band round a loop is as wide as from an edge loop (12% of the loop's size), so Blink works the same.
+- Making a part again while it's made is allowed (the light says it's made and points to Redo).
+- A step's light lives in its card in the old window too (the same text, coloured).
+- Old window: a step's light wraps (it never makes the page wider), and the loft's "Check and fix the curves first
+  (on copies, originals untouched)" is shorter - "(on copies)", the rest on hover - so Ribbon still fits 440 px.
+
 Gus_Rigtool 5.7.3.1 - Build fits a narrow window in Maya; Test this release's module check fixed
 
 Gus's Test this release on 5.7.3 (Real Maya: 104 ok):

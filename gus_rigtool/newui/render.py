@@ -221,6 +221,12 @@ class Field(object):
         elif key == "_level":
             w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" %
                             theme.LEVEL.get(v, theme.LEVEL["idle"]))
+            self.level = v
+            card = w.parentWidget()                      # 5.7.4: a step's light marks its card (made / ready)
+            while card is not None and not isinstance(card, widgets.Card):
+                card = card.parentWidget()
+            if card is not None and hasattr(card, "set_state") and not card.property("inner") == "true":
+                card.set_state(v)
         elif key in ("rgbValue", "rgb"):
             self.node.kw["rgbValue"] = v
             hx = _hex(v)
@@ -672,12 +678,13 @@ class Page(object):
     def _text(self, n, ctx):
         text = str(n.label())
         if n.kw.get("_light"):
-            w = QtWidgets.QLabel("")
+            w = QtWidgets.QLabel(text.strip())               # 5.7.4: what it said while the page was made
             w.setObjectName("gusLight")
             w.setWordWrap(True)
-            w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" % theme.LEVEL["idle"])
             self._note(n, "shown")
             Field(self, n, w)
+            w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" %
+                            theme.LEVEL.get(n.kw.get("_level"), theme.LEVEL["idle"]))
             return w
         if not text.strip() and not n.name.startswith("text__"):
             w = QtWidgets.QLabel("")                    # a named label the tool fills in later
@@ -974,7 +981,10 @@ class Page(object):
     def _scrollField(self, n, ctx):
         t = QtWidgets.QPlainTextEdit(str(n.kw.get("text") or ""))
         t.setReadOnly(n.kw.get("editable") is False)
-        t.setMinimumHeight(120)
+        h = n.kw.get("height") or n.kw.get("h")
+        t.setMinimumHeight(min(int(h), 120) if h else 120)       # 5.7.4: its own height (Ribbon's report: 80)
+        if h:
+            t.setMaximumHeight(max(int(h), 60) * 2)
         self._note(n, "shown")
         Field(self, n, t)
         return t

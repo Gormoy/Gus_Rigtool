@@ -24,7 +24,15 @@ TWO_ROWS = ("build", "skin")                     # tools on the top row, the cho
 # a long tool page shown as several sub-pages: (label, the card titles on it) - 5.7.2 Skin (Gus's picture)
 SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror weights"]),
                    ("Save / load", ["Save / load weights"]), ("Clean", ["Clean"]),
-                   ("Weights", ["Vertex weights", "Weight list"]), ("Cloth & jiggle", ["Cloth", "Jiggle and wave"])]}
+                   ("Weights", ["Vertex weights", "Weight list"]), ("Cloth & jiggle", ["Cloth", "Jiggle and wave"])],
+          # 5.7.4 (Gus's picture): Face as steps on one page, the rest on two short ones; Ribbon as steps
+          "face": [("Build the face", ["Setup", "Eyes", "Eyelids", "Mouth", "Brows", "Facial strips"]),
+                   ("Ribbons & groups", ["Face ribbons", "Group controls (mouth)"]),
+                   ("Squash & expressions", ["Head squash", "Expressions and selection sets"])],
+          "ribbon": [("Make a ribbon", ["Surface", "Follicles", "Controls", "Build and mirror"]),
+                     ("Builds in the scene", ["Builds in the scene"])]}
+FACE_STEPS = {"brows": "Brows", "eyes": "Eyes", "eyelids": "Eyelids", "mouth": "Mouth", "strip": "Facial strips"}
+RIBBON_STEPS = ["Surface", "Follicles", "Controls", "Build and mirror"]
 OLD_PAGE = ("settings",)                         # drawn as today's page even in a new-look area
 CATEGORY = {"home": "home", "build": "build", "skin": "skin", "controls": "controls", "connect": "links",
             "check": "finish", "toolbox": "toolbox", "settings": "settings"}
@@ -218,6 +226,10 @@ class Area(QtWidgets.QWidget):
                 fn()
             except Exception:
                 pass
+        if tool == "face":
+            self._face_map(page)
+        if tool == "ribbon":
+            self._step_strip(page)
         self._pin_from_state(tool)
         for card in page.cards:
             card.pin_clicked.connect(lambda c=card, t=tool: self.toggle_pin(c, t))
@@ -258,6 +270,61 @@ class Area(QtWidgets.QWidget):
             self.grids.append(grid)
             self.widgets[("controls_tab", i + 1)] = w
             self.body.addWidget(w)
+
+    # 5.7.4: the face map (Face > Build the face) and the step strip (Ribbon > Make a ribbon)
+    def _top_of(self, tool, w):
+        page_w = self.widgets.get((tool, None))
+        if page_w is not None:
+            page_w.layout().insertWidget(0, w)
+        return w
+
+    def _face_map(self, page):
+        card = widgets.Card("Your face", None, "Each part in its colour: green made, yellow your selection fits "
+                            "(press its button), grey not made yet. The right side (dashed) is mirrored for you. "
+                            "Click a part: its step.")
+        card.pin.hide()
+        row = widgets.flow_box(14)                     # narrow: the key goes under the face
+        self.face_map = widgets.FaceMap()
+        row.layout().addWidget(self.face_map)
+        key = QtWidgets.QWidget()
+        legend = QtWidgets.QVBoxLayout(key)
+        legend.setContentsMargins(0, 8, 0, 0)
+        for st, word in (("made", "made"), ("ready", "your selection fits"), ("todo", "not made yet")):
+            lab = widgets.label("<span style='color:%s'>■</span>  %s" % (widgets.STATE_COLOUR[st], word), "dim")
+            legend.addWidget(lab)
+        legend.addStretch(1)
+        row.layout().addWidget(key)
+        card.add(row)
+        self.face_map.clicked.connect(lambda part: self._scroll_to_card(page, FACE_STEPS.get(part)))
+        self.face_card = self._top_of("face", card)
+
+    def _step_strip(self, page):
+        self.strip = widgets.StepStrip(["Surface", "Joints", "Controls", "Create"])
+        self.strip.clicked.connect(lambda i: self._scroll_to_card(page, RIBBON_STEPS[i]))
+        self._top_of("ribbon", self.strip)
+
+    def _scroll_to_card(self, page, title):
+        for card in page.cards:
+            if card.title == title:
+                card.set_closed(False)
+                self.scroll.ensureWidgetVisible(card, 0, 40)
+                return card
+
+    def _update_steps(self):
+        """The face map / step strip from the scene and the selection (on each selection change)."""
+        cur = self.current or (None, None)
+        if getattr(self, "face_map", None) is not None and cur[0] == "face":
+            try:
+                from gus_rigtool.tools import face_kit_tool as FT
+                self.face_map.set_states(FT.part_states())
+            except Exception:
+                pass
+        if getattr(self, "strip", None) is not None and cur[0] == "ribbon":
+            try:
+                from gus_rigtool.tools import ribbon_tool as RT
+                self.strip.set_states(RT.step_states())
+            except Exception:
+                pass
 
     def _tabbed(self, page, tool, prefix):
         """A tool with its own tabs (Build): what is above them (its status light) stays on every sub-page; each
@@ -304,9 +371,9 @@ class Area(QtWidgets.QWidget):
                 continue
             on = card.title in want or (first and card.title not in named)
             card.setVisible(on)
-            if on and card.num.text():
+            if on and getattr(card, "number", None):
                 n += 1
-                card.num.setText(str(n))
+                card.set_number(n)
 
     def _mark_all(self, name):
         for g in getattr(self, "grids", []):
@@ -323,6 +390,10 @@ class Area(QtWidgets.QWidget):
         page = self.pages.get(sub[0])
         if page is not None and sub[0] in SPLITS:
             self._show_cards(page, sub)
+        if getattr(self, "face_card", None) is not None:
+            self.face_card.setVisible(tuple(sub) == ("face", SPLITS["face"][0][0]))
+        if getattr(self, "strip", None) is not None:
+            self.strip.setVisible(tuple(sub) == ("ribbon", SPLITS["ribbon"][0][0]))
         if page is not None and sub[0] in TABBED and sub[1]:
             self._show_tab(page, target, sub[1])
         if page is not None and sub[0] == "controls_tab" and sub[1]:
@@ -357,6 +428,7 @@ class Area(QtWidgets.QWidget):
                     fn()
                 except Exception:
                     pass
+        self._update_steps()
 
     def _go_next(self):
         if not self._target:
