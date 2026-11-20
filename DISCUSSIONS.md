@@ -61,8 +61,11 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.2.1 (fix of Test this release's check, Gus: "yes for both" - the name 5.7.2.1 too): waiting for his
-  Test this release; then push 5.7.2 + 5.7.2.1 to main. 5.7.2's Real Maya tests passed (104 ok).
+- 5.7.2.1 passed in Gus's Maya (Real Maya 104 ok, Test this release 31 ok, new window 14 ok) - waiting for his
+  "push it" to put 5.7.2 + 5.7.2.1 on main.
+- 5.7.3 Build preview, first look (recorded off-screen): Build 237 controls (its own 4 tabs: Rig builder,
+  Animation, Existing rig, Advanced -> sub-pages), Face 81 (10 cards), Joints 89 - all drawn, nothing unknown;
+  Ribbon's page code stops in the recorder (its refresh() gets None where Maya gives a list) - to fix in 5.7.3.
 - Next after 5.7.2: 5.7.3 Build area (preview first), then Connect, Check, Toolbox.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
