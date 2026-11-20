@@ -226,7 +226,13 @@ def _default(node, attr):
 def style(node, around=None, handles=None, colour=None):
     """The plain look (the Arcs panel's settings): the line, dots on the frames, bigger dots on keys, frame numbers
     or not, its colour. Range: the shot (Maya's own default) or some frames before / after your frame. Handles: on
-    the selected key, or off. Returns what was set."""
+    the selected key, or off. Returns what was set. Never an undo step (5.6.47: after Make weighted, Ctrl+Z undid a
+    tiny arc style change instead of the weighting)."""
+    with A.NoUndo():
+        return _style(node, around, handles, colour)
+
+
+def _style(node, around=None, handles=None, colour=None):
     around = opt("arcs_around") if around is None else around
     handles = opt("arcs_handles") if handles is None else handles
     colour = colour or COLOUR
@@ -369,6 +375,32 @@ def make_weighted(nodes, ask=True):
         cmds.keyTangent(curves, edit=True, weightedTangents=True)
     restyle()
     return len(curves)
+
+
+def break_handles(nodes, join=False):
+    """5.6.47: a key's two handles move on their own (break) - or together again (join). On the keys selected in
+    the Graph Editor, else the keys at this frame on the controls' translate curves. One undo. Returns how many
+    keys changed. (Maya joins them by default and its motion trail has no button to break them.)"""
+    picked = cmds.keyframe(query=True, selected=True, name=True) or []
+    work = []                                            # (curve, time)
+    for c in picked:
+        for t in cmds.keyframe(c, query=True, selected=True, timeChange=True) or []:
+            work.append((c, t))
+    if not work:
+        now = cmds.currentTime(query=True)
+        for n in controls(nodes):
+            for ax in "XYZ":
+                for c in cmds.listConnections("%s.translate%s" % (n, ax), source=True, destination=False,
+                                              type="animCurve") or []:
+                    if cmds.keyframe(c, query=True, time=(now, now), keyframeCount=True):
+                        work.append((c, now))
+    if not work:
+        raise RuntimeError("select a key (on the arc or in the Graph Editor), or go to a frame with a key on the "
+                           "selected controls.")
+    with A.Undo("gusAnimtoolBreakHandles"):
+        for c, t in work:
+            cmds.keyTangent(c, edit=True, time=(t, t), lock=bool(join))
+    return len(work)
 
 
 # --------------------------------------------------------------------------- saving / scenes

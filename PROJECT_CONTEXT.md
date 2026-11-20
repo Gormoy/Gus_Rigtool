@@ -1,8 +1,8 @@
 # Gus_Rigtool - project context (backup for a new chat)
 
 Written on 2026-11-09 at the end of a long working chat; updated on 2026-11-13 after the first Claude Code
-session (5.6.28 - 5.6.46). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
-`import-5.6.27`, `release-5.6.28` ... `release-5.6.46`; `main` holds the latest release since 5.6.45). It covers what the
+session (5.6.28 - 5.6.47). The code is in the GitHub repo `Gormoy/gus_rigtool` (one branch per release:
+`import-5.6.27`, `release-5.6.28` ... `release-5.6.47`; `main` holds the latest release since 5.6.45). It covers what the
 project is, how we work, what was built, the Hare rig's state, and what's open.
 
 ---
@@ -10,7 +10,7 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 ## 1. The project
 
 - **Gus_Rigtool** is a rigging toolkit for Maya 2024+ (Python). It's built by Gus with Claude, release by release.
-  It went from **1.0.0 to 5.6.46, about 166 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
+  It went from **1.0.0 to 5.6.47, about 167 releases**, all listed in `gus_rigtool/CHANGELOG.txt`.
 - **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`) is the animators' side:
   - the picker;
   - the pose library;
@@ -258,6 +258,12 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   (gus_animtool/__init__.py, LOCAL_ROOT keeps defaults.json); realmaya/maya_facts.py + MAYA_FACTS.md (case m);
   realmaya/window_checks.py = bar > Test this release; bar > Copy the last problem (anim.LAST_PROBLEM); attach
   bake_all; run_tests normalizes the version; CLAUDE.md rules 11-13. Next: 5.6.47 one Controls tab (mock-up first).
+- **5.6.47**: tools/controls_tab.py (Make + Shapes in one tab: shape list left, Make / Edit shape pages;
+  registry.ALIASES shapes/makectrl -> controls_tab) and core/shape_edit.py (in front on an axis, stretch, hover
+  preview, shape handles Done / Cancel / click away); MC.make front / front_axis / pivot_on_shape. Fixes: arc
+  styling out of undo; Arcs break / join handles; shelf rebuilt once per version; a shape is a LIST of curves (the
+  fake refuses one on its own); fake ls([]) -> []. Next: shape ideas 3-5 (fit to body, lie on the skin, shape
+  from edges) once the mesh facts are back.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

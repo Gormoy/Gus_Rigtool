@@ -167,6 +167,13 @@ class ArcsWindow(QtWidgets.QWidget):
         beads.setToolTip("Timing beads (ease in / out on the arc) need weighted tangents. Asks first.")
         beads.clicked.connect(self.beads)
         bl.addLayout(_line("Timing beads", beads, None))
+        brk = QtWidgets.QPushButton("Break")
+        brk.setToolTip("The selected key's two handles move on their own (Maya joins them by default)")
+        brk.clicked.connect(lambda *_: self.handles(False))
+        join = QtWidgets.QPushButton("Join again")
+        join.setToolTip("The selected key's handles move together again")
+        join.clicked.connect(lambda *_: self.handles(True))
+        bl.addLayout(_line("Key handles", brk, join))
         note = QtWidgets.QLabel("Asks first. The beads only show on weighted curves.")
         note.setProperty("note", True)
         bl.addWidget(note)
@@ -297,6 +304,10 @@ class ArcsWindow(QtWidgets.QWidget):
     def clear(self):
         _do(T.clear)
         self.refresh()
+
+    def handles(self, join):
+        from gus_animtool import actions as AC
+        AC.run("arcs_join" if join else "arcs_break")
 
     def beads(self):
         n = _do(T.make_weighted, cmds.ls(selection=True, long=True) or [])

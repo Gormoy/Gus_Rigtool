@@ -6,7 +6,7 @@ Put this file at the root of the repository. Claude Code reads it automatically 
 
 Gus_Rigtool is a personal rigging toolkit for **Maya 2024+** (Python 3.10 inside Maya; code must also lint as
 Python 3.7). It ships with **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`), the animators' tools: picker,
-pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.46**.
+pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.47**.
 
 Owner: Gus (Gustavo), a rigger on macOS. He is finishing the **Hare** rig for the short "The Tree That Bloomed in
 Winter". He writes in English (sometimes Portuguese) and prefers plain words over jargon.
@@ -37,6 +37,18 @@ Winter". He writes in English (sometimes Portuguese) and prefers plain words ove
    ```
 6. In every release message also tell Gus to **restart Maya, or reset `gus_animtool`**: the picker lives in
    Animtool, and the reset above only clears `gus_rigtool`.
+6b. (5.6.47, Gus asked) Every release message also ends with the **commands to paste**, ready to copy: the
+   Terminal line for the real-Maya tests and the one that shows the results file in Finder, and the Script
+   Editor line for Test this release:
+   ```bash
+   "/Applications/Autodesk/maya2024/Maya.app/Contents/bin/mayapy" ~/Library/Preferences/Autodesk/maya/scripts/gus_rigtool/realmaya/run_maya_tests.py --no-scene
+   ```
+   ```bash
+   open -R ~/Library/Preferences/Autodesk/maya/scripts/gus_rigtool/realmaya/maya_test_results.txt
+   ```
+   ```
+   from gus_rigtool.realmaya import window_checks; window_checks.run()
+   ```
 7. **Never overwrite an existing module.** Check with `ls` / grep before creating a file; there are 60+ modules
    in `core/` and the names are generic (e.g. `core/speed.py` already exists: it's the tool-timing report).
 8. Nothing is tested in real Maya here. Say plainly what was only tested against the fake Maya.

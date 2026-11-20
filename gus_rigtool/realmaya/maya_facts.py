@@ -49,6 +49,20 @@ def zero_threshold(rep):
 def empty_ls(rep):
     n = len(cmds.ls([]) or [])
     rep.add(INFO, "cmds.ls([]) - an empty list", "lists %d node(s)%s" % (n, " (EVERYTHING)" if n else " (nothing)"))
+    m = cmds.polyCube(constructionHistory=False)[0]          # 5.6.47: with flags (the onion skin's real case?)
+    for label, kw in (("type='mesh'", dict(type="mesh")), ("long=True", dict(long=True)),
+                      ("dag=True", dict(dag=True)), ("objectsOnly=True", dict(objectsOnly=True))):
+        try:
+            got = cmds.ls([], **kw) or []
+            rep.add(INFO, "cmds.ls([], %s)" % label, "lists %d node(s)" % len(got))
+        except Exception as e:
+            rep.add(INFO, "cmds.ls([], %s)" % label, "%s: %s" % (type(e).__name__, e))
+    try:
+        got = cmds.listRelatives([], allDescendents=True) or []
+        rep.add(INFO, "cmds.listRelatives([], allDescendents=True)", "lists %d node(s)" % len(got))
+    except Exception as e:
+        rep.add(INFO, "cmds.listRelatives([], allDescendents=True)", "%s: %s" % (type(e).__name__, e))
+    cmds.delete(m)
 
 
 def undo_state(rep):
@@ -71,6 +85,32 @@ def key_moves(rep):
         except RuntimeError as e:
             said.append("%s: %s" % (label, str(e).strip()))
         cmds.undo() if cmds.undoInfo(query=True, state=True) else None
+    for label, fn in (("a locked channel (setAttr -lock)", lambda: cmds.setAttr(t + ".translateX", lock=True)),):
+        fn()                                                 # 5.6.47: what refused in Gus's shot?
+        try:
+            cmds.keyframe(curve, edit=True, relative=True, time=(4, 10), timeChange=1, option="over")
+            said.append("%s: moved" % label)
+        except RuntimeError as e:
+            said.append("%s: %s" % (label, str(e).strip()))
+        cmds.setAttr(t + ".translateX", lock=False)
+    try:                                                     # a curve in an animation layer
+        layer = cmds.animLayer("gusFactsLayer")
+        cmds.animLayer(layer, edit=True, attribute=t + ".translateY")
+        cmds.setKeyframe(t, attribute="translateY", time=1, value=1, animLayer=layer)
+        cmds.setKeyframe(t, attribute="translateY", time=5, value=2, animLayer=layer)
+        lc = [c for c in cmds.ls(type="animCurve") or [] if "gusFactsLayer" in c] or []
+        if lc:
+            cmds.keyframe(lc[0], edit=True, relative=True, time=(4, 10), timeChange=1, option="over")
+            said.append("a curve in an animation layer: moved")
+        else:
+            said.append("a curve in an animation layer: (no curve found to try)")
+    except RuntimeError as e:
+        said.append("a curve in an animation layer: %s" % str(e).strip())
+    try:                                                     # a time range that holds no key
+        cmds.keyframe(curve, edit=True, relative=True, time=(100, 200), timeChange=1, option="over")
+        said.append("a time range with no keys: no error")
+    except RuntimeError as e:
+        said.append("a time range with no keys: %s" % str(e).strip())
     cmds.lockNode(curve, lock=True)
     try:
         cmds.keyframe(curve, edit=True, relative=True, time=(4, 10), timeChange=1, option="over")
@@ -81,6 +121,28 @@ def key_moves(rep):
     cmds.delete(t)
     for s in said:
         rep.add(INFO, "moving keys", s)
+
+
+def mesh_points(rep):
+    """5.6.47 (shape editor: fit to the body, lie on the skin): the nearest point and its normal on a mesh."""
+    import maya.api.OpenMaya as om
+    m = cmds.polySphere(radius=2, constructionHistory=False)[0]
+    sel = om.MSelectionList()
+    sel.add(cmds.listRelatives(m, shapes=True, fullPath=True)[0])
+    fn = om.MFnMesh(sel.getDagPath(0))
+    p, nrm, _face = None, None, None
+    try:
+        p, nrm, _face = fn.getClosestPointAndNormal(om.MPoint(5, 0, 0), om.MSpace.kWorld)
+        rep.add(INFO, "the nearest point on a mesh (radius 2 sphere, from x=5)",
+                "%s, normal %s" % ([round(v, 3) for v in (p.x, p.y, p.z)], [round(v, 3) for v in (nrm.x, nrm.y, nrm.z)]))
+    except Exception as e:
+        rep.add(INFO, "the nearest point on a mesh", "%s: %s" % (type(e).__name__, e))
+    try:
+        hit = fn.closestIntersection(om.MFloatPoint(0, 0, 0), om.MFloatVector(0, 0, 1), om.MSpace.kWorld, 100, False)
+        rep.add(INFO, "a ray from the centre along +Z hits the mesh at", str([round(v, 3) for v in hit[0]][:3]))
+    except Exception as e:
+        rep.add(INFO, "a ray along +Z", "%s: %s" % (type(e).__name__, e))
+    cmds.delete(m)
 
 
 def controllers(rep):
@@ -119,7 +181,7 @@ def node_types(rep):
     rep.add(INFO, "matrix / pin nodes this Maya has", ", ".join(have))
 
 
-FACTS = [zero_threshold, empty_ls, undo_state, key_moves, controllers, bookmarks, node_types]
+FACTS = [zero_threshold, empty_ls, undo_state, key_moves, mesh_points, controllers, bookmarks, node_types]
 
 
 def facts(rep):

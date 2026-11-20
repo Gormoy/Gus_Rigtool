@@ -101,7 +101,8 @@ def shelf(rep):
         except RuntimeError:
             pass
     missing = [label for _k, label, _t, _g in AC.ACTIONS if label not in labels]
-    rep.expect("every tool has its button (Attach too)", not missing, ", ".join(missing))
+    rep.expect("every tool has its button (Attach too)", not missing,
+               (", ".join(missing) + " - fix: Animtool window > Settings > Make the shelf") if missing else "")
 
 
 def undo(rep):
@@ -133,8 +134,8 @@ def bookmarks(rep):
 def pick_walk(rep):
     from gus_rigtool.core import control_maker as CM, shape_data
     rep.start("Pick-walk (the arrow keys) on controls made by the tool")
-    _t, arm = CM.new("Check_arm_ctrl", shape_data.circle_curve(1.0), groups=["Check_arm_ctrl_offset"])
-    _t, hand = CM.new("Check_hand_ctrl", shape_data.circle_curve(0.5), groups=["Check_hand_ctrl_offset"], parent=arm)
+    _t, arm = CM.new("Check_arm_ctrl", [shape_data.circle_curve(1.0)], groups=["Check_arm_ctrl_offset"])
+    _t, hand = CM.new("Check_hand_ctrl", [shape_data.circle_curve(0.5)], groups=["Check_hand_ctrl_offset"], parent=arm)
     CM.link(hand)
     rep.expect("both are Maya controllers", CM.is_tagged(arm) and CM.is_tagged(hand))
     cmds.select(hand, replace=True)
@@ -160,8 +161,38 @@ def inbetween(rep):
     rep.expect("Remove: back where they were", times() == [1, 10, 20, 30], str(times()))
 
 
+def controls_tab(rep):
+    """5.6.47: the Controls tab opens, the shape list, preview on a real control, the handles and click-away."""
+    from gus_rigtool.core import curves, shape_data, shape_edit as SE, control_maker as CM
+    from gus_rigtool.tools import controls_tab as CT
+    import gus_rigtool.main as gr
+    rep.start("The Controls tab (Make controls + Shapes)")
+    gr.show_tool("shapes")
+    rep.expect("the old Shapes button opens the Controls tab on Edit shape",
+               cmds.tabLayout(CT.N("Pages"), exists=True) and CT.page() == 2)
+    rep.add(INFO, "shapes in the list", str(len(CT._rows.get(CT._P["p"], []))))
+    _t, c = CM.new("Check_shape_ctrl", [shape_data.circle_curve(1.0)])
+    own = curves.read_shape(c)
+    cmds.select(c, replace=True)
+    SE.preview([c], dict(shape_data.builtin_shapes()[0][1])["square"])
+    rep.expect("hover preview: the square shows on the control", curves.read_shape(c) != own)
+    SE.end_preview()
+    rep.expect("...the mouse leaves: its own circle back", curves.read_shape(c) == own)
+    hs = SE.handles_start([c])
+    cmds.setAttr(hs[0] + ".translateY", 2.0)
+    cmds.select(clear=True)                        # clicking something else
+    try:
+        import maya.utils
+        maya.utils.processIdleEvents()
+    except Exception:
+        pass
+    rep.expect("shape handle, then click something else: kept (the handle gone)", not SE.handles_active() and
+               not cmds.ls("*" + SE.HANDLE + "*"))
+    rep.add(INFO, "look at the Controls tab", "the list on the left (drag the divider), Make / Edit shape on the right")
+
+
 CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("undo", undo),
-          ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween),
+          ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
           ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 
 

@@ -830,6 +830,49 @@ def inbetween_case(rep):
         rep.add(INFO, "Maya moved the locked curve anyway (lockNode doesn't stop key edits here)", str(times(leg)))
 
 
+def shape_editing(rep):
+    """n. The Controls tab's shape editing (5.6.47), measured on real curve points: in front along an axis (the
+    pivot stays), pivot on the shape, stretch on one axis, shape handles (Done / Cancel), keep size on a new shape."""
+    from gus_rigtool.core import curves, make_controls as MC, shape_data, shape_edit as SE
+    rep.start("n. Shape editing (Controls tab): in front, pivot on the shape, stretch, handles")
+    cmds.select(clear=True)
+    j = cmds.joint(name="Check_arm_jnt", position=(0, 0, 0))
+    out = MC.make([j], shape="circle", size=1.0, front=2.0, front_axis="+Y", pivot_on_shape=False)
+    ctrl = out[0][1]
+    pts = [p for s in curves.world_positions(ctrl) for p in s]
+    mid = [sum(p[i] for p in pts) / len(pts) for i in range(3)]
+    rep.expect("in front +Y 2, the pivot on the joint: the shape's centre 2 up, the control at the joint",
+               abs(mid[1] - 2.0) < 0.05 and _diff(_pos(ctrl), (0, 0, 0)) < TOL, "centre %s, control %s" % (
+                   [round(v, 3) for v in mid], [round(v, 3) for v in _pos(ctrl)]))
+    cmds.select(clear=True)
+    j2 = cmds.joint(name="Check_leg_jnt", position=(5, 0, 0))
+    out = MC.make([j2], shape="circle", size=1.0, front=2.0, front_axis="+Y", pivot_on_shape=True)
+    rep.expect("pivot on the shape: the control itself 2 up", _diff(_pos(out[0][1]), (5, 2, 0)) < TOL,
+               str([round(v, 3) for v in _pos(out[0][1])]))
+    before = [p for s in curves.world_positions(ctrl) for p in s]
+    SE.stretch([ctrl], "Z", 2.0)
+    after = [p for s in curves.world_positions(ctrl) for p in s]
+    span = lambda ps, i: max(p[i] for p in ps) - min(p[i] for p in ps)
+    rep.expect("stretch Z x2: twice as long on Z, the same on X", abs(span(after, 2) - 2 * span(before, 2)) < 1e-3 and
+               abs(span(after, 0) - span(before, 0)) < 1e-3)
+    hs = SE.handles_start([ctrl])
+    cmds.setAttr(hs[0] + ".translateX", 1.5)
+    SE.handles_done()
+    moved = [p for s in curves.world_positions(ctrl) for p in s]
+    rep.expect("shape handle moved 1.5, Done: the shape moved 1.5, the control's channels still 0",
+               abs((sum(p[0] for p in moved) - sum(p[0] for p in after)) / len(moved) - 1.5) < 1e-3 and
+               _diff(cmds.getAttr(ctrl + ".translate")[0], (0, 0, 0)) < TOL and not cmds.ls("*" + SE.HANDLE + "*"))
+    hs = SE.handles_start([ctrl])
+    cmds.setAttr(hs[0] + ".translateX", 9.0)
+    SE.handles_cancel()
+    rep.expect("Cancel: nothing changed", [p for s in curves.world_positions(ctrl) for p in s] == moved)
+    old = curves.read_shape(ctrl)
+    SE.use_shape([ctrl], shape_data.builtin_shapes()[0][1][2][1], keep_size=True)      # a square
+    c0, h0 = shape_data.bounds(old)
+    c1, h1 = shape_data.bounds(curves.read_shape(ctrl))
+    rep.expect("a new shape, keep size: the same size and place", abs(h0 - h1) < 1e-3 and _diff(c0, c1) < 1e-3)
+
+
 def A_rel(n, holder):
     """n's world position in holder's space (what 'follows exactly' keeps)."""
     import maya.api.OpenMaya as om
@@ -879,6 +922,7 @@ CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftov
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
-         ("k. add / remove inbetween", inbetween_case), ("m. Maya facts", maya_facts_case)]
+         ("k. add / remove inbetween", inbetween_case), ("n. shape editing", shape_editing),
+         ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

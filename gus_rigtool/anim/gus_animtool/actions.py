@@ -110,7 +110,8 @@ MENUS = {
     "arcs": [("Arcs panel (every arc, its colour, range, look)", "arcs_panel"), ("Clear the arcs", "arcs_clear"), ("Range: the whole shot", "arcs_shot"),
              ("Range: around my frame (24 before / after)", "arcs_around"),
              ("Show handles on the selected key (on / off)", "arcs_handles"),
-             ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted")],
+             ("Timing beads: make the selection's curves weighted (asks first)", "arcs_weighted"),
+             ("Break the handles (move one at a time)", "arcs_break"), ("Join the handles again", "arcs_join")],
     "ghosts": [("Clear the ghosts", "ghosts_clear")],
     "attach": [("Hand-over to the second one (4 frames)", "attach_handover"),
                ("Both hands: held by both (50 / 50)", "attach_both"),
@@ -419,6 +420,11 @@ def _call(key):
         from gus_animtool import arctrail
         on = arctrail.set_option("arcs_handles", not bool(A.opt("arcs_handles", False)))
         return "arcs: handles on the selected key %s" % ("on" if on else "off")
+    if key in ("arcs_break", "arcs_join"):
+        from gus_animtool import arctrail
+        n = arctrail.break_handles(tools._nodes() if A.selected() else [], join=key == "arcs_join")
+        return "%d key(s): handles %s" % (n, "joined again" if key == "arcs_join" else "broken (each moves on its "
+                                                                                     "own)")
     if key == "arcs_weighted":
         from gus_animtool import arctrail
         n = arctrail.make_weighted(tools._nodes())

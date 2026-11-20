@@ -2,15 +2,14 @@
 
 TOOLS = [
     ("home", "Home", "gus_rigtool.tools.home", "Where you are in the rig, and the next step."),
-    ("shapes", "Shapes", "gus_rigtool.tools.shape_library", "Create, replace and edit control shapes."),
     ("mirror", "Mirror", "gus_rigtool.tools.mirror_tool", "Shapes, controls, joints and geometry, L <-> R."),
     ("joints", "Joints", "gus_rigtool.tools.joint_chain", "Evenly spaced joint chains on curves, edges or objects."),
     ("ribbon", "Ribbon", "gus_rigtool.tools.ribbon_tool", "Ribbon rigs on NURBS surfaces: build, rebuild, mirror."),
     ("skin", "Skin", "gus_rigtool.tools.skin_tool", "Bind, copy, clean, mirror and save skin weights."),
     ("fixes", "Fixes", "gus_rigtool.tools.fixes_tool", "Corrective shapes: sculpt a fix in a bent pose, it turns on "
      "by itself."),
-    ("makectrl", "Make controls", "gus_rigtool.tools.make_controls_tool", "A control on each selected joint or "
-     "object: shape, offset groups, constraint, FK chains."),
+    ("controls_tab", "Controls", "gus_rigtool.tools.controls_tab", "Make controls and change their shapes: one "
+     "shape list, a Make page and an Edit shape page."),
     ("stick", "Stick to skin", "gus_rigtool.tools.stick_tab", "Controls that ride on the skin (lips, cheeks, "
      "brows...), with a 'stick' slider."),
     ("follow", "Follow", "gus_rigtool.tools.follow_tab", "Controls follow part of a driver (lips follow the jaw...)."),
@@ -41,13 +40,13 @@ CATEGORIES = [                                  # in the order you rig: Home, th
     ("home", "Home", ["home"]),                 # 5.4.0: one home per job (where everything went: Home > Map)
     ("build", "Build", ["build", "face", "ribbon", "joints"]),
     ("skin", "Skin", ["skin", "fixes"]),
-    ("controls", "Controls", ["makectrl", "shapes", "behaviour", "attrs", "channels", "spaces", "follow", "stick"]),
+    ("controls", "Controls", ["controls_tab", "behaviour", "attrs", "channels", "spaces", "follow", "stick"]),
     ("links", "Connect", ["constrain", "connect", "nodes", "sdk"]),
     ("finish", "Check", ["checker", "organize"]),
     ("toolbox", "Toolbox", ["select", "groups", "mirror", "rename", "pivots", "settings"]),
 ]
 
-MY_TOOLS = ["select", "groups", "shapes", "ribbon", "checker", "mirror", "constrain"]   # 5.4.0: your most used
+MY_TOOLS = ["select", "groups", "controls_tab", "ribbon", "checker", "mirror", "constrain"]   # 5.4.0: your most used
 
 
 STAGES = [
@@ -57,13 +56,13 @@ STAGES = [
      "build", "Build"),
     ("skin", "Skin", "Bind the model to the rig's joints, paint / mirror the weights.", "skin", "Bind"),
     ("controls", "Controls", "Make it nice to animate: shapes and colours, follows, space switches, attributes, "
-     "connections.", "shapes", "Shapes"),
+     "connections.", "controls_tab", "Size and place"),
     ("finish", "Check & publish", "Run the Checker, fix what it finds, then Publish a clean rig for animators.",
      "checker", "Check"),
 ]
 
 # Which workflow step each tool belongs to (the 'where am I' line); the others are the toolbox: any time.
-TOOL_STAGE = {"build": (1, 2), "face": 2, "ribbon": 2, "skin": 3, "fixes": 3, "shapes": 4, "makectrl": 4, "follow": 4, "stick": 4, "spaces": 4, "attrs": 4, "behaviour": 4, "channels": 4, "sdk": 4,
+TOOL_STAGE = {"build": (1, 2), "face": 2, "ribbon": 2, "skin": 3, "fixes": 3, "shapes": 4, "makectrl": 4, "controls_tab": 4, "follow": 4, "stick": 4, "spaces": 4, "attrs": 4, "behaviour": 4, "channels": 4, "sdk": 4,
               "connect": 4, "constrain": 4, "checker": 5, "organize": 5}
 
 # Simple view: these sections of each tool start folded, marked '(advanced)'. Full view: as you left them.
@@ -89,6 +88,16 @@ ADVANCED = {
 }
 
 
+# 5.6.47: Shapes and Make controls live in the Controls tab - their old keys (shelf buttons, Home, gr.show_tool)
+# open it, on the page they belong to
+ALIASES = {"shapes": ("controls_tab", 2), "makectrl": ("controls_tab", 1)}
+
+
+def resolve(key):
+    """(the tool that opens for this key, its page or None)."""
+    return ALIASES.get(key, (key, None))
+
+
 def category_of(key):
     for cat, label, keys in CATEGORIES:
         if key in keys:
@@ -104,6 +113,7 @@ PANELS = [
 
 
 def get(key):
+    key = resolve(key)[0]                       # 5.6.47: 'shapes' / 'makectrl' -> the Controls tab
     for item in PANELS:
         if item[0] == key:
             return item[:4]

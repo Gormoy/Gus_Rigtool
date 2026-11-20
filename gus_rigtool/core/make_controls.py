@@ -190,8 +190,12 @@ def plan(nodes, stack=("_offset",), hierarchy=True, both_sides=False):
 
 
 def make(nodes, shape="circle", size=None, face="X", stack=("_offset",), drive="constrain", scale=True,
-         hierarchy=True, lock=True, tag=True, side_colour=True, both_sides=False, size_factor=1.0):
-    """Make the controls; returns [(node, control)]. size None = auto per node (x size_factor)."""
+         hierarchy=True, lock=True, tag=True, side_colour=True, both_sides=False, size_factor=1.0,
+         front=0.0, front_axis="+Y", pivot_on_shape=False):
+    """Make the controls; returns [(node, control)]. size None = auto per node (x size_factor).
+    5.6.47 front / front_axis: the shape that far in front along the control's axis (+X -X +Y -Y +Z -Z);
+    pivot_on_shape: the whole control goes there (Ribbon's 'pivot on the shape'), else the pivot stays on the
+    joint and only the shape moves."""
     if drive not in DRIVE:
         raise ValueError(drive)
     stack = [s for s in stack if s] or ["_offset"]
@@ -211,11 +215,20 @@ def make(nodes, shape="circle", size=None, face="X", stack=("_offset",), drive="
             if side == "R" and cmds.nodeType(node) != "joint":
                 data = shape_data.map_points(data, lambda p: (-p[0], p[1], p[2]))
             mat = match_matrix(node)
+            if front and pivot_on_shape:                  # 5.6.47: the control itself in front (its axes kept)
+                from gus_rigtool.core import shape_edit
+                v = shape_edit.AXES[front_axis]
+                mat = list(mat)
+                for k in range(3):
+                    mat[12 + k] += float(front) * sum(v[a] * mat[a * 4 + k] for a in range(3))
             # 5.6.45: the one control maker (tagged below, once it's in the hierarchy)
             top, ctrl = control_maker.new(naming.unique(ctrl_name), data, style,
                                           groups=[naming.unique(g) for g in group_names], matrix=mat, tag=False)
             gids = [utils.uuid(top)]
             cid = utils.uuid(ctrl)
+            if front and not pivot_on_shape:              # 5.6.47: only the shape in front, the pivot on the joint
+                from gus_rigtool.core import shape_edit
+                shape_edit.in_front([ctrl], front, front_axis)
             # where the stack goes
             up = None
             if drive == "direct":

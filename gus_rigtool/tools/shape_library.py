@@ -271,7 +271,7 @@ def copy_shape(*_):
                % (naming.short_name(nodes[0]), done))
 
 
-def mirror_shape(*_):
+def mirror_shape(*_, **kw):
     """
     Two controls selected: the first is mirrored onto the second.
     Otherwise: every selected control is mirrored onto its other-side twin, found by the
@@ -282,7 +282,7 @@ def mirror_shape(*_):
     if not nodes:
         utils.warn(TOOL, "select the L control(s), or an L control then its R control.")
         return
-    axis = "XYZ".index(cmds.optionMenu(N("MirAxis"), query=True, value=True))
+    axis = "XYZ".index(kw.get("axis") or cmds.optionMenu(N("MirAxis"), query=True, value=True))   # 5.6.47: axis=
 
     pairs_names = sides.default_pairs()
 

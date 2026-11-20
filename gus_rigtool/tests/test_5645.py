@@ -25,19 +25,19 @@ ROOT = os.path.join(os.getcwd(), "..")
 # --- 1. the maker
 par = cmds.ls(createNode("transform", name="arm_grp"), long=True)[0]
 m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 4, 5, 1]
-top, ctrl = CM.new("L_arm_ctrl", shape_data.circle_curve(1.0), curves.rgb_style((0, 0, 1)),
+top, ctrl = CM.new("L_arm_ctrl", [shape_data.circle_curve(1.0)], curves.rgb_style((0, 0, 1)),
                    groups=["L_arm_ctrl_zero", "L_arm_ctrl_offset"], matrix=m, parent=par)
 check("a control in its groups (top first), under its parent",
       top == "|arm_grp|L_arm_ctrl_zero" and ctrl == "|arm_grp|L_arm_ctrl_zero|L_arm_ctrl_offset|L_arm_ctrl")
 check("at its place (world)", [round(v, 6) for v in cmds.xform(ctrl, query=True, worldSpace=True, translation=True)]
       == [3, 4, 5])
-same = curves.create_curve_control("old_way_ctrl", shape_data.circle_curve(1.0), curves.rgb_style((0, 0, 1)))
+same = curves.create_curve_control("old_way_ctrl", [shape_data.circle_curve(1.0)], curves.rgb_style((0, 0, 1)))
 check("the same curve and colour as the old way", curves.curve_shapes(ctrl) and
       curves.read_shape(ctrl) == curves.read_shape(same) and curves.read_style(ctrl) == curves.read_style(same))
 check("tagged as a Maya controller", CM.is_tagged(ctrl))
-_t, hand = CM.new("L_hand_ctrl", shape_data.circle_curve(1.0), groups=["L_hand_ctrl_offset"], parent=ctrl)
+_t, hand = CM.new("L_hand_ctrl", [shape_data.circle_curve(1.0)], groups=["L_hand_ctrl_offset"], parent=ctrl)
 check("a control under another: linked to it (pick-walk)", CM.link(hand) == ctrl and TAGS[hand] == ctrl)
-_t, loose = CM.new("C_free_ctrl", shape_data.circle_curve(1.0), tag=False)
+_t, loose = CM.new("C_free_ctrl", [shape_data.circle_curve(1.0)], tag=False)
 check("tag=False: left as it is", not CM.is_tagged(loose) and _t == loose)
 
 # --- 2. every tool goes through it (the source)
@@ -60,11 +60,11 @@ check("Builder: its control tagged, in its offset under the parent", CM.is_tagge
 
 # --- 4. Tag all controls: only when you press it; 'not a control' left out
 old_a = cmds.ls(createNode("transform", name="Old_arm_ctrl"), long=True)[0]
-curves.set_shape(old_a, shape_data.circle_curve(1.0))
+curves.set_shape(old_a, [shape_data.circle_curve(1.0)])
 old_b = cmds.ls(createNode("transform", name="Old_hand_ctrl", parent=old_a), long=True)[0]
-curves.set_shape(old_b, shape_data.circle_curve(1.0))
+curves.set_shape(old_b, [shape_data.circle_curve(1.0)])
 gone = cmds.ls(createNode("transform", name="Old_head_ctrl"), long=True)[0]
-curves.set_shape(gone, shape_data.circle_curve(1.0))
+curves.set_shape(gone, [shape_data.circle_curve(1.0)])
 from gus_rigtool.core import control_role
 control_role.set_role([gone], control=False)
 check("an old rig: nothing tagged by itself", not CM.is_tagged(old_a) and not CM.is_tagged(old_b))

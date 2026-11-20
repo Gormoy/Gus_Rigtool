@@ -1,11 +1,10 @@
 home      ok
-shapes    ok
 mirror    ok
 joints    ok
 ribbon    ok
 skin      ok
 fixes     ok
-makectrl  ok
+controls_tab ok
 stick     ok
 follow    ok
 build     ok

@@ -104,7 +104,7 @@ sys.path.insert(0, os.path.join(ROOT, ".."))
 from gus_rigtool.realmaya import window_checks as WC, maya_facts as MF
 check("Test this release: the bar, the shelf, undo, Time Slider, pick-walk, inbetween, versions, Maya facts",
       [n for n, _f in WC.CHECKS] == ["versions", "the bar", "the shelf", "undo", "time slider stretches", "pick-walk",
-                                      "inbetween", "maya facts"])
+                                      "inbetween", "controls tab", "maya facts"])
 cmds.file = mock.MagicMock(side_effect=lambda *a, **k: True if k.get("modified") else ("/x/shot.ma" if
                                                                                       k.get("sceneName") else None))
 cmds.confirmDialog = lambda **k: "Cancel"
@@ -116,8 +116,8 @@ check("Save, then test: your scene saved, then a new empty one",
       any(c.kwargs.get("save") for c in cmds.file.call_args_list) and
       any(c.kwargs.get("new") for c in cmds.file.call_args_list))
 check("Maya facts: zero, ls([]), undo, moving keys, controllers, bookmarks, node types",
-      [f.__name__ for f in MF.FACTS] == ["zero_threshold", "empty_ls", "undo_state", "key_moves", "controllers",
-                                         "bookmarks", "node_types"])
+      [f.__name__ for f in MF.FACTS] == ["zero_threshold", "empty_ls", "undo_state", "key_moves", "mesh_points",
+                                         "controllers", "bookmarks", "node_types"])
 cases = open(os.path.join(ROOT, "realmaya", "maya_cases.py")).read()
 check("...in the Terminal run too (case m)", '("m. Maya facts", maya_facts_case)' in cases)
 facts_md = open(os.path.join(ROOT, "realmaya", "MAYA_FACTS.md")).read()

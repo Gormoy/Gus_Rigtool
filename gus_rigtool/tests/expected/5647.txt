@@ -1,0 +1,37 @@
+PASS in front +Y 2: every point 2 along the control's Y (the pivot stays)
+PASS in front -X 2
+PASS stretch on Z only
+PASS size: all three
+PASS turn 90 on Y
+PASS the six directions, nothing else (Gus: just the axes)
+PASS anything else is refused
+PASS hover: the shape shows on the control, its size kept, its line width kept
+PASS ...not an undo step (undo off while it shows)
+PASS the mouse leaves: the control's own shape back
+PASS ...and nothing left to put back
+PASS a handle on the control's shape, selected for you
+PASS you click something else: it's kept (as with Done)
+PASS Done: the handle's move into the curve points (the control's channels untouched), the handle gone
+PASS Cancel: the handle gone, the shape as it was
+PASS in front, the pivot stays on the joint: only the shape moves (the control at the joint)
+PASS pivot on the shape: the whole control 2 along +Y (Ribbon's 'pivot on the shape')
+PASS one shape list: the built-in shapes, My shapes last
+PASS two pages: Make, Edit shape
+PASS Custom starts open (not in the folded 'advanced' list)
+PASS joints selected: 'Make 1 control(s) (Four Way Arrow)', Edit greyed out with the reason
+PASS controls selected: Make greyed out and says why; Edit: 'Use Four Way Arrow on 1 control(s)'
+PASS nothing selected: one control at the centre
+PASS the old keys open the Controls tab, on their page (Shapes: Edit shape; Make controls: Make)
+PASS ...the page is chosen for you
+PASS Ctrl+Z after timing beads: arc styling isn't an undo step
+PASS Break the handles: the selected key's handles move on their own
+PASS ...Join them again, both in the right-click menu
+PASS the shelf: rebuilt once for a new version (Attach and the 21 others come back), not again
+PASS ...no Gus_Animtool shelf: none is made
+PASS one curve on its own (not a list): refused, as in Maya (the pick-walk crash)
+PASS ...Test this release and World levels give a list
+PASS the fake Maya: ls([]) lists nothing (Gus's Mac)
+PASS MAYA_FACTS.md: ls([]) corrected, divide by zero measured, handles joined by default
+PASS new Maya facts: ls([]) with flags, what refuses to move keys, the nearest point on a mesh
+PASS CLAUDE.md: every release ends with the commands to paste
+36/36 passed

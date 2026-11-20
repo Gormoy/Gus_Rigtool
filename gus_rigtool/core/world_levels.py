@@ -62,7 +62,7 @@ def _hide(n, attrs):
 def _new_control(name, like, factor, parent, matrix):
     """An offset group + control at matrix under parent, with like's shape scaled by factor. (offset, ctrl)."""
     from gus_rigtool.core import control_maker            # 5.6.45: one control maker (tagged as a controller)
-    data = curves.read_shape(like) or shape_data.circle_curve(1.0)
+    data = curves.read_shape(like) or [shape_data.circle_curve(1.0)]      # 5.6.47: a shape is a list of curves
     off_name = naming.unique(name + "_offset")
     return control_maker.new(naming.unique(name), shape_data.scale(data, factor), curves.read_style(like),
                              groups=[off_name], matrix=matrix, parent=parent)

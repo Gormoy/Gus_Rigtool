@@ -72,6 +72,11 @@ def make_shelf(*_):
         mel.eval("saveAllShelves $gShelfTopLevel")
     except RuntimeError:
         pass
+    try:
+        import gus_animtool
+        A.set_opt("shelf_version", gus_animtool.__version__)   # 5.6.47: up to date for this version
+    except Exception:
+        pass
     if failed:                                              # 5.6.43: a button never vanishes without a word
         A.message("shelf: %s - please send this line." % "; ".join(failed), "warn")
     return n + 1

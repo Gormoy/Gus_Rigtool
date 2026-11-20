@@ -163,7 +163,9 @@ def ls(*args, **k):
         nodes = [n for n in S.nodes if n.parent is None and n.type in DAG_TYPES and n.type not in SHAPE_TYPES]
     elif k.get("selection") or k.get("sl") or k.get("orderedSelection"):
         nodes = [n for n in S.sel if n in S.nodes]
-    elif args and not (isinstance(args[0], (list, tuple)) and not args[0]):    # Maya: ls([]) lists EVERY node
+    elif args and isinstance(args[0], (list, tuple)) and not args[0] and not (set(k) - {"long", "l"}):
+        nodes = []                     # Maya (Gus's Mac, 5.6.46 facts): ls([]) lists nothing; with a type: see facts
+    elif args and not (isinstance(args[0], (list, tuple)) and not args[0]):    # ls([], type=...): still everything
         names = args[0] if isinstance(args[0], (list, tuple)) else list(args)
         nodes = []
         for nm in names:
@@ -611,14 +613,22 @@ cmds.confirmDialog = mock.MagicMock(return_value="Delete rig")
 from gus_rigtool.core import curves as _curves
 
 
+def _shape_data_ok(data):
+    """5.6.47 (Maya facts, rule 11): real Maya draws each curve of a shape, so a shape that isn't a list of curves
+    ({degree, points...}) fails there ('string indices must be integers') - the fake fails the same way."""
+    if isinstance(data, dict) or not all(isinstance(d, dict) and "degree" in d and "points" in d for d in data):
+        raise TypeError("string indices must be integers (a shape is a list of curves, got %s)" % type(data).__name__)
+
+
 def _ccc(name, data, style=None):
+    _shape_data_ok(data)
     t = S.create("transform", name)
     S.create("nurbsCurve", t.name + "Shape", t)
     return S.path(t)
 
 
 _curves.create_curve_control = _ccc
-_curves.set_shape = lambda *a, **k: None
+_curves.set_shape = lambda node, data, *a, **k: _shape_data_ok(data)
 from gus_rigtool.core import utils as _utils
 _SETTINGS = {}
 _utils.load_setting = lambda key, default: _SETTINGS.get(key, default)

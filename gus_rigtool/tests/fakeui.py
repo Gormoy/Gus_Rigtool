@@ -5,7 +5,7 @@ _menu_owner = [None]
 _count = [0]
 _cur = [None]                     # the current parent layout (like Maya's setParent)
 LAYOUTS = {"columnLayout", "rowLayout", "frameLayout", "rowColumnLayout", "gridLayout", "formLayout",
-           "scrollLayout", "tabLayout", "flowLayout"}
+           "scrollLayout", "tabLayout", "flowLayout", "paneLayout"}
 NOT_CHILDREN = {"menuItem", "popupMenu", "workspaceControl"}
 def _make(kind):
     def f(*args, **k):
@@ -80,7 +80,7 @@ for kind in ("textField", "intField", "floatField", "checkBox", "optionMenu", "f
              "rowColumnLayout", "separator", "floatSliderGrp", "radioButtonGrp", "iconTextButton", "gridLayout",
              "formLayout", "scrollLayout", "colorSliderGrp", "intFieldGrp", "optionMenuGrp", "layout", "control",
              "workspaceControl", "symbolButton", "popupMenu", "intSliderGrp", "tabLayout", "flowLayout", "intSlider",
-             "image", "shelfLayout", "shelfButton"):
+             "image", "shelfLayout", "shelfButton", "paneLayout"):
     setattr(cmds, kind, _make(kind))
 def _set_parent(*a, **k):
     if k.get("query"):

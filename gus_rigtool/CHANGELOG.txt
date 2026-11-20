@@ -1,3 +1,58 @@
+Gus_Rigtool 5.6.47 - the Controls tab (Make controls + Shapes in one), a more customizable shape editor; fixes from
+your Test this release
+
+Gus wanted shapes and controls more accessible in one tab, without one big block; the shape list long, with room;
+the shape editor more customizable (Ribbon's 'in front' for any control, on the axis he chooses); improvements,
+not new tools. His first Test this release found two problems, and his facts corrected one of mine.
+
+The Controls tab (Controls > Controls - the Shapes and Make controls buttons open it, on their page):
+- Left: the long shape list - each shape with its picture and name, a search box, the categories as headings,
+  My shapes last (right-click one to delete it). Drag the divider to make it wider.
+- Right, page Make: today's Make controls in three short boxes - Size and place (size, facing, In front with the
+  distance and the axis +X -X +Y -Y +Z -Z, Pivot on the shape), How it drives (drive, groups, hierarchy, both
+  sides, scale), Custom (open: colour by side, lock, controllers, name, side, centre prefix). The big button says
+  what it will do: 'Make 3 control(s) (Circle)', 'Make 1 control at the centre' - greyed out with the reason when
+  your selection doesn't fit (controls selected: Edit shape changes them).
+- Right, page Edit shape: hover a shape in the list - it shows on the selected controls (not an undo step); click
+  it, or the big button ('Use Four Way Arrow on 2 control(s)'), to keep it, its size and place kept. Move the
+  shape in front along an axis (the pivot stays). Shape handles: a handle on the shape only - move / turn / size
+  it; Done, or clicking something else, puts it into the curve (the control's channels stay at zero); Cancel
+  throws it away. Size, Stretch on one axis, Turn 90, colours, line width, by side, copy, mirror, save as My shape.
+- The old Shapes and Make controls code stays underneath (its tests still guard it); the new tab uses it.
+
+Fixes:
+- Arcs > Make weighted, then Ctrl+Z: it undid a tiny arc style change, not the weighting (each arc style change
+  was an undo step). Arc styling is never an undo step now.
+- Arcs: one key handle moved both (Maya joins them by default; its motion trail has no button to separate them).
+  Right-click Arcs > Break the handles / Join the handles again, and in the Arcs panel (Editing > Key handles).
+- Your Gus_Animtool shelf lacked 22 buttons (Attach among them): updates never rebuilt it. Now the Animtool
+  rebuilds it once for each new version, where it is.
+- Test this release's pick-walk check crashed: my code gave the control maker one curve where a shape is a list
+  of curves (the same old slip in World levels). The fake Maya accepted it; now it refuses it as Maya does.
+- Maya facts from your Mac: ls([]) lists NOTHING (my MAYA_FACTS line said 'everything' - wrong; the fake Maya
+  corrected); 'divide by zero' at 0.00001 and below; undo is on even without a window; keys move onto other
+  keys, and locked curves move, so what refused to move keys in your shot is still unknown - new fact questions
+  (a locked channel, an animation layer, ls([]) with a type) and the nearest point on a mesh (for 'fit to the
+  body' and 'lie on the skin' next).
+- Every release message now ends with the commands to paste (CLAUDE.md).
+
+Real-Maya case n (new): in front, pivot on the shape, stretch, shape handles (Done / Cancel), keep size - measured
+on real curve points. Test this release: the Controls tab (opens on its page, preview, handles + click away).
+
+Decisions I made:
+- In front: the axes only (you chose); 'away from the body' / 'toward the camera' left out.
+- Shape handles: Done, clicking something else (also keeps it), and Cancel. Hovering only previews on the Edit
+  shape page (on Make it would change controls you're not working on).
+- 'Keep their size and place' is on by default when a new shape is used (as Shapes' 'Replace: keep the current
+  size').
+- The tab is Maya's own UI like the other tabs (the hover uses a small Qt helper; without it, clicking works).
+- The old Make controls and Shapes tabs aren't listed any more; their keys, shelf buttons and Home links open
+  the Controls tab on the right page.
+
+Tested against the fake Maya (tests/test_5647.py: 36 checks; the full suite). Not tested in real Maya: the tab's
+look and the hover, the shape handles in the viewport, Break the handles on a motion trail - run Test this release
+and the Terminal tests (cases h, k, n, m).
+
 Gus_Rigtool 5.6.46 - foundations: one Animtool, Maya facts, Test this release, Copy the last problem, Bake all
 
 Gus asked for every 'better way' from the 5.6.45 review in one bigger update (attach stays as it is: a keyed

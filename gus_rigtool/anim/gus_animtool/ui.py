@@ -1127,6 +1127,21 @@ def _settings_tab():
 DOCK = ["Floating (drag its tab to dock it)", "Docked next to the Channel Box"]
 
 
+def _shelf_up_to_date():
+    """Your Gus_Animtool shelf made again once per new version - updates never rebuilt it, so new tools (Attach,
+    Bar, inbetween...) were missing from it. Only if you have the shelf; it stays where it is. True: rebuilt."""
+    import gus_animtool
+    from gus_animtool import toolbar
+    if A.opt("shelf_version", "") == gus_animtool.__version__:
+        return False
+    if not cmds.shelfLayout(toolbar.SHELF, exists=True):
+        return False
+    n = toolbar.make_shelf()
+    A.set_opt("shelf_version", gus_animtool.__version__)
+    A.message("the Gus_Animtool shelf is up to date (%d buttons) for %s." % (n, gus_animtool.__version__))
+    return True
+
+
 def _version_check():
     """This Animtool older than the Gus_Rigtool installed: say so, and offer to update it from there."""
     import gus_animtool
@@ -1169,6 +1184,10 @@ def show():
         build()
     try:                                     # 5.6.45: an Animtool older than the Gus_Rigtool next to it
         _version_check()
+    except Exception:
+        pass
+    try:                                     # 5.6.47: a new version: its shelf rebuilt once (new buttons appear)
+        _shelf_up_to_date()
     except Exception:
         pass
     if not A.opt("bar_replaces_toolbar", 0):                  # 5.6.44: the bar does its job - the toolbar off once

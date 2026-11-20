@@ -546,6 +546,7 @@ def _remember_width(key):
 def open_panel(key, width=None):
     """Open (or reopen) a tool - or the main window, key 'main' - as a dockable panel."""
     from gus_rigtool.core import utils
+    key = _follow_alias(key)
     name = panel_name(key)
     if cmds.workspaceControl(name, exists=True):
         cmds.deleteUI(name)
@@ -695,9 +696,26 @@ def _next_step(*_):
     return go_to_tool("home")
 
 
+def _follow_alias(key):
+    """5.6.47: an old tool key (Shapes, Make controls) opens the Controls tab, on its page."""
+    try:
+        from gus_rigtool import registry
+        new, page = registry.resolve(key)
+    except Exception:
+        return key
+    if new != key and page:
+        try:
+            from gus_rigtool.tools import controls_tab
+            controls_tab.WANT_PAGE["page"] = page
+        except Exception:
+            pass
+    return new
+
+
 def go_to_tool(key, section_label=None):
     """Show a tool in the main window (opening it if needed), with one of its sections open."""
     from gus_rigtool import registry
+    key = _follow_alias(key)
     if not cmds.formLayout(_form_name(MAIN_KEY), exists=True):
         open_panel(MAIN_KEY)
     cat, _label = registry.category_of(key)
@@ -1368,6 +1386,9 @@ def my_tools():
     keys = utils.load_setting("myTools", None) or list(registry.MY_TOOLS)
     out = []
     for k in keys:
+        k = registry.resolve(k)[0]                 # 5.6.47: a saved 'Shapes' / 'Make controls' -> Controls
+        if k in out:
+            continue
         try:
             registry.get(k)
             out.append(k)

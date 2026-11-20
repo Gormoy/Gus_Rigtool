@@ -19,7 +19,7 @@ check("Joints in Build, SDK in Connect, Behaviour in Controls", registry.categor
       registry.category_of("sdk")[0] == "links" and registry.category_of("behaviour")[0] == "controls")
 with mock.patch.object(ui.utils if hasattr(ui, "utils") else __import__("gus_rigtool.core.utils", fromlist=["x"]),
                        "load_setting", lambda k, d=None: d):
-    check("My tools by default: what you use most", ui.my_tools() == ["select", "groups", "shapes", "ribbon",
+    check("My tools by default: what you use most", ui.my_tools() == ["select", "groups", "controls_tab", "ribbon",
                                                                        "checker", "mirror", "constrain"])
 m = ui.map_text()
 check("the map: every page, and what moved", all(registry.get(k)[1] in m for k in tools) and
