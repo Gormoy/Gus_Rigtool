@@ -10,7 +10,7 @@ Build: a full body rig from guides (modular builder).
   5. Animation : IK / FK matching (no jump when switching); Make animator tools (Gus Animtool).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 
 from gus_rigtool.builder import build as bld
 from gus_rigtool.builder import existing, guides, limb, modules, names

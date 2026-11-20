@@ -9,7 +9,7 @@ pair puts the label above the field when narrow, the main button is the area's b
 
 import re
 
-from gus_rigtool.newui import proxy, theme, widgets
+from gus_rigtool.newui import proxy, record, theme, widgets
 from gus_rigtool.newui.qt import QtCore, QtGui, QtWidgets
 
 Qt = QtCore.Qt
@@ -58,6 +58,7 @@ class Field(object):
         self.items = [dict(i) for i in node.items]       # a menu's items (label, command, _name)
         self.list_items = list(node.kw.get("_items", []))
         self.alive = True
+        self.card = None
         page.fields[node.name] = self
         proxy.REGISTRY[node.name] = self
         for i in self.items:
@@ -130,12 +131,24 @@ class Field(object):
             return w.height()
         if key in ("collapse", "cl"):
             return getattr(w, "closed", False)
-        if key == "rgbValue":
-            return self.node.kw.get("rgbValue")
+        if key in ("rgbValue", "rgb"):
+            return list(self.node.kw.get("rgbValue") or self.node.kw.get("rgb") or (1.0, 1.0, 1.0))
+        if isinstance(w, _Numbers):
+            if key in ("value", "v"):
+                return w.values()
+            m = re.match(r"v(?:alue)?([1-4])$", key)
+            if m:
+                return w.get(int(m.group(1)))
         return self.node.kw.get(key)
 
     def edit(self, key, v):
         w, kind = self.widget, self.kind
+        m = re.match(r"v(?:alue)?([1-4])$", key) if isinstance(w, _Numbers) else None
+        if m or (isinstance(w, _Numbers) and key in ("value", "v")):
+            vals = [v] if m else list(v if isinstance(v, (list, tuple)) else [v])
+            for i, x in enumerate(vals):
+                w.set(int(m.group(1)) if m else i + 1, x)
+            return self.node.name
         if key in ("enable", "en"):
             w.setEnabled(bool(v))
         elif key in ("manage", "m", "visible", "vis"):
@@ -208,11 +221,12 @@ class Field(object):
         elif key == "_level":
             w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" %
                             theme.LEVEL.get(v, theme.LEVEL["idle"]))
-        elif key in ("rgbValue",):
+        elif key in ("rgbValue", "rgb"):
             self.node.kw["rgbValue"] = v
             hx = _hex(v)
-            if hx:
-                w.setStyleSheet("QPushButton { background: %s; border-radius: 5px; }" % hx)
+            sw = getattr(w, "swatch", w)
+            if hx and isinstance(sw, QtWidgets.QAbstractButton):
+                sw.setStyleSheet("QPushButton { background: %s; border-radius: 5px; border: 1px solid #0006; }" % hx)
         elif key in ("tabLabel", "tl"):
             pass
         else:
@@ -303,6 +317,8 @@ class Field(object):
                 return 0 if self.kind == "intField" else 0.0
         if isinstance(w, _Slider):
             return w.value()
+        if isinstance(w, _Numbers):
+            return w.values()
         return self.node.kw.get("value")
 
     def _set_value(self, v):
@@ -334,6 +350,41 @@ class Field(object):
             w.setCurrentIndex(i)
             w.blockSignals(False)
         self.node.kw["select"] = i + 1
+
+
+class _Numbers(QtWidgets.QWidget):
+    """The number boxes of a floatFieldGrp / intFieldGrp."""
+
+    def __init__(self, kw, integer):
+        super(_Numbers, self).__init__()
+        self.integer, self.kw = integer, kw
+        count = int(kw.get("numberOfFields") or kw.get("nf") or 0) or \
+            max([i for i in (1, 2, 3, 4) if ("value%d" % i) in kw or ("v%d" % i) in kw] or [1])
+        h = QtWidgets.QHBoxLayout(self)
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(4)
+        self.boxes = []
+        for i in range(count):
+            e = QtWidgets.QLineEdit()
+            e.setMinimumWidth(52)
+            e.setMaximumWidth(90)
+            h.addWidget(e)
+            self.boxes.append(e)
+            self.set(i + 1, kw.get("value%d" % (i + 1), kw.get("v%d" % (i + 1), 0)))
+
+    def get(self, i):
+        t = self.boxes[i - 1].text().strip() if 0 < i <= len(self.boxes) else ""
+        try:
+            return int(float(t)) if self.integer else float(t)
+        except ValueError:
+            return 0 if self.integer else 0.0
+
+    def set(self, i, v):
+        if 0 < i <= len(self.boxes):
+            self.boxes[i - 1].setText(_num_text(v, self.kw, "intField" if self.integer else "floatField"))
+
+    def values(self):
+        return [self.get(i + 1) for i in range(len(self.boxes))]
 
 
 class _Item(object):
@@ -410,8 +461,8 @@ def _combo(field, items, current):
     c = QtWidgets.QComboBox()
     c.addItems([str(i.get("label", "")) for i in items])
     c.setCurrentIndex(max(0, current))
-    c.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
-    c.setMinimumContentsLength(6)
+    c.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)     # 5.7.3: as wide as its longest choice
+    c.setMinimumContentsLength(0)
     cb = field.node.kw.get("changeCommand") or field.node.kw.get("cc")
 
     def changed(i):
@@ -519,7 +570,8 @@ class Page(object):
         v.setContentsMargins(0, 0, 0, 0)
         v.setSpacing(6)
         self._children(n, v, ctx)
-        Field(self, n, w)
+        f = Field(self, n, w)
+        f.card = ctx.get("card")                    # where a refill draws (proxy.refill)
         return w
 
     _columnLayout = _box
@@ -579,8 +631,14 @@ class Page(object):
         closed = bool(n.kw.get("collapse") or n.kw.get("cl"))
         if "(advanced)" in title:
             title, closed = title.replace("(advanced)", "").strip(), True
-        card = widgets.Card(title, number, str(n.kw.get("annotation") or ""), closed)
-        self.cards.append(card)
+        inside = ctx.get("card") is not None              # 5.7.3: a section inside a card - a lighter panel
+        card = widgets.Card(title, None if inside else number, str(n.kw.get("annotation") or ""), closed)
+        if inside:
+            card.setProperty("inner", "true")
+            card.pin.hide()
+            widgets.restyle(card)
+        else:
+            self.cards.append(card)
         inner = {"card": card}
         for c in n.children:
             w = self._node(c, inner)
@@ -832,6 +890,36 @@ class Page(object):
         Field(self, n, e, "intField" if integer else "floatField")
         return e
 
+    def _colorSliderGrp(self, n, ctx):
+        """5.7.3: a colour square - click it to choose (Maya's colour slider in the old window)."""
+        rgb = n.kw.get("rgbValue") or n.kw.get("rgb") or (1.0, 1.0, 1.0)
+        box = widgets.flow_box(8)
+        lab = n.label()
+        if lab:
+            box.layout().addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
+        sw = QtWidgets.QPushButton("")
+        sw.setFixedSize(46, 24)
+        sw.setCursor(Qt.PointingHandCursor)
+        sw.setToolTip("Click to choose the colour")
+        box.swatch = sw
+        box.layout().addWidget(sw)
+        f = Field(self, n, box, "colorSliderGrp")
+        f.edit("rgbValue", list(rgb))
+        cc = n.kw.get("changeCommand") or n.kw.get("cc") or n.kw.get("dragCommand") or n.kw.get("dc")
+
+        def pick():
+            cur = f.query("rgbValue")
+            got = QtWidgets.QColorDialog.getColor(QtGui.QColor.fromRgbF(*[float(x) for x in cur[:3]]), sw,
+                                                  "Choose the colour")
+            if got.isValid():
+                f.edit("rgbValue", [got.redF(), got.greenF(), got.blueF()])
+                _call(cc, True)
+        sw.clicked.connect(lambda _=False: pick())
+        self._note(n, "shown")
+        return box
+
+    _attrColorSliderGrp = _colorSliderGrp
+
     def _floatField(self, n, ctx):
         return self._number(n, ctx, False)
 
@@ -937,23 +1025,72 @@ class Page(object):
 
     _textFieldButtonGrp = _textFieldGrp
 
-    def _floatFieldGrp(self, n, ctx):
-        box, e = self._group(n, ctx, QtWidgets.QLineEdit)
-        e.setText(_num_text(n.kw.get("value1", 0), n.kw, "floatField"))
-        Field(self, n, e, "floatField")
+    def _number_group(self, n, ctx, integer):
+        """A label and 1-4 number boxes (5.7.3: each box answers value1..value4; value is the list, as in Maya)."""
+        box, m = self._group(n, ctx, lambda: _Numbers(n.kw, integer))
+        Field(self, n, m, "intFieldGrp" if integer else "floatFieldGrp")
+        cc = n.kw.get("changeCommand") or n.kw.get("cc")
+        if cc:
+            for e in m.boxes:
+                e.editingFinished.connect(lambda: _call(cc, True))
         return box
 
+    def _floatFieldGrp(self, n, ctx):
+        return self._number_group(n, ctx, False)
+
     def _intFieldGrp(self, n, ctx):
-        box, e = self._group(n, ctx, QtWidgets.QLineEdit)
-        e.setText(_num_text(n.kw.get("value1", 0), n.kw, "intField"))
-        Field(self, n, e, "intField")
-        return box
+        return self._number_group(n, ctx, True)
 
     def _checkBoxGrp(self, n, ctx):
         box, c = self._group(n, ctx, lambda: QtWidgets.QCheckBox(str(n.kw.get("label1") or "")))
         c.setChecked(bool(n.kw.get("value1")))
         Field(self, n, c, "checkBox")
         return box
+
+
+def _forget(field_page, node):
+    """The fields made for node's children are gone (the layout is filled again)."""
+    for c in node.children:
+        _forget(field_page, c)
+        f = field_page.fields.pop(c.name, None)
+        if f is not None:
+            f.alive = False
+            for i in f.items:
+                proxy.REGISTRY.pop(i.get("_name"), None)
+            if proxy.REGISTRY.get(c.name) is f:
+                proxy.REGISTRY.pop(c.name, None)
+
+
+_refills = {"n": 0}
+
+
+def refill(field, fill):
+    """Run fill() with its controls written down (as when the page was recorded), then draw them into the shown
+    layout `field`, in place of what it had (proxy.refill)."""
+    page, node = field.page, field.node
+    _refills["n"] += 1
+    rec = record.Recorder("%sr%d_" % (node.name, _refills["n"]))
+    rec.live = True
+    root = record.Node(node.kind, node.name, node.kw, None)
+    rec.root = rec.current = root
+    rec.nodes = {node.name: root}
+    with record.recording(rec):
+        got = fill()
+    _forget(page, node)
+    lay = field.widget.layout()
+    while lay is not None and lay.count():
+        item = lay.takeAt(0)
+        w = item.widget()
+        if w is not None:
+            w.hide()
+            w.deleteLater()
+    node.children = list(root.children)
+    for c in node.children:
+        c.parent = node
+    page._children(node, lay, {"card": field.card})
+    for anchor, fn in rec.selection:
+        page.rec.selection.append((anchor, fn))
+    return got
 
 
 def _role(w, role):

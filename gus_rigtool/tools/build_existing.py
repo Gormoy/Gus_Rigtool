@@ -4,7 +4,7 @@ The Build tab's '3 Existing rig' page (split out of tools/build_tab in 4.2.0): s
 name.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 
 from gus_rigtool.builder import build as bld  # noqa: F401
 from gus_rigtool.builder import existing, guides, limb, modules, names  # noqa: F401

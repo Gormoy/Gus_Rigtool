@@ -28,7 +28,8 @@ class Node(object):
 
 
 class Recorder(object):
-    def __init__(self):
+    def __init__(self, stem=""):
+        self.stem = stem                    # 5.7.3: in unnamed controls' names - unique per page and per refill
         self.root = Node("columnLayout", "__page__", {"adjustableColumn": True}, None)
         self.nodes = {"__page__": self.root}
         self.current = self.root
@@ -38,19 +39,37 @@ class Recorder(object):
         self.lights = []                    # anchors of status lights
         self.deferred = []
         self.jobs = []
+        self.live = False                   # 5.7.3: refilling part of a page that is shown - names the recorder
+        #                                     doesn't know are the shown page's fields (proxy.REGISTRY)
 
     # ---------------------------------------------------------------- names
     def _name(self, kind, args, k):
         if args and isinstance(args[0], str) and args[0]:
             return proxy.short(args[0])
         self.count += 1
-        return "%s__%d" % (kind, self.count)
+        return "%s__%s%d" % (kind, self.stem, self.count)
 
     def find(self, name):
         return self.nodes.get(proxy.short(name)) if isinstance(name, str) else None
 
     # ---------------------------------------------------------------- one call
+    def _shown(self, kind, args, k):
+        """While refilling: the shown page's field this call is about (one this recording didn't make)."""
+        if not self.live or not args or not isinstance(args[0], str) or self.find(args[0]) is not None:
+            return None
+        if not (k.get("query") or k.get("q") or k.get("edit") or k.get("e") or k.get("exists") or k.get("ex")) \
+                and kind not in ("deleteUI", "objectTypeUI"):
+            return None
+        return proxy.REGISTRY.get(proxy.short(args[0]))
+
     def call(self, kind, args, k):
+        f = self._shown(kind, args, k)
+        if f is not None:
+            if kind == "deleteUI":
+                return f.delete()
+            if kind == "objectTypeUI":
+                return f.kind
+            return f.cmd(kind, args, k)
         if kind == "setParent":
             return self._set_parent(args, k)
         if kind == "deleteUI":
@@ -170,6 +189,8 @@ class Recorder(object):
                 return n.kw.get("selectTabIndex", 1)
             if key in ("width", "w", "height", "h"):
                 return n.kw.get(key) or 100
+            if key in ("rgbValue", "rgb"):                     # 5.7.3: a colour picker's colour (Ribbon reads it)
+                return list(n.kw.get("rgbValue") or n.kw.get("rgb") or (1.0, 1.0, 1.0))
             if key in ("allItems", "ai"):
                 return list(n.kw.get("_items", [])) or None
             if key in ("selectIndexedItem", "sii", "selectItem", "si"):
@@ -199,9 +220,12 @@ class Recorder(object):
 class recording(object):
     """with recording() as rec: build(prefix) - the page written down in rec.root."""
 
+    def __init__(self, rec=None):
+        self.given = rec
+
     def __enter__(self):
         from gus_rigtool.core import ui
-        self.rec = Recorder()
+        self.rec = self.given or Recorder()
         self.saved = {}
         for kind in proxy.UI_KINDS:              # pages that use maya.cmds itself (and core/ui) are recorded too
             fn = getattr(_mc, kind, None)
@@ -254,6 +278,6 @@ class recording(object):
 
 def record(build, prefix):
     """The tree build(prefix) makes (and the recorder, for its selection callbacks)."""
-    with recording() as rec:
+    with recording(Recorder(prefix)) as rec:
         build(prefix)
     return rec

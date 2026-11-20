@@ -1,3 +1,36 @@
+Gus_Rigtool 5.7.3 - Build in the new look, two rows of tabs
+
+Gus approved the 5.7.3 plan (window work only; Face and Ribbon as steps and the two-curve loft come in 5.7.4).
+
+Build (1 in the sidebar):
+- Build, Face, Ribbon and Joints in the new look, as they are today - every button and option (a test counts
+  over 500), nothing twice, nothing cut off at 300 / 420 / 700 px.
+- Two rows of tabs: the tools on top (Build · Face · Ribbon · Joints), the chosen tool's own pages under them
+  (Build: Rig builder · Animation · Existing rig · Advanced - its old tabs). Skin works the same way: Skin · Fixes
+  on top, Skin's 6 pages under them.
+- Build's "Settings of the picked module" fills in when you pick a module in the list, in the new look; Apply,
+  Reset and "Use these as my defaults" are the tool's own.
+- Ribbon's control and mirror colours: a colour square - click it to choose.
+- Sections inside a card (Ribbon > Surface > Make a plane, the module settings' Options / Names...) are drawn as
+  lighter panels inside it, with no number or pin.
+- No drop-down cuts its text: each one is as wide as its longest choice, and the 'nothing cut off' test checks
+  drop-downs too.
+
+Fixed on the way:
+- A number box with a label (Ribbon > Make a plane > Length, the spans...) gave the tool the number it started
+  with, not the one you typed. It gives what you typed now.
+- Pop out: a sub-page name with "&" (Copy & mirror) lost the "&".
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release checks Build in your Maya: both
+rows of tabs, nothing cut off narrow or wide, Ribbon's colour square and - if the scene has guides - picking a
+module fills its settings.
+
+Decisions I made:
+- Build's status light stays above its pages (as in the old window, where it sat above the tabs).
+- Pop out of a Build page: Build's buttons work in the last page opened (the main window or the panel) - the
+  same as the old window's Pop out, which worked like this too.
+- Unnamed controls get names unique to their page, so two pages (or a refill) never share one.
+
 Gus_Rigtool 5.7.2.1 - Test this release's 'new window' check fixed (it stopped at Settings)
 
 Gus's Test this release on 5.7.2: the 'new window' check crashed - an older line still looked for Settings in the

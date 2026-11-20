@@ -322,6 +322,49 @@ def new_window(rep):
         cut = cut_pages(sk, sk.subs)
         rep.expect("Skin: its 7 sub-pages, nothing cut off narrow or wide", len(sk.subs) == 7 and not cut,
                    str(list(cut.items())[:3]))
+        f.go(("skin", "Bind"))
+        settle()
+        rep.expect("Skin: Skin and Fixes on the top row, Skin's 6 pages under them (5.7.3)",
+                   [b.text() for b in f.tabs.findChildren(QtWidgets.QPushButton)] == ["Skin", "Fixes"] and
+                   len(f.tabs2.findChildren(QtWidgets.QPushButton)) == 6)
+
+    def build():                               # 5.7.3: the Build area in the new look, two rows of tabs
+        bd = f._area("build")
+        cut = cut_pages(bd, bd.subs)
+        rep.expect("Build: Build's 4 pages, Face, Ribbon, Joints - nothing cut off narrow or wide (drop-downs too)",
+                   len(bd.subs) == 7 and not cut, str(list(cut.items())[:3]))
+        f.go(("build", 1))
+        settle()
+        top = [b.text() for b in f.tabs.findChildren(QtWidgets.QPushButton)]
+        under = [b.text() for b in f.tabs2.findChildren(QtWidgets.QPushButton)] if f.tabs2.isVisible() else []
+        rep.expect("two rows of tabs: Build Face Ribbon Joints, then Rig builder Animation Existing rig Advanced",
+                   top == ["Build", "Face", "Ribbon", "Joints"] and len(under) == 4, "%s / %s" % (top, under))
+        f.go(("ribbon", None))
+        settle()
+        from gus_rigtool.tools import ribbon_tool as RT
+        col = bd.pages["ribbon"].fields.get(RT.N("Color"))
+        rep.expect("Ribbon: the control colour is a colour square", col is not None and
+                   getattr(col.widget, "swatch", None) is not None)
+        f.go(("build", 1))
+        settle()
+        lists = [w for w in bd.findChildren(QtWidgets.QListWidget) if w.isVisible()]
+        if not lists or not lists[0].count():
+            rep.add(INFO, "Build > Settings of the picked module", "no modules in this scene: not checked (open a "
+                    "scene with guides and run it again to check it)")
+            return
+        was = cmds.ls(selection=True) or []
+        try:
+            lists[0].clearSelection()
+            lists[0].item(0).setSelected(True)
+            settle()
+            from gus_rigtool.tools import build_tab as B
+            form = bd.pages["build"].fields.get(B.N("Form"))
+            shown = [w.text() for w in form.widget.findChildren(QtWidgets.QLabel) if w.isVisible()] if form else []
+            rep.expect("Build: pick a module in the list - its settings appear (in the new look)",
+                       any("  -  " in t for t in shown), str(shown[:2]))
+        finally:
+            lists[0].clearSelection()
+            cmds.select(was, replace=True) if was else cmds.select(clear=True)
 
     def profiles():
         was = FV.current()
@@ -337,7 +380,7 @@ def new_window(rep):
     for name, part in (("one window", one_window), ("Controls pages, narrow and wide", controls_cut),
                        ("docking", docking), ("Limits + Ctrl+Z", limits), ("Settings", settings),
                        ("Pop out", pop_out), ("favourites bar and row", favourites), ("Skin", skin),
-                       ("favourites profiles", profiles)):
+                       ("Build", build), ("favourites profiles", profiles)):
         rep.guard("new window: " + name, part)
     rep.add(INFO, "look at the new window", "the sidebar, the coloured areas; drag it narrow - nothing is cut off, "
             "the sidebar becomes icons")

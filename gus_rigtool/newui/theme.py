@@ -74,6 +74,9 @@ QLabel[role="faint"] { color: %(FAINT)s; font-size: 11px; }
 QLabel[role="sec"] { color: %(FAINT)s; font-size: 10px; letter-spacing: 1px; }
 QFrame#gusCard { background: %(CARD)s; border-radius: 9px; border-left: 3px solid %(accent)s; }
 QFrame#gusCard[closed="true"] { background: %(CARD_CLOSED)s; border-left: 3px solid %(LINE)s; }
+QFrame#gusCard[inner="true"] { background: rgba(255,255,255,0.04); border-left: 2px solid rgba(255,255,255,0.12);
+                               border-radius: 7px; }
+QFrame#gusCard[inner="true"] QLabel#gusCardTitle { font-size: 13px; }
 QFrame#gusCard[pinned="true"] { border-left: 3px solid #ffcf5c; background: #3d3a30; }
 QLabel#gusNum { background: %(accent)s; color: #111; border-radius: 10px; font-weight: bold; font-size: 11px; }
 QFrame#gusCard[closed="true"] QLabel#gusNum { background: #5a6069; }
@@ -98,6 +101,10 @@ QPushButton[role="seg"] { background: #2e3237; border-radius: 0px; border: 1px s
 QPushButton[role="seg"]:checked { background: %(accent)s; color: #111; font-weight: bold; }
 QPushButton[role="tab"] { background: transparent; color: %(DIM)s; border-radius: 7px; padding: 7px 12px; }
 QPushButton[role="tab"]:checked { background: %(PANEL)s; color: white; border-top: 3px solid %(accent)s; }
+QPushButton[role="tab2"] { background: transparent; color: %(DIM)s; border-radius: 11px; padding: 4px 11px;
+                          font-size: 12px; border: 1px solid transparent; }
+QPushButton[role="tab2"]:checked { background: %(soft)s; color: white; border: 1px solid %(accent)s; }
+QPushButton[role="tab2"]:hover { color: white; }
 QPushButton[role="nav"] { background: transparent; text-align: left; padding: 6px 8px; border-radius: 6px;
                           color: #cfd2d6; border-left: 3px solid transparent; }
 QPushButton[role="nav"]:checked { background: rgba(255,255,255,0.07); color: white; font-weight: bold; }

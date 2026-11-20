@@ -12,7 +12,7 @@ The bar at the top shows the ribbon the buttons act on: the selected one (or a n
 build), else the last one built.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 
 from gus_rigtool.core import naming, ribbon, ui, utils
 

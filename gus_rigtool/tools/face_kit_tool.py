@@ -5,7 +5,7 @@ eye control's Blink, a mouth ribbon following the jaw, brows as a control hierar
     import gus_rigtool.main as gr; gr.show_tool("face")
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 
 from gus_rigtool.core import face_kit, naming, ui, utils
 

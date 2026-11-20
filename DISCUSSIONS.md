@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Gus: "yes to all" - split into 5.7.3 (Build area in the new look: colour pickers, no cut
+  drop-downs, inner sections, live refill of the module settings, two rows of tabs for Build and Skin) and 5.7.4
+  (Face and Ribbon as steps + two curves, plus a real-Maya case for lofting from two curves). 5.7.3 built and sent
+  for his tests; waiting for his results and his OK to push (push 5.7.3 to main only after he says so).
+
 - 2026-11-20: Face + Ribbon previews approved. Two curves is the default (remembered) for eyelids, strips - and
   (read as yes) mouth and brows too; edges stay as the other way. Full 5.7.3 plan to send before building.
 
@@ -78,11 +83,9 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.3 plan (Build area) presented 2026-11-20 with real screenshots; waiting for his OK.
-- 5.7.3 Build preview, first look (recorded off-screen): Build 237 controls (its own 4 tabs: Rig builder,
-  Animation, Existing rig, Advanced -> sub-pages), Face 81 (10 cards), Joints 89 - all drawn, nothing unknown;
-  Ribbon's page code stops in the recorder (its refresh() gets None where Maya gives a list) - to fix in 5.7.3.
-- Next after 5.7.2: 5.7.3 Build area (preview first), then Connect, Check, Toolbox.
+- 5.7.3 (Build in the new look) sent: waiting for his Real-Maya + Test this release results, then his OK to push.
+- Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
+  Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
 ## Ideas parked (not now)

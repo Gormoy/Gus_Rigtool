@@ -73,3 +73,15 @@ class _Cmds(object):
 
 
 cmds = _Cmds()
+
+
+def refill(layout, fill):
+    """5.7.3: fill() remakes what is inside `layout` (Build's "Settings of the picked module", when you pick a
+    module). In the old window - or while the page is being recorded - it simply runs. In the new window the
+    controls it makes are drawn into the shown layout, in place of the ones it had."""
+    name = short(layout) if layout else ""
+    f = REGISTRY.get(name)
+    if f is None or _REC["on"] is not None or not f.alive:
+        return fill()
+    from gus_rigtool.newui import render
+    return render.refill(f, fill)

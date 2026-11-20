@@ -12,7 +12,7 @@ Orient    : aim + up axes; up from No flip / World / Object / Curve normal
 Result    : a chain (parented) or separate joints, rotate = 0 (all in Joint Orient)
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 import maya.api.OpenMaya as om
 
 from gus_rigtool.core import chain_math, colors, ik_spline, naming, shape_data, sides, ui, utils

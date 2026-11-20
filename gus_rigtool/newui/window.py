@@ -16,7 +16,11 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls", "skin", "settings")      # the areas drawn in the new look (5.7.0 Controls, 5.7.2 Skin)
+NEW_LOOK = ("controls", "skin", "settings", "build")   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
+#                                                        5.7.3 Build)
+# a tool whose page has its own tabs: each tab a sub-page (5.7.3 Build) - its tabLayout's name, the tabs' labels
+TABBED = {"build": ("Tabs", ["Rig builder", "Animation", "Existing rig", "Advanced"])}
+TWO_ROWS = ("build", "skin")                     # tools on the top row, the chosen tool's sub-pages under it
 # a long tool page shown as several sub-pages: (label, the card titles on it) - 5.7.2 Skin (Gus's picture)
 SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror weights"]),
                    ("Save / load", ["Save / load weights"]), ("Clean", ["Clean"]),
@@ -127,6 +131,8 @@ class Area(QtWidgets.QWidget):
                 self.subs += [("controls_tab", 1, "Make"), ("controls_tab", 2, "Edit shape")]
             elif t in SPLITS and key in NEW_LOOK:
                 self.subs += [(t, label, label) for label, _titles in SPLITS[t]]
+            elif t in TABBED and key in NEW_LOOK:
+                self.subs += [(t, i + 1, label) for i, label in enumerate(TABBED[t][1])]
             else:
                 self.subs.append((t, None, registry.get(t)[1]))
         self.pages = {}                         # tool key -> render.Page (new look)
@@ -200,6 +206,8 @@ class Area(QtWidgets.QWidget):
         self.pages[tool] = page
         if tool == "controls_tab":
             self._controls_tab(page, mod, prefix)
+        elif tool in TABBED:
+            self._tabbed(page, tool, prefix)
         else:
             w = page.build()
             w.layout().setContentsMargins(0, 0, 0, 0)
@@ -251,6 +259,35 @@ class Area(QtWidgets.QWidget):
             self.widgets[("controls_tab", i + 1)] = w
             self.body.addWidget(w)
 
+    def _tabbed(self, page, tool, prefix):
+        """A tool with its own tabs (Build): what is above them (its status light) stays on every sub-page; each
+        tab is a sub-page."""
+        w = page.build()
+        w.layout().setContentsMargins(0, 0, 0, 0)
+        name = prefix + TABBED[tool][0]
+        w.tab_name = name
+        w.tab_pages = [pw for _l, pw in page.tabs.get(name, [])]
+        for pw in w.tab_pages:
+            w.layout().insertWidget(w.layout().count() - 1, pw)
+        for i in range(max(1, len(w.tab_pages))):
+            self.widgets[(tool, i + 1)] = w
+        page.on_tab = lambda _name, i, t=tool: self.frame.go((t, i))
+        self.body.addWidget(w)
+
+    def _show_tab(self, page, w, i):
+        for j, pw in enumerate(getattr(w, "tab_pages", [])):
+            pw.setVisible(j + 1 == i)
+        name = getattr(w, "tab_name", "")
+        if page.tab_current.get(name) != i:
+            page.tab_current[name] = i
+            node = page.rec.find(name)
+            cc = node.kw.get("changeCommand") or node.kw.get("cc") if node is not None else None
+            if cc:
+                try:
+                    render._call(cc)
+                except Exception:
+                    pass
+
     def prefix(self, tool):
         return "%s%s_" % (self.pfx, tool)
 
@@ -286,6 +323,8 @@ class Area(QtWidgets.QWidget):
         page = self.pages.get(sub[0])
         if page is not None and sub[0] in SPLITS:
             self._show_cards(page, sub)
+        if page is not None and sub[0] in TABBED and sub[1]:
+            self._show_tab(page, target, sub[1])
         if page is not None and sub[0] == "controls_tab" and sub[1]:
             name = self.prefix("controls_tab") + "Pages"
             if page.tab_current.get(name) != sub[1]:
@@ -501,7 +540,17 @@ def cut_off(area):
             bad.append((type(w).__name__, str(text or w.objectName())[:40]))
         elif isinstance(w, QtWidgets.QAbstractButton) and text and not _fits(w, text):
             bad.append((type(w).__name__ + " text", str(text)[:40]))
+        elif isinstance(w, QtWidgets.QComboBox) and not _combo_fits(w):
+            bad.append(("drop-down text", str(w.currentText())[:40]))
     return bad
+
+
+def _combo_fits(w):
+    """A drop-down shows its whole choice (5.7.3: 'One per spa...' was cut)."""
+    fm = w.fontMetrics()
+    adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
+    room = w.width() - 28                            # the arrow and the padding
+    return all(adv(w.itemText(i)) <= room + 1 for i in range(w.count()))
 
 
 def _fits(w, text):
@@ -598,6 +647,10 @@ class Frame(QtWidgets.QWidget):
         self.tabs = widgets.flow_box(2)
         self.tabs.layout().setContentsMargins(0, 8, 0, 0)
         hv.addWidget(self.tabs)
+        self.tabs2 = widgets.flow_box(2)                 # 5.7.3: the chosen tool's sub-pages (Build, Skin)
+        self.tabs2.setObjectName("gusTabs2")
+        self.tabs2.layout().setContentsMargins(0, 2, 0, 0)
+        hv.addWidget(self.tabs2)
         main.addWidget(self.head)
         self.subtitle = widgets.label("", "dim")
         self.subtitle.setContentsMargins(14, 6, 14, 0)
@@ -767,10 +820,24 @@ class Frame(QtWidgets.QWidget):
         return self.areas[key]
 
     def _fill_tabs(self, area_obj, sub):
-        lay = self.tabs.layout()
+        _clear(self.tabs2.layout())
+        if area_obj.key in TWO_ROWS and len(area_obj.tools) > 1:
+            from gus_rigtool import registry
+            tools = [(t, None, registry.get(t)[1]) for t in area_obj.tools]
+            self._tab_row(self.tabs.layout(), tools, (sub[0], None),
+                          lambda t, p: self.go(area_obj.default_sub(t)), "tab")
+            mine = [s for s in area_obj.subs if s[0] == sub[0]]
+            self.tabs2.setVisible(len(mine) > 1)
+            if len(mine) > 1:
+                self._tab_row(self.tabs2.layout(), mine, sub, lambda t, p: self.go((t, p)), "tab2")
+            return
+        self.tabs2.setVisible(False)
+        self._tab_row(self.tabs.layout(), area_obj.subs, sub, lambda t, p: self.go((t, p)), "tab")
+
+    def _tab_row(self, lay, shown, sub, go, role):
+        """One row of tabs (with More ▾ for the rest when the window is narrow)."""
         _clear(lay)
         narrow = self.width() and self.width() < 520
-        shown = area_obj.subs
         more = []
         if narrow and len(shown) > 3:
             keep = [s for s in shown[:2]]
@@ -781,11 +848,11 @@ class Frame(QtWidgets.QWidget):
             shown = keep
         for t, p, label in shown:
             b = QtWidgets.QPushButton(label.replace("&", "&&"))
-            b.setProperty("role", "tab")
+            b.setProperty("role", role)
             b.setCheckable(True)
-            b.setChecked((t, p) == tuple(sub))
+            b.setChecked((t, p) == tuple(sub[:2]))
             b.setCursor(Qt.PointingHandCursor)
-            b.clicked.connect(lambda _=False, t=t, p=p: self.go((t, p)))
+            b.clicked.connect(lambda _=False, t=t, p=p: go(t, p))
             lay.addWidget(b)
         if more:
             m = QtWidgets.QToolButton()
@@ -794,7 +861,7 @@ class Frame(QtWidgets.QWidget):
             menu = QtWidgets.QMenu(m)
             for t, p, label in more:
                 a = menu.addAction(label)
-                a.triggered.connect(lambda _=False, t=t, p=p: self.go((t, p)))
+                a.triggered.connect(lambda _=False, t=t, p=p: go(t, p))
             m.setMenu(menu)
             m.setStyleSheet("QToolButton { background: transparent; color: %s; padding: 7px 10px; }" % theme.DIM)
             lay.addWidget(m)
@@ -1046,7 +1113,7 @@ class PopFrame(QtWidgets.QWidget):
         _clear(self.tabs.layout())
         if len(self.body.subs) > 1:
             for t, p, label in self.body.subs:
-                b = QtWidgets.QPushButton(label)
+                b = QtWidgets.QPushButton(label.replace("&", "&&"))
                 b.setProperty("role", "tab")
                 b.setCheckable(True)
                 b.setChecked((t, p) == tuple(sub))

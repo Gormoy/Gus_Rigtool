@@ -6,7 +6,7 @@ Every field is made by one small widget function that returns a reader; the form
 the guides - it never builds (Build picked does).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.3)
 
 from gus_rigtool.builder import guides, modules
 from gus_rigtool.core import ui, utils
@@ -317,6 +317,13 @@ def clear():
 
 
 def fill():
+    """The settings of the picked module(s). In the new window (5.7.3) they are drawn into its page, in place."""
+    from gus_rigtool.newui import proxy
+    _into["layout"] = None
+    return proxy.refill(_N("Form"), _fill)
+
+
+def _fill():
     if not cmds.columnLayout(_parent(), exists=True):
         return
     clear()

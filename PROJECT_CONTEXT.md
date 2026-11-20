@@ -290,6 +290,15 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   profiles (favProfiles: current, mine; builtin = All tools + one per area; My tools mirrors myTools), edit mode
   on the row (× remove, drop to reorder, + Add grouped) and the bar (per-profile shape: favBar.shapes).
   Next: 5.7.3 Build (preview first), then Connect, Check, Toolbox.
+- **5.7.3**: NEW_LOOK + build; window.TABBED (a tool's own tabLayout -> sub-pages, Area._tabbed / _show_tab: the
+  tab's changeCommand runs, so Build remembers sub_page2); TWO_ROWS (build, skin: Frame.tabs = tools, Frame.tabs2 =
+  the tool's sub-pages, role "tab2"); proxy.refill(layout, fill) + render.refill: build_form.fill() in the new
+  window records into the shown Form layout (Recorder.live: unknown names go to the shown page's fields) and
+  draws it in place; Recorder(stem) - unnamed controls named kind__<stem>N, unique per page / refill;
+  colorSliderGrp drawn (swatch + QColorDialog, rgbValue); float/intFieldGrp = render._Numbers (value list,
+  value1..4); nested frameLayouts = inner cards (property inner, no number/pin, not in page.cards); combos
+  AdjustToContents + window._combo_fits in cut_off. build_tab, build_form, build_existing, face_kit_tool,
+  ribbon_tool, joint_chain use the proxy cmds. Next: 5.7.4 Face/Ribbon steps + two curves.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
