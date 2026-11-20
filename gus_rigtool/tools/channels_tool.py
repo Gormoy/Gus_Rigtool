@@ -11,7 +11,7 @@ Channels: lock, hide and make keyable the channels of many controls at once.
                see what is locked / hidden on the selection.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import attrs, ui, utils
 

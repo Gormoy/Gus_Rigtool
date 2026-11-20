@@ -1,3 +1,59 @@
+Gus_Rigtool 5.7.0 - the new window: a sidebar with your rig's steps, a colour per area, nothing cut off at any
+width; the Controls area in the new look
+
+Gus wanted the whole window to look like the previews (version 2: a colour per area, pictures, line icons - no
+emoji), no tool ever cropped, the same functionality as 5.6.48, and the old window a click away. 5.7.0 is the frame
+and the Controls area; the other areas follow (5.7.1 Skin, 5.7.2 Build, 5.7.3 Connect, 5.7.4 Check, 5.7.5 Toolbox).
+
+The new window (gr.show(), the shelf's Main button - it's the default now):
+- The sidebar: Home; your rig in order - 1 Build, 2 Skin, 3 Controls, 4 Connect, 5 Check & publish; any time -
+  Toolbox, My tools; Recent (your last pages); Help. Narrow: only the coloured icons (names on hover).
+- Search any tool (top): type part of a name, pick it, the window goes there.
+- Each area has its colour on its header, its card numbers and its big button (Controls green, Skin pink, Build
+  orange, Connect purple, Check yellow, Toolbox blue). X / Y / Z are red / green / blue, like Maya.
+- Under the header: its sub-pages (narrow: the ones that don't fit go in More); each area opens on the sub-page
+  you used last.
+- Selected: what you have selected, as chips (joint, control, mesh), and what it is ("a chain").
+- Next step (the lamp): what to do with this selection - a chain of joints: make an FK chain of controls; a mesh
+  and joints: bind the skin; controls then a mesh: Fit to the body; an edge loop: Shape from edges. It only
+  suggests; its button takes you to the page.
+- Pin a card (the pin on any card): it stays on top of every page of that area. Pin it again to put it back.
+- The status line at the bottom shows every tool's messages, as before.
+
+The Controls area in the new look: Make, Edit shape, Behaviour, Attributes, Channels, Spaces, Follow, Stick to
+skin. Every button, field and option of 5.6.48 is there, with the same names and the same actions (a test checks
+all 332 of them - none lost, none twice). Sections are numbered cards (the rare ones closed, saying what's inside);
+rows wrap and long buttons / check boxes go onto two lines instead of being cut off; a label sits above its field
+when narrow. The shape list is a grid of pictures (search, hover, right-click a My shape to delete it).
+
+The other areas show today's pages inside the new window until they're redone.
+
+The old window: Toolbox > Settings > Window > 'Use the old window (5.6)' - gr.show() opens it from then on; 'Use
+the new window' comes back. Your options are the same in both (the same saved settings).
+
+Real Qt tests here (off-screen, PySide6): every Controls page at 300, 420 and 700 px - nothing sticks out; a
+Limits typed in the new window reaches the tool's own code; one click on a shape makes the controls; the next
+step; pinning; search; the switch. Test this release (in your Maya): the new window opens (and how long it
+takes), its title, nothing cut off narrow and wide, docked and floating, Limits + one Ctrl+Z, a page of today's
+window inside it.
+
+Only tested here off-screen with PySide6 (Maya 2025's Qt) and the fake Maya - not in Maya, and not with PySide2
+(your Maya 2024). Please run Test this release: it's the first time this window meets Maya.
+
+Decisions I made:
+- How the pages are made: each tool's own page code (the same that builds the old window) is recorded and drawn
+  in the new look; its fields keep their names, so the tool's functions find them as before (a small router,
+  newui/proxy.py, sends those names to the new window and everything else to Maya). One page code for both
+  windows: nothing to keep in step, nothing can be lost.
+- The Controls tab's two pages (Make, Edit shape) are two sub-pages of the Controls area, each with the shape grid
+  on top (Pick a shape / Swap the shape).
+- Some preview pictures (the lock grid in X / Y / Z colours, the 'In front' drawing) aren't in 5.7.0: the pages
+  are today's pages in the new look. They can come page by page.
+- 'Last check' in the sidebar left out for now (the checker doesn't keep its last result between runs).
+- In Maya, links inside today's pages (Home's next step, the Guide) open the page in the new window.
+- Areas not redone keep today's pages as they are inside the new window - they can still crop when very narrow
+  until their release.
+
 Gus_Rigtool 5.6.48 - shapes on the body (fit to the body, lie on the skin, shape from edges); one click makes the
 controls again; a new control on any rig's control; other rigs' controls change shape
 

@@ -171,9 +171,10 @@ def controls_tab(rep):
     from gus_rigtool.tools import controls_tab as CT
     import gus_rigtool.main as gr
     rep.start("The Controls tab (Make controls + Shapes)")
+    from gus_rigtool.newui.proxy import cmds as pc            # 5.7: the new window's Controls too
     gr.show_tool("shapes")
     rep.expect("the old Shapes button opens the Controls tab on Edit shape",
-               cmds.tabLayout(CT.N("Pages"), exists=True) and CT.page() == 2)
+               pc.tabLayout(CT.N("Pages"), exists=True) and CT.page() == 2)
     rep.add(INFO, "shapes in the list", str(len(CT._rows.get(CT._P["p"], []))))
     _t, c = CM.new("Check_shape_ctrl", [shape_data.circle_curve(1.0)])
     own = curves.read_shape(c)
@@ -204,9 +205,78 @@ def controls_tab(rep):
     rep.add(INFO, "look at the Controls tab", "the list on the left (drag the divider), Make / Edit shape on the right")
 
 
+def new_window(rep):
+    """5.7.0: the new window - opens, its title, docked and floating, nothing cut off when narrow, a Controls action
+    and its Ctrl+Z, today's pages inside it, how long it takes to open."""
+    import time
+    import gus_rigtool
+    from gus_rigtool.newui import window as W
+    from gus_rigtool.newui.qt import QtWidgets
+    rep.start("The new window (5.7)")
+    W.close()
+    t0 = time.time()
+    f = W.show()
+    QtWidgets.QApplication.processEvents()
+    rep.add(INFO, "it opened in", "%.2f s" % (time.time() - t0))
+    rep.expect("it's open and visible", f is not None and f.isVisible())
+    label = cmds.workspaceControl(W.WS, query=True, label=True)
+    rep.expect("its title says this version", gus_rigtool.__version__ in (label or ""), label)
+    cut = {}
+    for width in (330, 700):
+        try:
+            cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
+        except RuntimeError:
+            pass
+        for sub in [("controls_tab", 1), ("controls_tab", 2), ("behaviour", None), ("attrs", None),
+                    ("channels", None), ("spaces", None), ("follow", None), ("stick", None)]:
+            f.go(sub)
+            for _i in range(3):
+                QtWidgets.QApplication.processEvents()
+            got = W.cut_off(f.areas["controls"])
+            if got:
+                cut["%s at %d" % (sub[0], f.width())] = got[:2]
+    rep.expect("nothing cut off: every Controls page, narrow and wide", not cut, str(list(cut.items())[:3]))
+    try:
+        cmds.workspaceControl(W.WS, edit=True, tabToControl=("ChannelBoxLayerEditor", -1))
+        QtWidgets.QApplication.processEvents()
+        rep.expect("docked next to the Channel Box: still there", W._frame["w"] is not None and
+                   W._frame["w"].isVisible())
+        cmds.workspaceControl(W.WS, edit=True, floating=True)
+        QtWidgets.QApplication.processEvents()
+        rep.expect("...floating again", W._frame["w"].isVisible())
+    except RuntimeError as e:
+        rep.add(NOTE, "docking", str(e))
+    c = _circle("Check_limit_ctrl")
+    cmds.select(c, replace=True)
+    f.go(("behaviour", None))
+    page = f.areas["controls"].pages["behaviour"]
+    page.fields["q7_behaviour_LimMin"].widget.setText("-45")
+    page.fields["q7_behaviour_LimMax"].widget.setText("90")
+    page.fields["q7_behaviour_LimCh"].widget.setCurrentIndex(5)
+    for b in page.cards[0].findChildren(QtWidgets.QPushButton):
+        if b.text() == "Apply to the selected controls":
+            b.click()
+            break
+    lim = cmds.transformLimits(c, query=True, rotationZ=True)
+    rep.expect("Behaviour > Limits in the new window: rotate Z -45 .. 90 on the control", lim == [-45.0, 90.0],
+               str(lim))
+    cmds.undo()
+    rep.expect("...one Ctrl+Z takes it off", not any(cmds.transformLimits(c, query=True,
+                                                                         enableRotationZ=True) or []))
+    f.go(("settings", None))
+    for _i in range(3):
+        QtWidgets.QApplication.processEvents()
+    old = f.areas["toolbox"].widgets.get(("settings", None))
+    rep.expect("Toolbox > Settings: today's page shows inside the new window (the Window switch on it)",
+               old is not None and old.layout().count() > 0 and old.isVisible())
+    rep.add(INFO, "look at the new window", "the sidebar, the green Controls pages; drag it narrow - nothing is cut "
+            "off, the sidebar becomes icons")
+    f.go(("controls_tab", 1))
+
+
 CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
-          ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
+          ("new window", new_window), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 
 
 def run(ask=True):

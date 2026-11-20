@@ -19,11 +19,58 @@ from gus_rigtool.core import quick, ui, utils
 SHELF = "Gus_Rigtool"
 
 
+WINDOW_KEY = "window"            # 5.7: "new" (default) or "old" - Toolbox > Settings > Window
+
+
+def new_window():
+    """True: the 5.7 window (the default); False: the 5.6 one (Toolbox > Settings > Window)."""
+    return utils.load_setting(WINDOW_KEY, "new") != "old"
+
+
+def use_window(which):
+    """'new' or 'old': which window gr.show() opens from now on - the other one closes, this one opens."""
+    utils.save_setting(WINDOW_KEY, "old" if which == "old" else "new")
+    try:                        # after the click: the button that asked is in the window that closes
+        cmds.evalDeferred(lambda: _switch(which))
+    except (RuntimeError, AttributeError):
+        _switch(which)
+
+
+def _switch(which):
+    if which == "old":
+        try:
+            from gus_rigtool.newui import window
+            window.close()
+        except Exception:
+            pass
+        ui.open_panel(ui.MAIN_KEY)
+    else:
+        try:
+            if cmds.workspaceControl(ui.panel_name(ui.MAIN_KEY), exists=True):
+                cmds.deleteUI(ui.panel_name(ui.MAIN_KEY))
+        except RuntimeError:
+            pass
+        from gus_rigtool.newui import window
+        window.show("settings")
+
+
 def show():
+    if new_window():
+        try:
+            from gus_rigtool.newui import window
+            return window.show()
+        except Exception as e:                  # the new window can't open: the old one, and say why
+            ui.report_error(e, "new window")
     ui.open_panel(ui.MAIN_KEY)
 
 
 def show_tool(key):
+    if new_window():
+        try:
+            from gus_rigtool.newui import window
+            return window.show(key)
+        except Exception as e:
+            ui.report_error(e, "new window")
     ui.open_panel(key)
 
 

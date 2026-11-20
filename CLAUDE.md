@@ -6,7 +6,7 @@ Put this file at the root of the repository. Claude Code reads it automatically 
 
 Gus_Rigtool is a personal rigging toolkit for **Maya 2024+** (Python 3.10 inside Maya; code must also lint as
 Python 3.7). It ships with **Gus Animtool** (`gus_rigtool/anim/gus_animtool/`), the animators' tools: picker,
-pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.6.48**.
+pose library, IK/FK switch, mirror, tween, keys tools. Current version: **5.7.0**.
 
 Owner: Gus (Gustavo), a rigger on macOS. He is finishing the **Hare** rig for the short "The Tree That Bloomed in
 Winter". He writes in English (sometimes Portuguese) and prefers plain words over jargon.
@@ -77,6 +77,9 @@ gus_rigtool/
   builder/                build / publish / deliver (publish.py, deliver.py, anim_export.py, ...)
   tools/                  the Maya UI tabs (ribbon_tool.py, checker.py, ...)
   anim/gus_animtool/      Gus Animtool (anim.py, ui.py, pickerqt.py, pickmodel.py, pickmore.py, pickshapes.py, ...)
+  newui/                  5.7 window (Qt): window.py (frame, sidebar, areas), record.py (a page's build() written
+                          down), render.py (drawn in the new look), proxy.py (the pages' `cmds`: their field names
+                          go to the new widgets), widgets.py, theme.py, icons.py, nextstep.py
   tests/                  run_tests.py, fakemaya.py, fakeqt.py, test_*.py, expected/*.txt
 ```
 
@@ -99,6 +102,10 @@ gus_rigtool/
   or `run_maya_tests.command` (Mac); mayapy runs `maya_cases.py` and writes `maya_test_results.txt`, which he
   sends. They can't run here. Add a case there for anything the fake Maya can't show, and list in the release
   message which cases to run.
+- **The new window** (since 5.7.0): `test_570` builds it with real Qt off-screen (`pip install PySide6`; Maya
+  2024 itself uses PySide2). It checks nothing is cut off at 300 / 420 / 700 px and that no control of a page is
+  lost (a page in the new look is its tool's own build(), recorded). A tool drawn in the new look imports `cmds`
+  from `gus_rigtool.newui.proxy`, not maya.cmds.
 - Lint only the changed files: `ruff check --select F --target-version py37 <files>`. Linting the whole repo
   reports thousands of false errors, because tests use names from `exec`'d fakes.
 

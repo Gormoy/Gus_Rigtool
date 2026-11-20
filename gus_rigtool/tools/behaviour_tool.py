@@ -4,7 +4,7 @@ front of the mesh, a chain stopped at the body. (Lock / hide channels: the Chann
     import gus_rigtool.main as gr; gr.show_tool("behaviour")
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import naming, ui, utils
 

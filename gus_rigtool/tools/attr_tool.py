@@ -16,7 +16,7 @@ delete: it comes back at the end of the list, with its value, keys and connectio
   4 Copy    : the picked attributes from the first selected control to the others.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import attrs, ui, utils
 

@@ -15,7 +15,7 @@ The big button says what it will do with your selection; when it can't, it's gre
 
 import os
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 import gus_rigtool
 from gus_rigtool.core import control_maker, curves, naming, shape_data, shape_edit, ui, utils

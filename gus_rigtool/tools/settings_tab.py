@@ -229,6 +229,16 @@ def build(prefix="p_settings_"):
     cmds.textField(textChangedCommand=_w(search), annotation="Type part of an option's name, e.g. colour.")
     cmds.setParent("..")
 
+    ui.section("Window", help_text="5.7: the new window (a sidebar, a colour per area, nothing cut off) or the old "
+               "one (5.6, tabs). Your options are the same in both; switch any time.")
+    import gus_rigtool.main as gr
+    ui.note("Now: the %s window." % ("new" if gr.new_window() else "old (5.6)"))
+    ui.row(2, 170)
+    cmds.button(label="Use the new window", height=26, command=_w(_guard(lambda *_: gr.use_window("new"))))
+    cmds.button(label="Use the old window (5.6)", height=26, command=_w(_guard(lambda *_: gr.use_window("old"))))
+    cmds.setParent("..")
+    _end()
+
     ui.section("Update", help_text="Install a newer Gus_Rigtool from its zip (the one you downloaded - no "
                "unzipping, no drag and drop). The old files are kept as gus_rigtool_backup; Gus_Rigtool restarts "
                "and the Script Editor says which version is running.")

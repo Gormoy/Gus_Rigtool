@@ -1,0 +1,34 @@
+PASS nothing lost: every named control of today's 7 Controls pages is on the new pages (332 controls)
+PASS nothing twice: no control appears twice
+PASS every kind of control is drawn (none left as 'not known')
+PASS nothing cut off: every Controls page at 300, 420 and 700 px wide
+PASS the sidebar: Home, the rig's 5 steps, Toolbox (names); narrow: icons only
+PASS ...narrow: icons only, the section names hidden
+  [info] rz limited -45 .. 90 on 1 control(s).
+PASS Behaviour > Limits: rz, -45, 90 typed in the new window - Apply limits rz -45 .. 90 (the tool's own code)
+PASS ...the old window's name for that field still goes to Maya (the proxy only takes the new window's)
+PASS Make: one click on a shape makes the controls (the tool sees it's on its Make page)
+PASS Edit shape: the tool knows it's on Edit shape (hover previews only there)
+PASS ...the shape you clicked is marked on both pages
+PASS Spaces: a target the tool adds shows in its list
+PASS Follow: the curve choice (radio buttons) read by the tool
+PASS the status line shows the tools' messages
+PASS next step: a chain of joints -> Make (an FK chain)
+PASS ...a mesh and joints -> Skin > Bind
+PASS ...controls, then a mesh -> Edit shape (On the body)
+PASS ...an edge loop -> Shape from edges
+PASS ...nothing selected: no suggestion
+PASS in the window: 2 joints selected - the lamp suggests Make, the Selected box shows them
+PASS ...its button takes you there (nothing is made)
+PASS pin 'In front of the mesh': it stays on top of the other Controls pages (Attributes)
+PASS ...unpinned: back in its page
+PASS search 'Edit shape': the Controls area on Edit shape
+PASS search 'ribbon': the Build area on Ribbon (today's page inside the new window until Build is redone)
+PASS an area opens on the sub-page you used last
+PASS the new window is the default
+PASS Toolbox > Settings > Window > the old window: gr.show() opens the old one from now on
+PASS ...the switch is on Settings (both windows show it)
+PASS old keys (the Shapes / Make controls shelf buttons) open the right page
+PASS Qt: PySide6 (Maya 2025+) or PySide2 (Maya 2024)
+PASS the window is rebuilt when Maya reopens it at start-up, with this version's title
+32/32 passed

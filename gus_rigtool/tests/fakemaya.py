@@ -10,6 +10,10 @@ api = types.ModuleType("maya.api"); om = mock.MagicMock()
 maya.cmds = cmds; maya.mel = mel; maya.api = api; api.OpenMaya = om
 sys.modules.update({"maya": maya, "maya.cmds": cmds, "maya.mel": mel, "maya.api": api,
                     "maya.api.OpenMaya": om, "maya.api.OpenMayaAnim": mock.MagicMock()})
+if not _os.environ.get("GUS_REAL_QT"):      # 5.7: a real PySide6 installed for test_570 stays out of the others
+    for _q in ("PySide6", "shiboken6"):        # (they use fakeqt.py, as before)
+        if _q not in sys.modules:
+            sys.modules[_q] = None
 
 from gus_rigtool.core import mirror_engine as me   # pure maths, uses cmds lazily
 

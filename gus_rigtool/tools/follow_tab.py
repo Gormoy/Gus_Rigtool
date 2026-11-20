@@ -10,7 +10,7 @@ cheeks follow the mouth corners...
 Stick to skin has its own tab (4.2.0).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 from gus_rigtool.core import follow, naming, ui, utils
 

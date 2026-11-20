@@ -272,6 +272,14 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   look 'version 2' approved (a colour per area: Build orange, Skin pink, Controls green, Connect purple, Check
   yellow, Toolbox blue; X/Y/Z red/green/blue; selection chips; shapes as pictures; drawings for hard fields),
   same functionality as 5.6.48, sub-pages remembered, an inventory test per area (nothing lost, nothing twice).
+- **5.7.0** (Gus: 'make the new one default'): gus_rigtool/newui/ - the Qt window (window.py: Frame, Area,
+  OldPage; workspaceControl gusRigtool57Window, uiScript restore()); pages = the tool's build() recorded
+  (record.py) and drawn (render.py: Field answers query/edit by name; cards, wrapping rows, QFormLayout label
+  above field); proxy.py = the `cmds` of core/ui and the 7 Controls tools (UI names registered by the new window
+  go there). Controls area in the new look (controls_tab -> Make / Edit shape sub-pages with ShapeGrid); other
+  areas = today's pages embedded (OldPage, in Maya only). main.new_window() / use_window(); Settings > Window.
+  core/ui: STATUS_HOOKS, REBUILD_HOOKS, _to_new_window in go_to_tool. Next: 5.7.1 Skin (preview first), then
+  Build, Connect, Check, Toolbox (then the old window can go); 5.8 one look for the Animtool / bar / Arcs / Attach.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

@@ -16,7 +16,7 @@ import os
 import platform
 import traceback
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds    # 5.7: maya.cmds, and the new window's fields by name
 
 # colours
 HEADER_BG = (0.17, 0.23, 0.29)
@@ -477,8 +477,17 @@ def status_line():
     return form
 
 
+STATUS_HOOKS = []         # 5.7: the new window's status line
+REBUILD_HOOKS = []        # 5.7: the new window draws a page again when a tool asks (rebuild_page)
+
+
 def status(message, level="info"):
     """Show a message on every open Gus_Rigtool status line."""
+    for hook in list(STATUS_HOOKS):
+        try:
+            hook(message, level)
+        except Exception:
+            STATUS_HOOKS.remove(hook)
     alive = []
     for ctrl in _status_controls:
         try:
@@ -712,9 +721,23 @@ def _follow_alias(key):
     return new
 
 
+def _to_new_window(key, section_label=None):
+    """In Maya, with the new window in use (the default): show the tool there. False: use the old window."""
+    try:
+        import gus_rigtool.main as gr
+        from gus_rigtool.newui import window
+        if not (gr.new_window() and window.in_maya()):
+            return False
+        return window.show(key, section_label) is not None
+    except Exception:
+        return False
+
+
 def go_to_tool(key, section_label=None):
     """Show a tool in the main window (opening it if needed), with one of its sections open."""
     from gus_rigtool import registry
+    if _to_new_window(key, section_label):            # 5.7: the new window is the one in use
+        return True
     key = _follow_alias(key)
     if not cmds.formLayout(_form_name(MAIN_KEY), exists=True):
         open_panel(MAIN_KEY)
@@ -852,6 +875,11 @@ def rebuild_page(key):
     """5.6.1: a page built while its tab was hidden (in the background, or for the search) is built again the first
     time it's shown - Maya sizes a page it can't see wrong, and cut off what didn't fit (Make controls,
     Constraints > 3, Connect > 3). Built while visible, it's sized like any page built in front of you."""
+    for hook in list(REBUILD_HOOKS):
+        try:
+            hook(key)
+        except Exception:
+            pass
     got = _built_hidden.pop(key, None)
     if not got:
         return False
@@ -1155,17 +1183,19 @@ class _Fit(object):
     """While a page is built, its texts / buttons / check boxes fit the window (see _fitting), and its sections
     re-measure the page when they open / close (see _framing)."""
     def __enter__(self):
+        import maya.cmds as mc                     # 5.7: Maya's own cmds (this module's `cmds` is the proxy)
         self.saved = {}
         for kind in FIT_KINDS + ("frameLayout",):
-            fn = getattr(cmds, kind, None)
+            fn = getattr(mc, kind, None)
             if fn is not None and not getattr(fn, "_gus_fit", False):
                 self.saved[kind] = fn
-                setattr(cmds, kind, _framing(fn) if kind == "frameLayout" else _fitting(fn, kind))
+                setattr(mc, kind, _framing(fn) if kind == "frameLayout" else _fitting(fn, kind))
         return self
 
     def __exit__(self, *exc):
+        import maya.cmds as mc
         for kind, fn in self.saved.items():
-            setattr(cmds, kind, fn)
+            setattr(mc, kind, fn)
         return False
 
 
