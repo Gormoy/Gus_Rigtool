@@ -17,6 +17,12 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-20: Animtool pitch answers: style A Studio is the default (B / C not asked for - keep as options to
+  show again later); bar variants 1 row with labels, 2 compact row, 3 grid AND 4 the pie on a hotkey - in the pie
+  each tool's NAME UNDER its icon; the bar needs a profile with ALL the tools too. Release order 5.8.0-5.8.5 OK.
+  He wants MORE design options and tool improvements before it's built - maybe in a separate chat just for
+  design. Now: finish the 5.7 releases (5.7.2 Settings button + favourites editing + Skin, then the rest).
+
 - 2026-11-20: Gus: "We are not building new tools, just improving what we have." Wants the Animtool presented as
   a studio pitch (clearer, immersive, ideas from other departments and tools, honest about flaws, style variants).
 
@@ -43,12 +49,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Open plans / waiting on Gus
 
-- The Animtool pitch (2026-11-20, 6 slides: today vs proposal, principles + ideas borrowed from other departments,
-  more pages, style variants A Studio / B Compact / C High contrast / D Maya-native, bar variants 1 row with
-  labels / 2 compact row / 3 grid / 4 pie on a hotkey / 5 viewport HUD / 6 docked by the Channel Box, honest
-  risks + rollout 5.8.0-5.8.5). Waiting for: which style variants (recommended A default + B + C), which bar
-  variants (1-3 core; 4-6 optional), whether the pie / HUD count as 'new tools' for him (they are new ways in).
-  Mock-up sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py - see its README).
+- The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
+  possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
+- 5.7.2: preview of the Skin area + the Settings button + favourites editing, then the plan, then build.
 - Push 5.7.1 to main (needs his explicit "push 5.7.1").
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
