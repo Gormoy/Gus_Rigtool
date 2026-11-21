@@ -22,7 +22,8 @@ TOOL_HINTS = {
              "click the first point to close it. Drag points or handles to adjust; Ctrl-drag breaks a handle.",
     "arrow": "Drag from the tail to the head.",
     "circle": "Drag across the box the circle fits in.",
-    "eraser": "Click or drag over strokes to remove them - saved notes' strokes on this frame too.",
+    "eraser": "Rub over lines: only the part under the eraser goes (Size = how big). Saved notes on this "
+              "frame too.",
 }
 STYLE = """
 QWidget#reviewNotesWindow { background: #3a3a3a; }

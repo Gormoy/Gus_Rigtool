@@ -587,9 +587,44 @@ class SketchTests(unittest.TestCase):
         s.press((0.5, 0.9))
         self.assertEqual(len(s.strokes), 1)                      # far away: nothing
         s.press((0.2, 0.105))
-        self.assertEqual(s.strokes, [])
+        self.assertEqual(len(s.strokes), 2)                      # cut in two
+        self.assertEqual((s.strokes[0]["points"][0], s.strokes[1]["points"][-1]), ([0.1, 0.1], [0.3, 0.1]))
         s.clear()
         self.assertIsNone(s.camera)
+
+    def test_eraser_on_curves_circles_arrows(self):
+        from reviewNotes import sketch
+        curve = {"tool": "bezier", "color": [1, 0, 0], "width": 3, "closed": False,
+                 "anchors": [[[0.1, 0.5], [0.1, 0.5], [0.2, 0.1]], [[0.5, 0.1], [0.4, 0.1], [0.6, 0.1]],
+                             [[0.9, 0.5], [0.8, 0.1], [0.9, 0.5]]]}
+        out, changed = sketch.cut([curve], (0.5, 0.1), 0.02)
+        self.assertTrue(changed)
+        self.assertEqual([x["tool"] for x in out], ["pen", "pen"])           # the arc split at its peak
+        self.assertEqual(out[0]["color"], [1, 0, 0])
+        ring = {"tool": "circle", "points": [[0.4, 0.7], [0.6, 0.9]]}
+        out, changed = sketch.cut([ring], (0.6, 0.8), 0.02)
+        self.assertEqual((changed, len(out)), (True, 1))                    # a ring cut once: one open line
+        arrow = {"tool": "arrow", "points": [[0.1, 0.5], [0.4, 0.5]]}
+        out, changed = sketch.cut([arrow], (0.25, 0.5), 0.02)
+        self.assertEqual(len(out), 3)                                       # shaft in two + the head
+        same, changed = sketch.cut([ring, arrow], (0.9, 0.1), 0.02)
+        self.assertFalse(changed)
+        self.assertEqual(same, [ring, arrow])                               # untouched: kept as they were
+
+    def test_saved_notes_eraser_saves_once_keeps_backup(self):
+        d = tempfile.mkdtemp()
+        try:
+            path = os.path.join(d, "shot.review.json")
+            n = store.add_note(path, store.make_note("cam", 1, strokes=[{"tool": "pen", "points": [[0, 0], [1, 0]]}]))
+            store.add_note(path, store.make_note("cam", 2))                 # the .bak now has note 1 as it was
+            with open(path + ".bak") as f:
+                before = f.read()
+            store.set_strokes(path, {n["id"]: [{"tool": "pen", "points": [[0, 0], [0.4, 0]]}]}, backup=False)
+            with open(path + ".bak") as f:
+                self.assertEqual(f.read(), before)                          # a drag doesn't replace the backup
+            self.assertEqual(store.read(path)["notes"][0]["strokes"][0]["points"], [[0, 0], [0.4, 0]])
+        finally:
+            shutil.rmtree(d)
 
     def test_drawing_shown_live_with_handles(self):
         s = self.s
@@ -606,6 +641,7 @@ class Fixes021Tests(unittest.TestCase):
     """0.2.1 (Gus): the drawing sticks to its frame, the eraser drags and finds strokes, Esc drops a curve."""
 
     def test_drag_eraser(self):
+        """0.2.2: rubbing across two lines cuts a gap in each; the third line is left alone."""
         from reviewNotes import sketch
         s = sketch.Sketch()
         for y in (0.1, 0.3, 0.5):
@@ -615,9 +651,15 @@ class Fixes021Tests(unittest.TestCase):
         s.set_tool("eraser")
         s.press((0.25, 0.0))
         s.move((0.25, 0.2))
-        s.move((0.25, 0.32))                                  # rubbed across the first two lines
+        s.move((0.25, 0.32))
         s.release((0.25, 0.32))
-        self.assertEqual([x["points"][0][1] for x in s.strokes], [0.5])
+        self.assertEqual(len(s.strokes), 5)                    # 2 + 2 pieces, and the untouched line
+        r = sketch.eraser_radius(s.width)
+        for st in s.strokes:
+            for q in st["points"]:
+                if q[1] in (0.1, 0.3):
+                    self.assertGreaterEqual(abs(q[0] - 0.25), r * 0.99)   # nothing left under the eraser
+        self.assertIn([[0.1, 0.5], [0.4, 0.5]], [st["points"] for st in s.strokes])
 
     def test_nearest_on_saved_strokes(self):
         from reviewNotes import sketch

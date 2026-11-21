@@ -70,8 +70,9 @@ def _double_click(p):
     return double
 
 
-def _erase_saved(cam, frame, p):
-    """The eraser also takes strokes off SAVED notes shown here (this camera, on this frame)."""
+def _erase_saved(cam, frame, points, radius, first):
+    """The eraser on SAVED notes shown here (this camera, on this frame): only what it rubs over goes.
+    One save per mouse event; the .bak is made only when you press (it keeps the file from before)."""
     path = controller.review_path()
     if not path:
         return False
@@ -80,18 +81,16 @@ def _erase_saved(cam, frame, p):
     except store.ReviewFileError:
         return False
     names = draw.camera_names(cam)
-    best = None
+    changes = {}
     for n in notes:
-        if draw.camera_matches(n["camera"], names) and draw.note_state(n, frame, 0) == "now":
-            i, d = sketch.nearest(n["strokes"], p)
-            if i is not None and (best is None or d < best[2]):
-                best = (n, i, d)
-    if best is None:
-        return False
-    n, i, _ = best
-    strokes = [x for k, x in enumerate(n["strokes"]) if k != i]
-    store.update_note(path, n["id"], strokes=strokes)
-    return True
+        if draw.camera_matches(n["camera"], names) and draw.note_state(n, frame, 0) == "now" and n["strokes"]:
+            strokes, hit = n["strokes"], False
+            for q in points:
+                strokes, changed = sketch.cut(strokes, q, radius)
+                hit = hit or changed
+            if hit:
+                changes[n["id"]] = strokes
+    return bool(changes) and store.set_strokes(path, changes, backup=first) > 0
 
 
 def _use(p, pressing):
@@ -102,11 +101,10 @@ def _use(p, pressing):
     if s.tool == "eraser":                                # along the whole drag, the drawing's strokes first
         if pressing:
             s._last_erase = p
-        gone = False
-        for q in ([p] if pressing else s._erase_path(p)):
-            if not s._erase(q) and _erase_saved(cam, frame, q):
-                gone = True
-        if gone:
+        points = [p] if pressing else s._erase_path(p)
+        for q in points:
+            s._erase(q)
+        if _erase_saved(cam, frame, points, sketch.eraser_radius(s.width), pressing):
             changed()
         return
     if s.camera and (s.camera != cam or s.frame != frame):

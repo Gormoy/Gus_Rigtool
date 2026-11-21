@@ -17,6 +17,16 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus on 0.2.1: notes stick to their frame now; Enter / Esc / double-click for curves work; the
+  eraser "just deletes everything instead of acting like an eraser" -> 0.2.2: the eraser cuts only the part it
+  rubs over (a touched curve / circle / arrow becomes plain lines), Size = eraser size, saved notes too (one
+  save per mouse event, .bak keeps the file from before the drag). His video test2.mov = a playblast with the
+  notes in it (playblasts OK). "In general it's looking good" - asked when SyncSketch comes in. Found
+  (SyncSketch's own Python library README; their site wasn't reachable from here): API access needs an
+  ENTERPRISE account; the drawing (stroke) format isn't documented publicly. Plan sent: he checks his account
+  has an API key (Settings > Developer Options), runs a small script on his Mac that saves one review's notes to
+  a JSON file (his key never in chat), then I build the import. Waiting for his answers.
+
 - 2026-11-21: Gus tried 0.2.0: "it works", curves and notes work. Problems: notes "not sticking to the frame,
   going for the whole duration"; the eraser didn't work well; curves need Enter to stop. 0.2.1 (fixes to what he
   tested, done straight away given "I don't feel we are going forward"): the unsaved drawing shows only on its

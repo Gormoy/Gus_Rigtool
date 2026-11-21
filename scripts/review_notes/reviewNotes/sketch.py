@@ -9,7 +9,7 @@ Tools:
           (Alt is Maya's camera); End curve (or another tool, or Save) finishes it
   arrow   press = the tail, release = the head
   circle  press and release = two corners of the box it fits in
-  eraser  click or drag over strokes to remove them (saved notes' strokes too: drawtool.py)
+  eraser  rub over lines: only the part under it goes (Size = how big); saved notes too (drawtool.py)
 Enter ends a curve (or saves the note), Esc throws the curve away, a double-click ends it too (drawtool.py).
 """
 
@@ -58,6 +58,41 @@ def nearest(strokes, p, limit=ERASE):
             if d < best_d:
                 best, best_d = i, d
     return (best, best_d) if best is not None else (None, None)
+
+
+def eraser_radius(width):
+    """How far (gate widths) the eraser reaches: the Size setting (3 = 0.018, about 18 px on a 1000 px gate)."""
+    return 0.006 + 0.004 * max(1, int(width))
+
+
+def cut(strokes, p, radius, aspect=ASPECT):
+    """The strokes with what's within `radius` of p rubbed out, like a real eraser (0.2.2 - before, a whole
+    stroke went: Gus "just delete everything"). A stroke the eraser touches becomes plain lines (pen strokes)
+    without the rubbed part; untouched strokes stay as they are. Returns (strokes, changed)."""
+    from reviewNotes.draw import polylines
+    out, changed = [], False
+    for stroke in strokes:
+        lines = polylines(stroke, aspect)
+        if not any(seg_dist(p, a, b, aspect) < radius for line in lines for a, b in zip(line, line[1:])):
+            out.append(stroke)
+            continue
+        changed = True
+        for line in lines:
+            dense = [tuple(line[0])]
+            for a, b in zip(line, line[1:]):                   # points close enough that the cut is clean
+                n = max(1, int(dist(a, b, aspect) / (radius / 3.0)))
+                dense += [(a[0] + (b[0] - a[0]) * i / float(n), a[1] + (b[1] - a[1]) * i / float(n))
+                          for i in range(1, n + 1)]
+            run = []
+            for q in dense + [None]:
+                if q is not None and dist(q, p, aspect) >= radius:
+                    run.append([round(q[0], 4), round(q[1], 4)])
+                    continue
+                if len(run) >= 2:
+                    out.append({"tool": "pen", "color": list(stroke.get("color") or (1.0, 0.3, 0.26)),
+                                "width": stroke.get("width", 3), "points": run})
+                run = []
+    return out, changed
 
 
 class Sketch(object):
@@ -216,17 +251,14 @@ class Sketch(object):
         """Points every half eraser-width from the last eraser position to p (a fast drag skips nothing)."""
         last = getattr(self, "_last_erase", None) or p
         self._last_erase = p
-        steps = max(1, int(dist(last, p) / (ERASE / 2.0)))
+        steps = max(1, int(dist(last, p) / (eraser_radius(self.width) / 2.0)))
         return [(last[0] + (p[0] - last[0]) * i / float(steps), last[1] + (p[1] - last[1]) * i / float(steps))
                 for i in range(1, steps + 1)]
 
     def _erase(self, p):
-        """Removes the stroke of this drawing under p. True if one went."""
-        i = nearest(self.strokes, p)[0]
-        if i is None:
-            return False
-        del self.strokes[i]
-        return True
+        """Rubs out the part of this drawing under p. True if anything went."""
+        self.strokes, changed = cut(self.strokes, p, eraser_radius(self.width))
+        return changed
 
     # ---------------- what the node draws on top while you draw ----------------
     def handles(self):

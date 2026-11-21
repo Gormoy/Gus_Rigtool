@@ -128,8 +128,9 @@ def read(path):
     return data
 
 
-def write(path, data):
-    """Saves safely: a new file first, then swapped in; the one before is kept as .bak."""
+def write(path, data, backup=True):
+    """Saves safely: a new file first, then swapped in; the one before is kept as .bak (unless backup=False:
+    while you drag the eraser, so .bak keeps the file from before you started)."""
     folder = os.path.dirname(os.path.abspath(path))
     if not os.path.isdir(folder):
         os.makedirs(folder)
@@ -139,7 +140,7 @@ def write(path, data):
     with open(tmp, "w") as f:
         json.dump(out, f, indent=1, sort_keys=False)
         f.write("\n")
-    if os.path.isfile(path):
+    if os.path.isfile(path) and backup:
         try:
             if os.path.isfile(path + ".bak"):
                 os.remove(path + ".bak")
@@ -171,6 +172,20 @@ def update_note(path, note_id, **changes):
             write(path, data)
             return n
     return None
+
+
+def set_strokes(path, strokes_by_id, backup=True):
+    """New strokes for several notes in one save (the eraser). Returns how many notes changed."""
+    data = read(path)
+    done = 0
+    for n in data["notes"]:
+        if n["id"] in strokes_by_id:
+            n["strokes"] = strokes_by_id[n["id"]]
+            n["updated"] = now()
+            done += 1
+    if done:
+        write(path, data, backup)
+    return done
 
 
 def delete_note(path, note_id):
