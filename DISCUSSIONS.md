@@ -17,6 +17,14 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: (1) yes, one look for both tools - but first show how the Rigtool looks with the Gemini bits;
+  (2) Rigtool first; the new look applied to the Rigtool's tools for now so he can see it in Maya and compare;
+  (3) the three files are all for now; (4) the Rigtool can take the HTML's style, but he wants to look at
+  everything first and see how I interpret it. Sent C4 (design/screens577/c4_*): C3b's layout in the Gemini style
+  (slate #16191e/#22262d/#242933/#343c4a, #454f60 borders, sections as drawers with a 3px area-colour rail and a
+  12%-tinted header 'N NAME', tabs as pills, buttons with a coloured bottom edge, a status line at the bottom,
+  step lights folded). Plan 5.7.7 = the new look as a switch (Settings > Window > Look) + Toolbox; waiting.
+
 - 2026-11-21: Gus picked C3b (names on the left, short, left-aligned) for the Rigtool look; "yes" the joined choice
   buttons read better than round radio buttons; FOLD the step lights too (the number badge says ready / done).
   He then sent his 5.8 Animtool work made with Gemini (kept in design/references/): a style guide

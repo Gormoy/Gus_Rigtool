@@ -186,9 +186,42 @@ QLineEdit, QComboBox, QListWidget, QPlainTextEdit { background: #202326; border:
                            border-radius: 6px; padding: 5px 7px; }
 QLabel#light { border-radius: 8px; padding: 8px 10px; }
 """
+# C4 (2026-11-21): C3b's layout in Gus's Gemini style (design/references: the 5.8 HTML workspace + style guide)
+STYLES["c4"] = """
+QWidget { background: transparent; color: #f1f5f9; font-size: 13px; }
+QWidget#page { background: #16191e; }
+QLabel[role="lab"] { color: #9aa5b5; font-size: 12px; }
+QLabel[role="dim"] { color: #9aa5b5; font-size: 12px; }
+QFrame#card { background: #242933; border: 1px solid #454f60; border-left: 3px solid ACCENT; border-radius: 6px; }
+QFrame#drawerHead { background: rgba(ACCENT_RGB, 0.12); border: none; border-bottom: 1px solid #333a47;
+                    border-top-right-radius: 5px; }
+QLabel#cardTitle { font-weight: bold; font-size: 12px; color: ACCENT; letter-spacing: 0.5px; }
+QLabel#num { color: ACCENT; font-weight: bold; font-size: 12px; }
+QPushButton { background: #343c4a; border: 1px solid #454f60; border-radius: 4px; padding: 5px 9px; }
+QPushButton:hover { background: #404a5b; }
+QPushButton[role="main"] { background: #343c4a; border: 1px solid ACCENT; border-bottom: 3px solid ACCENT;
+                           font-weight: bold; font-size: 13px; padding: 8px; }
+QPushButton[role="danger"] { background: #343c4a; border: 1px solid #a8504c; color: #f3b5b1; }
+QPushButton[role="seg"] { background: #16191e; border: 1px solid #454f60; border-radius: 0px; padding: 5px 8px; }
+QPushButton[role="seg"][first="true"] { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+QPushButton[role="seg"][last="true"] { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+QPushButton[role="seg"]:checked { background: ACCENT; color: #111; font-weight: bold; border: 1px solid ACCENT; }
+QPushButton[role="fold"] { background: #16191e; border: 1px solid #333a47; border-radius: 4px; padding: 4px 10px;
+                           color: #9aa5b5; text-align: left; }
+QPushButton[role="chip"] { background: #343c4a; border: 1px solid #454f60; border-radius: 4px; padding: 4px 9px;
+                           border-bottom: 2px solid ACCENT; }
+QCheckBox { spacing: 8px; }
+QCheckBox::indicator { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #454f60; background: #16191e; }
+QCheckBox::indicator:checked { background: ACCENT; border: 1px solid ACCENT; }
+QLineEdit, QComboBox, QListWidget, QPlainTextEdit { background: #16191e; border: 1px solid #454f60;
+                           border-radius: 4px; padding: 5px 7px; }
+QLabel#light { border-radius: 4px; padding: 7px 9px; border: 1px solid #454f60; }
+"""
 STYLES["c3a"] = _C3
 STYLES["c3b"] = _C3
-OPT = {"c3a": dict(section="card", desc=True, choice="seg", quick=True, light="#4b4321", badge=True, fold=True,
+OPT = {"c4": dict(section="drawer", desc=True, choice="seg", quick=True, light="#2b2a20", badge=True, fold=True,
+                  closed_desc=False, label="left", fold_lights=True),
+       "c3a": dict(section="card", desc=True, choice="seg", quick=True, light="#4b4321", badge=True, fold=True,
                    closed_desc=False, label="top"),
        "c3b": dict(section="card", desc=True, choice="seg", quick=True, light="#4b4321", badge=True, fold=True,
                    closed_desc=False, label="left"),
@@ -384,7 +417,44 @@ class Page(object):
             return self._bar(n, title, closed, help_text, inner)
         if self.opt["section"] == "flat":
             return self._flat(n, title, closed, help_text)
+        if self.opt["section"] == "drawer" and not inner:
+            return self._drawer(n, title, closed, help_text)
         return self._card(n, title, closed, help_text, inner)
+
+    def _drawer(self, n, title, closed, help_text):
+        """Gus's 5.8 drawers: a 3 px rail in the area's colour, a header tinted 12%, the number + the name."""
+        card = QtWidgets.QFrame()
+        card.setObjectName("card")
+        outer = QtWidgets.QVBoxLayout(card)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        head = QtWidgets.QFrame()
+        head.setObjectName("drawerHead")
+        h = QtWidgets.QHBoxLayout(head)
+        h.setContentsMargins(10, 6, 10, 6)
+        self.n += 1
+        num = QtWidgets.QLabel("%d" % self.n)
+        num.setObjectName("num")
+        h.addWidget(num)
+        t = QtWidgets.QLabel(title.upper())
+        t.setObjectName("cardTitle")
+        h.addWidget(t, 1)
+        arrow = QtWidgets.QLabel("▸" if closed else "▾")
+        arrow.setStyleSheet("color: ACCENT_TEXT;")
+        h.addWidget(arrow)
+        outer.addWidget(head)
+        if closed:
+            return card
+        body = QtWidgets.QWidget()
+        v = QtWidgets.QVBoxLayout(body)
+        v.setContentsMargins(10, 8, 10, 10)
+        v.setSpacing(7)
+        has_light = any(c.kw.get("_light") for c in self._walk(n))
+        if not has_light:
+            self._desc(help_text, v)
+        self._folded(n, v)
+        outer.addWidget(body)
+        return card
 
     def _walk(self, n):
         for c in n.children:
@@ -579,6 +649,8 @@ class Page(object):
     def _text(self, n):
         text = str(n.label())
         if n.kw.get("_light"):
+            if self.opt.get("fold_lights") and self._inside_frame(n):
+                return None                                  # (C4: a step's light folds - its number says it)
             if not text.strip() and self.opt.get("fold"):
                 return None                                  # (the tool says nothing yet: no empty box)
             w = QtWidgets.QLabel(text.strip() or "Select the objects to work on.")
@@ -729,8 +801,8 @@ QPushButton[role="tab2"] { background: transparent; border: 1px solid transparen
 QPushButton[role="tab2"]:checked { border: 1px solid %(accent)s; color: white; font-weight: bold; }
 QFrame#sel { background: rgba(0,0,0,0.18); border-radius: 6px; }
 """
-PAGE_BG = {"c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
-SIDE_BG = {"classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
+PAGE_BG = {"c4": "#16191e", "c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
+SIDE_BG = {"c4": "#22262d", "classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
 
 
 def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror", "Rename", "Pivots"),
@@ -811,7 +883,27 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     mv.addWidget(page, 1)
     h.addWidget(main, 1)
     accent = theme.colour(area)
-    css = STYLES[style].replace("ACCENT", accent)
+    rgb = ",".join(str(int(accent[i:i + 2], 16)) for i in (1, 3, 5))
+    css = STYLES[style].replace("ACCENT_RGB", rgb).replace("ACCENT_TEXT", accent).replace("ACCENT", accent)
+    for lab in win.findChildren(QtWidgets.QLabel):
+        if "ACCENT_TEXT" in lab.styleSheet():
+            lab.setStyleSheet(lab.styleSheet().replace("ACCENT_TEXT", accent))
+    if style == "c4":
+        css += """
+QPushButton[role="tab"] { background: #343c4a; border: 1px solid #454f60; border-radius: 4px; padding: 4px 11px;
+                          margin-right: 4px; color: #9aa5b5; font-size: 12px; }
+QPushButton[role="tab"]:checked { background: %(a)s; border: 1px solid %(a)s; color: #111; font-weight: bold; }
+QPushButton[role="tab2"] { background: transparent; border: 1px solid #333a47; border-radius: 4px; padding: 3px 9px;
+                           color: #9aa5b5; font-size: 12px; }
+QPushButton[role="tab2"]:checked { border: 1px solid %(a)s; color: #f1f5f9; font-weight: bold; }
+QFrame#side { border-right: 1px solid #333a47; }
+QFrame#sel { background: #22262d; border: 1px solid #333a47; border-radius: 4px; }
+QLabel#foot { background: #22262d; border-top: 1px solid #333a47; color: #9aa5b5; font-size: 11px; padding: 4px 10px; }
+""" % {"a": accent}
+        foot = QtWidgets.QLabel("<span style='color:%s'>●</span>  nothing selected  ·  %s  ›  %s" % (
+            accent, theme.area(area)[1].replace("&", "&amp;"), current2 or current or key.title()))
+        foot.setObjectName("foot")
+        main.layout().addWidget(foot)
     win.setStyleSheet(css + WINDOW_CSS % {"page": PAGE_BG.get(style, "#33373d"), "side": SIDE_BG.get(style, "#26292d"),
                                           "accent": accent})
     return win
