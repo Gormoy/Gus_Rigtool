@@ -250,7 +250,13 @@ QLabel#light { border-radius: 6px; padding: 6px 8px; }
 """
 STYLES["c3a"] = _C3
 STYLES["c3b"] = _C3
-OPT = {"c5": dict(section="card", desc=True, choice="seg", quick=True, light="#6b5016", badge=True, fold=True,
+STYLES["c6"] = STYLES["c5"] + """
+QLabel#chip { border-radius: 9px; padding: 1px 9px; font-size: 11px; font-weight: bold; }
+QLabel#stateLine { font-size: 12px; }
+"""
+OPT = {"c6": dict(section="card", desc=True, choice="seg", quick=True, light="#6b5016", badge=True, fold=True,
+                  closed_desc=False, label="left", fold_lights=True, states=True),
+       "c5": dict(section="card", desc=True, choice="seg", quick=True, light="#6b5016", badge=True, fold=True,
                   closed_desc=False, label="left", fold_lights=True),
        "c4": dict(section="drawer", desc=True, choice="seg", quick=True, light="#2b2a20", badge=True, fold=True,
                   closed_desc=False, label="left", fold_lights=True),
@@ -443,6 +449,9 @@ class Page(object):
                 not self._inside_frame(n) and title not in self.only:
             return None
         closed = bool(n.kw.get("collapse") or n.kw.get("cl"))
+        states = getattr(self, "states", {}) or {}
+        if getattr(self, "accordion", False) and states and not self._inside_frame(n):
+            closed = title != self.current_step          # only the step you're on is open
         help_text = str(n.kw.get("annotation") or "")
         inner = n.parent is not None and n.parent.kind != "columnLayout" or (
             n.parent is not None and n.parent.parent is not None and n.parent.parent.kind == "frameLayout")
@@ -556,6 +565,10 @@ class Page(object):
         return out
 
     def _is_option(self, c):
+        if self.opt.get("states") and any(k in c.name for k in KEEP):
+            return False                                   # C6: how the step works stays on show
+        if self.opt.get("states") and c.kind == "frameLayout" and "Two curves" in str(c.label()):
+            return False                                   # (Ribbon > Surface: the loft is the step's job)
         if c.kind in OPTION_KINDS or c.kind == "frameLayout":
             return True
         if c.kind == "rowLayout":
@@ -663,12 +676,28 @@ class Page(object):
         if inner:
             t.setStyleSheet("font-size: 13px; font-weight: bold;")
         h.addWidget(t, 1)
+        state = (getattr(self, "states", {}) or {}).get(title) if not inner else None
+        if state:
+            bg, fg, word = STATE_COL[state[0]]
+            chip = QtWidgets.QLabel(word)
+            chip.setObjectName("chip")
+            chip.setStyleSheet("background: %s; color: %s;" % (bg, fg))
+            h.addWidget(chip, 0, Qt.AlignVCenter)
+            if state[0] in ("made", "ready"):
+                num.setText("✓" if state[0] == "made" else "●")
+                num.setStyleSheet("background: %s; color: #111;" % ("#5fbf4f" if state[0] == "made" else "#e3bd3c"))
         arrow = QtWidgets.QLabel("▸" if closed else "▾")
         arrow.setProperty("role", "dim")
         h.addWidget(arrow)
         v.addLayout(h)
+        if state:
+            line = QtWidgets.QLabel(state[1])
+            line.setObjectName("stateLine")
+            line.setWordWrap(True)
+            line.setStyleSheet("color: %s;" % STATE_COL[state[0]][1])
+            v.addWidget(line)
         has_light = self.opt.get("fold") and any(c.kw.get("_light") for c in self._walk(n))
-        if not inner and (not closed or self.opt.get("closed_desc", True)) and not has_light:
+        if not inner and (not closed or self.opt.get("closed_desc", True)) and not has_light and not state:
             self._desc(help_text, v)
         if not closed:
             if self.opt.get("fold") and not inner:
@@ -834,8 +863,8 @@ QPushButton[role="tab2"] { background: transparent; border: 1px solid transparen
 QPushButton[role="tab2"]:checked { border: 1px solid %(accent)s; color: white; font-weight: bold; }
 QFrame#sel { background: rgba(0,0,0,0.18); border-radius: 6px; }
 """
-PAGE_BG = {"c5": "#33373d", "c4": "#16191e", "c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
-SIDE_BG = {"c5": "#26292d", "c4": "#22262d", "classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
+PAGE_BG = {"c6": "#33373d", "c5": "#33373d", "c4": "#16191e", "c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
+SIDE_BG = {"c6": "#26292d", "c5": "#26292d", "c4": "#22262d", "classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
 
 
 def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror", "Rename", "Pivots"),
@@ -887,7 +916,7 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     h.addWidget(side)
     main = QtWidgets.QWidget()
     mv = QtWidgets.QVBoxLayout(main)
-    mv.setContentsMargins(14, 12, 14, 0) if style != "c5" else mv.setContentsMargins(0, 0, 0, 0)
+    mv.setContentsMargins(14, 12, 14, 0) if style not in ("c5", "c6") else mv.setContentsMargins(0, 0, 0, 0)
     mv.setSpacing(6)
     from gus_rigtool.newui import window as W
     title = QtWidgets.QLabel("<b style='font-size:21px'>%s</b>&nbsp;&nbsp;<span style='color:#9aa0a8'>%s</span>" % (
@@ -896,7 +925,7 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     head = QtWidgets.QFrame()
     head.setObjectName("head")
     hv = QtWidgets.QVBoxLayout(head)
-    hv.setContentsMargins(0, 0, 0, 0) if style != "c5" else hv.setContentsMargins(14, 12, 14, 0)
+    hv.setContentsMargins(0, 0, 0, 0) if style not in ("c5", "c6") else hv.setContentsMargins(14, 12, 14, 0)
     hv.setSpacing(6)
     hv.addWidget(title)
     mv.addWidget(head)
@@ -927,7 +956,7 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     for lab in win.findChildren(QtWidgets.QLabel):
         if "ACCENT_TEXT" in lab.styleSheet():
             lab.setStyleSheet(lab.styleSheet().replace("ACCENT_TEXT", accent))
-    if style == "c5":
+    if style in ("c5", "c6"):
         css = css.replace("ACCENT_DARK", theme.mix(accent, "#000000", 0.35))
         css += """
 QFrame#head { border-top: 4px solid %(a)s;
@@ -993,8 +1022,35 @@ def shoot(key, styles=("classic", "new"), width=520, height=None, whole=False):
     return pics
 
 
+STATE_COL = {"made": ("#2f5a35", "#c8efcd", "✓ Made"), "ready": ("#5c5418", "#f3e3a0", "● Ready"),
+             "todo": ("#3f444c", "#c9cdd2", "To do")}
+STATES = {
+    "face": {"Setup": ("made", "Head: head_jnt  ·  Jaw: Jaw_ctrl  ·  Cartoony"),
+             "Eyes": ("made", "L / R_Eye_ctrl made, Blink on each"),
+             "Eyelids": ("ready", "2 curves: L_lid_up_crv, L_lid_low_crv - their ends meet: one loop round the eye"),
+             "Mouth": ("todo", "Select two curves: the line above and below the lips"),
+             "Brows": ("todo", "Select two curves along the LEFT brow, one each side"),
+             "Facial strips": ("todo", "Select two curves along the strip (LEFT side)")},
+    "ribbon_make": {"Surface": ("ready", "2 curves: cape_L_crv, cape_R_crv - same direction, 8 spans each"),
+                    "Follicles": ("todo", "9 follicles, even, 50% across the width"),
+                    "Controls": ("todo", "controls on joints 1, 3, 5, 7, 9 - circle")},
+    "skin_bind": {"Bind": ("ready", "Hare_Body + 97 joints selected - ready to bind")},
+}
+KEEP = ("From_", "Mode", "Style")       # choices that say how a step works: never folded
+
+
 PAGES = [  # (file name, tool, area, top tabs, current, second-row tabs, current, the sections on that page)
     ("groups", "groups", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Groups", None, None, None),
+    ("ribbon_make", "ribbon", "build", ("Build", "Face", "Ribbon", "Joints"), "Ribbon",
+     ("Make a ribbon", "Builds in the scene"), "Make a ribbon", ["Surface", "Follicles", "Controls", "Build and mirror"]),
+    ("face_steps", "face", "build", ("Build", "Face", "Ribbon", "Joints"), "Face",
+     ("Build the face", "Ribbons & groups", "Squash & expressions"), "Build the face",
+     ["Setup", "Eyes", "Eyelids", "Mouth", "Brows", "Facial strips"]),
+    ("ribbon_make_steps", "ribbon", "build", ("Build", "Face", "Ribbon", "Joints"), "Ribbon",
+     ("Make a ribbon", "Builds in the scene"), "Make a ribbon", ["Surface", "Follicles", "Controls", "Build and mirror"]),
+    ("driven_keys", "sdk", "connect", ("Constraints", "Connections", "Nodes", "Driven keys"), "Driven keys", None, None,
+     None),
+    ("checker", "checker", "check", ("Checker", "Organize", "Publish"), "Checker", None, None, None),
     ("groups_open", "groups", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Groups", None, None,
      None),
     ("mirror", "mirror", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Mirror", None, None, None),
@@ -1018,8 +1074,35 @@ def shoot_c2(names=None, width=760, style="c2"):
         rec = record.record(registry.builder(key), "c2_%s_" % name)
         p = Page(style, only)
         p.open_options = name.endswith("_open")
+        p.states = STATES.get(name, {}) if OPT[style].get("states") else {}
+        p.accordion = name.endswith("_steps")
+        if p.accordion:
+            p.states = STATES.get(name[:-6], {})
+            p.current_step = next((t for t, st in p.states.items() if st[0] != "made"), None)
         w = p.build(rec.root, "", "", head=False)
         w.layout().setContentsMargins(0, 4, 0, 12)
+        if OPT[style].get("states") and name in ("face", "face_steps"):            # today's good part: the face map on top
+            from gus_rigtool.newui import widgets as WG
+            card = QtWidgets.QFrame()
+            card.setObjectName("card")
+            cv = QtWidgets.QHBoxLayout(card)
+            cv.setContentsMargins(12, 10, 12, 10)
+            fm = WG.FaceMap()
+            fm.set_states({"eyes": "made", "eyelids": "ready", "mouth": "todo", "brows": "todo", "strip": "todo"})
+            cv.addWidget(fm)
+            key_lab = QtWidgets.QLabel("<b style='font-size:14px'>Your face</b><br><br>"
+                                       "<span style='color:#5fbf4f'>■</span>  made<br>"
+                                       "<span style='color:#e3bd3c'>■</span>  your selection fits<br>"
+                                       "<span style='color:#5a6069'>■</span>  not made yet<br><br>"
+                                       "<span style='color:#a2a7ae'>Right side dashed: mirrored for you.<br>"
+                                       "Click a part: its step.</span>")
+            cv.addWidget(key_lab, 1)
+            w.layout().insertWidget(0, card)
+        if OPT[style].get("states") and name in ("ribbon_make", "ribbon_make_steps"):     # today's good part: the steps strip
+            from gus_rigtool.newui import widgets as WG
+            strip = WG.StepStrip(["Surface", "Joints", "Controls", "Create"])
+            strip.set_states(["ready", "todo", "todo", "on"])
+            w.layout().insertWidget(0, strip)
         win = window(style, key, w, area, tabs, cur, tabs2, cur2)
         win.resize(width, 500)
         win.show()

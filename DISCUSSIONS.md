@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: "C5 is the best, the right direction; I like the way the Face is today - keep good parts like
+  these; I want things clearer visually"; the fine borders / quick-button edge / status line STAY; yes to a build
+  plan; "give more examples of C5 keeping what is good visually". Sent C6 (design/screens577/c6_*): C5 + today's
+  good parts - the face map, the Ribbon steps strip, each step's state as a coloured tag on its title line
+  (✓ Made / ● Ready / To do) with its message as one line under it (instead of a big light box), the badge's
+  tick / dot, and the choices that say how a step works (Make it from, Mode, Style) never folded. Pages: Face,
+  Ribbon, Skin > Bind, Behaviour, Driven keys, Checker, Groups. Plus a step-page idea: only the step you're on is
+  open (c6_face_steps, c6_ribbon_make_steps), compare_face_c6 (Today | C5 | C6). Build plan 5.7.7 sent; waiting.
+
 - 2026-11-21: Gus on C4: "still not liking it - it seems better but loses the look we were working on; bring back
   more of what we discussed and the images, with what is now + the updates we were planning + the new one; make a
   new version first". Sent C5 (design/screens577/c5_*): today's 5.7 look as the base (cards with a colour edge,
