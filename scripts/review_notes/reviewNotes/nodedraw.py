@@ -94,7 +94,8 @@ def prepare(objPath, cameraPath, frameContext):
     render = cam.getRenderingFrustum(render_aspect())
     gate = draw.gate_rect(view, render, w, h)
     items = draw.build_items(notes, names, frame, gate, opts)
-    if not drawing.empty() and (drawing.camera is None or draw.camera_matches(drawing.camera, names)):
+    if not drawing.empty() and (drawing.camera is None or draw.camera_matches(drawing.camera, names)) and \
+            (drawing.frame is None or drawing.frame == frame):       # sticks to its frame (Gus, 0.2.0 didn't)
         items += draw.sketch_items(drawing.all_strokes(), drawing.handles(), gate, scale)
     return items, scale
 

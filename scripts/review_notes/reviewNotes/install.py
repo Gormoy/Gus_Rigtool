@@ -47,7 +47,10 @@ def _old_copy_off():
         cmds.flushUndo()            # Maya won't unload a plugin whose node is still in the undo queue (Gus OK'd)
         print("Review Notes installer: undo history cleared to update the plugin.")
         cmds.unloadPlugin(PLUGIN)
-        sys.modules.pop(PLUGIN, None)   # or Maya loads the OLD code again from Python's memory (0.1.3: still 0.1.1)
+        for name, mod in list(sys.modules.items()):       # or Maya loads the OLD code again from memory
+            f = os.path.basename(getattr(mod, "__file__", None) or "")
+            if name == PLUGIN or f.startswith(PLUGIN + "."):
+                del sys.modules[name]
         return True
     except RuntimeError as e:
         print("Review Notes installer: the old plugin (%s) stays loaded until Maya restarts: %s"
@@ -56,10 +59,13 @@ def _old_copy_off():
 
 
 def _loaded_version():
+    """The version of the plugin RUNNING now, or None when it isn't loaded (it loads with a scene's notes)."""
     try:
+        if not cmds.pluginInfo(PLUGIN, query=True, loaded=True):
+            return None
         return cmds.pluginInfo(PLUGIN, query=True, version=True)
     except Exception:
-        return "?"
+        return None
 
 
 def _ensure_user_setup(version_scripts, shared):
@@ -153,9 +159,11 @@ def install(source_dir):
     ctl.watch()
     ctl.show()
     loaded = _loaded_version()
-    stale = loaded != reviewNotes.__version__
+    old_shell = loaded is not None and not ctl.plugin_is_fine(loaded)    # before 0.1.2 the plugin drew itself
     msg = "Review Notes %s installed in %s - Review button on the '%s' shelf; %d hotkey command(s).%s" % (
         reviewNotes.__version__, dest, shelf, len(keys),
-        " RESTART MAYA: the plugin running is still %s." % loaded if (stale or not fresh) else "")
+        " RESTART MAYA: the plugin running is %s (too old)." % loaded if old_shell else "")
+    if not fresh and not old_shell:
+        print("Review Notes installer: the plugin (%s) stays loaded - fine: it uses the new drawing code." % loaded)
     print(msg)
     return dest

@@ -36,7 +36,11 @@ def _plugin():
     loaded = controller.load_plugin()
     version = cmds.pluginInfo(controller.PLUGIN, query=True, version=True)
     if version != reviewNotes.__version__:
-        return False, "the plugin running is %s, the tool is %s - restart Maya" % (version, reviewNotes.__version__)
+        if controller.plugin_is_fine(version):
+            return loaded, "plugin %s, tool %s - fine: the plugin only hands the drawing to the tool's code" % (
+                version, reviewNotes.__version__)
+        return False, "the plugin running is %s (too old), the tool is %s - restart Maya" % (
+            version, reviewNotes.__version__)
     return loaded, "version %s" % version
 
 

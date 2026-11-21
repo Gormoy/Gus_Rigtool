@@ -1,4 +1,4 @@
-Review Notes 0.2.0 - notes drawn and written on a camera and frames, like SyncSketch, inside Maya.
+Review Notes 0.2.1 - notes drawn and written on a camera and frames, like SyncSketch, inside Maya.
 A separate tool, next to the onion skin; both show at the same time.
 
 INSTALL OR UPDATE (every new version the same way)
@@ -19,11 +19,14 @@ DRAW A NOTE
 1. Save your scene once (the notes go in a file next to it). Click Review on the shelf: the window opens.
 2. Click "Draw on the view" (or Pen / Curve / ... ), then draw in the view you want the note on. Alt still
    moves the camera. The drawing belongs to the camera and frame where you start it.
-   - Pen: drag. Arrow: drag from tail to head. Circle: drag across its box. Eraser: click a stroke.
+   - Pen: drag. Arrow: drag from tail to head. Circle: drag across its box.
    - Curve (like Illustrator): click = corner, click-drag = smooth point; click the first point to close;
-     drag points or handles to adjust, Ctrl-drag breaks a handle; End curve when done.
-3. Write what should change, pick the type (change / fix / add / idea) and for how many frames it shows.
-4. Save note (or Ctrl+Enter in the window). Clear throws the drawing away.
+     drag points or handles to adjust, Ctrl-drag breaks a handle. Enter (or a double-click) ends it, Esc
+     throws it away.
+   - Eraser: click or drag over strokes - the drawing's, and saved notes' strokes on this frame.
+3. Write what should change, pick the type (change / fix / add / idea) and for how many frames it shows
+   (1 = only this frame, the default). The drawing stays on its frame until you save it.
+4. Save note (Enter in the view, Ctrl+Enter in the window). Clear (or Esc) throws the drawing away.
 
 THE NOTES
 - The list shows every note of the scene: double-click (or Go to) = its frame, through its camera.

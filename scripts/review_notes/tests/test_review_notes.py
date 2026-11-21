@@ -378,6 +378,24 @@ class PluginTests(unittest.TestCase):
         self.assertEqual(calls.count("lineStrip"), 2)
         self.assertEqual(calls.count("text2d"), 1)
 
+    def test_unsaved_drawing_only_on_its_frame(self):
+        from reviewNotes import sketch
+        sys.modules.pop("reviewNotes.nodedraw", None)
+        s = sketch.SKETCH
+        s.clear()
+        s.start("shotCam", 1008)
+        s.press((0.1, 0.1))
+        s.move((0.3, 0.3))
+        s.release((0.3, 0.3))
+        o = self.plugin.ReviewNotesDrawOverride(None)
+        cam = types.SimpleNamespace(parts=["shotCam", "shotCamShape"])
+        obj = types.SimpleNamespace(node=lambda: None)
+        here = len(o.prepareForDraw(obj, cam, self.ctx(), None).items)
+        self.state["frame"] = 1009
+        there = len(o.prepareForDraw(obj, cam, self.ctx(), None).items)
+        s.clear()
+        self.assertEqual(here - there, 1)                     # only the drawing goes (the saved note holds 1006-1011)
+
     def test_other_camera_playing_and_broken_file(self):
         o = self.plugin.ReviewNotesDrawOverride(None)
         top = types.SimpleNamespace(parts=["top", "topShape"])
@@ -582,6 +600,42 @@ class SketchTests(unittest.TestCase):
         items = draw.sketch_items(s.all_strokes(), s.handles(), GATE, 2.0)
         lines = [i for i in items if i[0] == "line"]
         self.assertEqual(len(lines), 5)                          # 2 handle lines + 2 handle dots + the point
+
+
+class Fixes021Tests(unittest.TestCase):
+    """0.2.1 (Gus): the drawing sticks to its frame, the eraser drags and finds strokes, Esc drops a curve."""
+
+    def test_drag_eraser(self):
+        from reviewNotes import sketch
+        s = sketch.Sketch()
+        for y in (0.1, 0.3, 0.5):
+            s.press((0.1, y))
+            s.move((0.4, y))
+            s.release((0.4, y))
+        s.set_tool("eraser")
+        s.press((0.25, 0.0))
+        s.move((0.25, 0.2))
+        s.move((0.25, 0.32))                                  # rubbed across the first two lines
+        s.release((0.25, 0.32))
+        self.assertEqual([x["points"][0][1] for x in s.strokes], [0.5])
+
+    def test_nearest_on_saved_strokes(self):
+        from reviewNotes import sketch
+        strokes = [{"tool": "circle", "points": [[0.4, 0.7], [0.6, 0.9]]},
+                   {"tool": "arrow", "points": [[0.1, 0.1], [0.3, 0.1]]}]
+        self.assertEqual(sketch.nearest(strokes, (0.6, 0.8))[0], 0)        # on the circle's edge
+        self.assertEqual(sketch.nearest(strokes, (0.2, 0.1))[0], 1)        # on the arrow's shaft
+        self.assertEqual(sketch.nearest(strokes, (0.5, 0.8)), (None, None))  # inside the circle: nothing
+
+    def test_esc_drops_the_curve(self):
+        from reviewNotes import sketch
+        s = sketch.Sketch()
+        s.set_tool("curve")
+        for p in ((0.1, 0.1), (0.2, 0.2)):
+            s.press(p)
+            s.release(p)
+        s.cancel_curve()
+        self.assertTrue(s.empty())
 
 
 if __name__ == "__main__":

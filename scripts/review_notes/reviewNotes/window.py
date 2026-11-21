@@ -18,11 +18,11 @@ TOOL_NAMES = (("pen", "Pen"), ("curve", "Curve"), ("arrow", "Arrow"), ("circle",
 STATUS_NEXT = {"open": "in progress", "in progress": "done", "done": "open"}
 TOOL_HINTS = {
     "pen": "Drag to draw a free line.",
-    "curve": "Click = corner, click-drag = smooth point. Click the first point to close. Drag points or handles "
-             "to adjust; Ctrl-drag breaks a handle. End curve when done.",
+    "curve": "Click = corner, click-drag = smooth point. Enter (or double-click) ends it, Esc throws it away, "
+             "click the first point to close it. Drag points or handles to adjust; Ctrl-drag breaks a handle.",
     "arrow": "Drag from the tail to the head.",
     "circle": "Drag across the box the circle fits in.",
-    "eraser": "Click on a stroke of this drawing to remove it.",
+    "eraser": "Click or drag over strokes to remove them - saved notes' strokes on this frame too.",
 }
 STYLE = """
 QWidget#reviewNotesWindow { background: #3a3a3a; }
@@ -112,7 +112,7 @@ class ReviewWindow(QtWidgets.QWidget):
         self.size.valueChanged.connect(self._set_size)
         row.addWidget(self.size)
         row.addStretch(1)
-        self.end_curve_btn = QtWidgets.QPushButton("End curve")
+        self.end_curve_btn = QtWidgets.QPushButton("End curve (Enter)")
         self.end_curve_btn.clicked.connect(drawtool.end_curve)
         row.addWidget(self.end_curve_btn)
         lay.addLayout(row)
@@ -128,7 +128,7 @@ class ReviewWindow(QtWidgets.QWidget):
         row.addWidget(QtWidgets.QLabel("for"))
         self.hold = QtWidgets.QSpinBox()
         self.hold.setRange(1, 200)
-        self.hold.setValue(6)
+        self.hold.setValue(1)               # a note sticks to its frame, like SyncSketch (Gus, 0.2.1)
         row.addWidget(self.hold)
         row.addWidget(QtWidgets.QLabel("frames"))
         row.addStretch(1)
@@ -238,8 +238,9 @@ class ReviewWindow(QtWidgets.QWidget):
         self.end_curve_btn.setEnabled(s.curve is not None)
         n = len(s.all_strokes())
         if n:
-            self.state.setText("Not saved yet: %d stroke(s) on %s, frame %s. Write a line, then Save note."
-                               % (n, s.camera, s.frame))
+            here = int(round(cmds.currentTime(query=True))) == s.frame
+            self.state.setText("Not saved yet: %d stroke(s) on %s, frame %s%s. Write a line, then Save note (Enter)."
+                               % (n, s.camera, s.frame, "" if here else " (go back to it to see it)"))
         elif on:
             self.state.setText("Draw in the view you want the note on (Alt still moves the camera).")
         else:

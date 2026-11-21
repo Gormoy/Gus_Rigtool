@@ -57,17 +57,76 @@ def _refresh():
     cmds.refresh(currentView=True, force=True)
 
 
+_last_click = {"time": 0.0, "at": None}
+
+
+def _double_click(p):
+    """A second click at the same place within a third of a second."""
+    import time
+    now = time.time()
+    last = _last_click["at"]
+    double = last is not None and now - _last_click["time"] < 0.35 and sketch.dist(last, p) < sketch.HIT * 2
+    _last_click["time"], _last_click["at"] = (0.0, None) if double else (now, p)
+    return double
+
+
+def _erase_saved(cam, frame, p):
+    """The eraser also takes strokes off SAVED notes shown here (this camera, on this frame)."""
+    path = controller.review_path()
+    if not path:
+        return False
+    try:
+        notes = store.read(path)["notes"]
+    except store.ReviewFileError:
+        return False
+    names = draw.camera_names(cam)
+    best = None
+    for n in notes:
+        if draw.camera_matches(n["camera"], names) and draw.note_state(n, frame, 0) == "now":
+            i, d = sketch.nearest(n["strokes"], p)
+            if i is not None and (best is None or d < best[2]):
+                best = (n, i, d)
+    if best is None:
+        return False
+    n, i, _ = best
+    strokes = [x for k, x in enumerate(n["strokes"]) if k != i]
+    store.update_note(path, n["id"], strokes=strokes)
+    return True
+
+
+def _use(p, pressing):
+    s = sketch.SKETCH
+    view = _view()
+    cam = _camera(view)
+    frame = int(round(cmds.currentTime(query=True)))
+    if s.tool == "eraser":                                # along the whole drag, the drawing's strokes first
+        if pressing:
+            s._last_erase = p
+        gone = False
+        for q in ([p] if pressing else s._erase_path(p)):
+            if not s._erase(q) and _erase_saved(cam, frame, q):
+                gone = True
+        if gone:
+            changed()
+        return
+    if s.camera and (s.camera != cam or s.frame != frame):
+        if pressing:
+            cmds.inViewMessage(amg="This drawing is on <hl>%s, frame %s</hl>: save it or clear it first."
+                               % (s.camera, s.frame), pos="topCenter", fade=True)
+        return "elsewhere"
+    if pressing:
+        if s.tool == "curve" and s.curve and _double_click(p):
+            s.end_curve()
+            return
+        s.start(cam, frame)
+        s.press(p, _ctrl())
+    else:
+        s.move(p, _ctrl())
+
+
 def _press(*_):
     try:
-        view = _view()
-        cam = _camera(view)
-        s = sketch.SKETCH
-        if s.camera and s.camera != cam:
-            cmds.inViewMessage(amg="This drawing is on <hl>%s</hl>: save it or clear it first." % s.camera,
-                               pos="topCenter", fade=True)
-            return
-        s.start(cam, int(round(cmds.currentTime(query=True))))
-        s.press(_mouse_on_gate(view), _ctrl())
+        _use(_mouse_on_gate(_view()), True)
         _refresh()
     except Exception as e:
         print("Review Notes: drawing failed (%s)" % e)
@@ -75,10 +134,7 @@ def _press(*_):
 
 def _drag(*_):
     try:
-        s = sketch.SKETCH
-        if s.camera and s.camera != _camera(_view()):
-            return
-        s.move(_mouse_on_gate(_view()), _ctrl())
+        _use(_mouse_on_gate(_view()), False)
         _refresh()
     except Exception as e:
         print("Review Notes: drawing failed (%s)" % e)
@@ -87,13 +143,73 @@ def _drag(*_):
 def _release(*_):
     try:
         s = sketch.SKETCH
-        if s.camera and s.camera != _camera(_view()):
-            return
-        s.release(_mouse_on_gate(_view()), _ctrl())
+        p = _mouse_on_gate(_view())
+        if s.tool != "eraser" and s.camera == _camera(_view()) and s.frame == int(round(cmds.currentTime(query=True))):
+            s.release(p, _ctrl())
         _refresh()
         changed()
     except Exception as e:
         print("Review Notes: drawing failed (%s)" % e)
+
+
+# ---------------- Enter / Esc while drawing ----------------
+_keys = {"filter": None}
+
+
+def _make_key_filter():
+    from reviewNotes.qt import QtCore, QtWidgets
+
+    class KeyFilter(QtCore.QObject):
+        """Enter: end the curve (or save the note). Esc: throw the curve (or the drawing) away.
+        Only while the drawing tool is on, and never while you type in a text field."""
+
+        def eventFilter(self, obj, event):
+            try:
+                if event.type() != QtCore.QEvent.KeyPress or not is_on():
+                    return False
+                focus = QtWidgets.QApplication.focusWidget()
+                if isinstance(focus, (QtWidgets.QLineEdit, QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit,
+                                      QtWidgets.QAbstractSpinBox)):
+                    return False
+                key = event.key()
+                if key in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
+                    if sketch.SKETCH.curve is not None:
+                        end_curve()
+                    else:
+                        hk_save()
+                    return True
+                if key == QtCore.Qt.Key_Escape:
+                    if sketch.SKETCH.curve is not None:
+                        cancel_curve()
+                    elif not sketch.SKETCH.empty():
+                        clear()
+                    else:
+                        return False
+                    return True
+            except Exception:
+                return False
+            return False
+    return KeyFilter()
+
+
+def _keys_on():
+    try:
+        from reviewNotes.qt import QtWidgets
+        if _keys["filter"] is None:
+            _keys["filter"] = _make_key_filter()
+            QtWidgets.QApplication.instance().installEventFilter(_keys["filter"])
+    except Exception as e:
+        print("Review Notes: Enter / Esc won't work while drawing (%s)" % e)
+
+
+def _keys_off():
+    try:
+        from reviewNotes.qt import QtWidgets
+        if _keys["filter"] is not None:
+            QtWidgets.QApplication.instance().removeEventFilter(_keys["filter"])
+    except Exception:
+        pass
+    _keys["filter"] = None
 
 
 def _make_context():
@@ -120,11 +236,13 @@ def on():
     controller.ensure_node()
     _make_context()
     cmds.setToolTo(CONTEXT)
+    _keys_on()
     changed()
     return True
 
 
 def off():
+    _keys_off()
     if is_on():
         cmds.setToolTo("selectSuperContext")
     sketch.SKETCH.end_curve()
@@ -144,6 +262,12 @@ def set_tool(tool):
 
 def end_curve():
     sketch.SKETCH.end_curve()
+    _refresh()
+    changed()
+
+
+def cancel_curve():
+    sketch.SKETCH.cancel_curve()
     _refresh()
     changed()
 

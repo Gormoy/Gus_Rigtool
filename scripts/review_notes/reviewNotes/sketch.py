@@ -9,7 +9,8 @@ Tools:
           (Alt is Maya's camera); End curve (or another tool, or Save) finishes it
   arrow   press = the tail, release = the head
   circle  press and release = two corners of the box it fits in
-  eraser  click on a stroke of this drawing to remove it
+  eraser  click or drag over strokes to remove them (saved notes' strokes too: drawtool.py)
+Enter ends a curve (or saves the note), Esc throws the curve away, a double-click ends it too (drawtool.py).
 """
 
 import math
@@ -32,6 +33,31 @@ def seg_dist(p, a, b, aspect=ASPECT):
     dx, dy = bx - ax, by - ay
     t = 0.0 if dx == dy == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
     return math.hypot(px - ax - t * dx, py - ay - t * dy)
+
+
+ERASE = 0.02             # how close (gate widths) the eraser must pass to a stroke
+
+
+def stroke_points(stroke):
+    """The points a stroke is drawn through (curves and circles sampled)."""
+    if stroke.get("tool") == "bezier":
+        return bezier(stroke.get("anchors", []), stroke.get("closed", False), steps=8)
+    pts = [q[:2] for q in stroke.get("points", [])]
+    if stroke.get("tool") == "circle" and len(pts) >= 2:
+        return ellipse(pts[0], pts[-1], 24)
+    return pts
+
+
+def nearest(strokes, p, limit=ERASE):
+    """(index, distance) of the stroke closest to p, if it's within `limit`; (None, None) otherwise."""
+    best, best_d = None, limit
+    for i, stroke in enumerate(strokes):
+        pts = stroke_points(stroke)
+        for q0, q1 in zip(pts, pts[1:] or pts):
+            d = seg_dist(p, q0, q1)
+            if d < best_d:
+                best, best_d = i, d
+    return (best, best_d) if best is not None else (None, None)
 
 
 class Sketch(object):
@@ -75,6 +101,10 @@ class Sketch(object):
         if self.camera is None:
             self.camera, self.frame = camera, frame
 
+    def cancel_curve(self):
+        """The curve in progress thrown away (Esc)."""
+        self.curve, self.drag = None, None
+
     def end_curve(self):
         """The curve in progress is done (kept if it has 2 points or more)."""
         if self.curve and len(self.curve["anchors"]) >= 2:
@@ -93,6 +123,7 @@ class Sketch(object):
     def press(self, p, ctrl=False):
         p = [round(p[0], 4), round(p[1], 4)]
         if self.tool == "eraser":
+            self._last_erase = p
             self._erase(p)
         elif self.tool == "curve":
             self._curve_press(p)
@@ -103,7 +134,10 @@ class Sketch(object):
 
     def move(self, p, ctrl=False):
         p = [round(p[0], 4), round(p[1], 4)]
-        if self.tool == "curve":
+        if self.tool == "eraser":                         # dragging the eraser rubs out what it passes over
+            for q in self._erase_path(p):
+                self._erase(q)
+        elif self.tool == "curve":
             self._curve_drag(p, ctrl)
         elif self.current is not None:
             if self.tool == "pen":
@@ -178,23 +212,21 @@ class Sketch(object):
                     a[other] = [pt[0] - vx / length * keep, pt[1] - vy / length * keep]
 
     # ---------------- eraser ----------------
+    def _erase_path(self, p):
+        """Points every half eraser-width from the last eraser position to p (a fast drag skips nothing)."""
+        last = getattr(self, "_last_erase", None) or p
+        self._last_erase = p
+        steps = max(1, int(dist(last, p) / (ERASE / 2.0)))
+        return [(last[0] + (p[0] - last[0]) * i / float(steps), last[1] + (p[1] - last[1]) * i / float(steps))
+                for i in range(1, steps + 1)]
+
     def _erase(self, p):
-        best, best_d = None, 0.03
-        for s in self.strokes:
-            if s["tool"] == "bezier":
-                pts = bezier(s["anchors"], s.get("closed", False), steps=8)
-            elif s["tool"] == "circle":
-                pts = ellipse(s["points"][0], s["points"][-1], 24)
-            else:
-                pts = s["points"]
-            for q0, q1 in zip(pts, pts[1:] or pts):
-                d = seg_dist(p, q0, q1)
-                if d < best_d:
-                    best, best_d = s, d
-        if best is not None:
-            self.strokes.remove(best)
-            return True
-        return False
+        """Removes the stroke of this drawing under p. True if one went."""
+        i = nearest(self.strokes, p)[0]
+        if i is None:
+            return False
+        del self.strokes[i]
+        return True
 
     # ---------------- what the node draws on top while you draw ----------------
     def handles(self):

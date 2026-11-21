@@ -32,11 +32,35 @@ def _tell(msg, warn=False):
 
 def load_plugin():
     if not cmds.pluginInfo(PLUGIN, query=True, loaded=True):
-        import sys
-        sys.modules.pop(PLUGIN, None)       # a copy left in Python's memory would be loaded instead of the file
+        forget_plugin_code()
         cmds.loadPlugin(PLUGIN_PATH, quiet=True)
     no_requires()
     return cmds.pluginInfo(PLUGIN, query=True, loaded=True)
+
+
+SHELL_FROM = (0, 1, 2)          # from 0.1.2 the plugin only hands drawing to nodedraw.py (always the new code)
+
+
+def version_tuple(text):
+    try:
+        return tuple(int(x) for x in str(text).split(".")[:3])
+    except ValueError:
+        return (0, 0, 0)
+
+
+def plugin_is_fine(version):
+    """An older plugin is fine from 0.1.2 on: it only registers the node; the drawing is the tool's own code."""
+    return version_tuple(version) >= SHELL_FROM
+
+
+def forget_plugin_code():
+    """Python keeps a loaded plugin's code in memory: drop it, so loadPlugin reads the file again
+    (looked up by file, not by name - Maya may keep it under another name)."""
+    import sys
+    for name, mod in list(sys.modules.items()):
+        f = os.path.basename(getattr(mod, "__file__", None) or "")
+        if name == PLUGIN or f.startswith(PLUGIN + "."):
+            del sys.modules[name]
 
 
 def no_requires():

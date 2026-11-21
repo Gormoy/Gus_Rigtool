@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus tried 0.2.0: "it works", curves and notes work. Problems: notes "not sticking to the frame,
+  going for the whole duration"; the eraser didn't work well; curves need Enter to stop. 0.2.1 (fixes to what he
+  tested, done straight away given "I don't feel we are going forward"): the unsaved drawing shows only on its
+  frame, hold defaults to 1 frame (like SyncSketch), eraser drags (the whole path) and also erases saved notes'
+  strokes on that frame, Enter ends a curve / saves, Esc drops the curve / drawing, double-click ends a curve.
+  "RESTART MAYA" was a false alarm: since 0.1.2 the plugin is a shell, any shell >= 0.1.2 is fine (installer and
+  self test say so now); the plugin's code is dropped from memory by file, not name. Asked: was it the unsaved
+  drawing or a saved note that showed on every frame?
+
 - 2026-11-21: Gus: "I prefer to go ahead and have a real try it out tool first. If we go step by step I don't
   feel we are going forward" -> for Review Notes, skip the separate try-it (rule 12) and ship a working tool;
   bigger steps. Built 0.2.0: draw on the view with a Maya drawing tool (draggerContext: Alt still moves the camera;
