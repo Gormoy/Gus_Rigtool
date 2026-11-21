@@ -217,9 +217,42 @@ QLineEdit, QComboBox, QListWidget, QPlainTextEdit { background: #16191e; border:
                            border-radius: 4px; padding: 5px 7px; }
 QLabel#light { border-radius: 4px; padding: 7px 9px; border: 1px solid #454f60; }
 """
+# C5 (2026-11-21, Gus: "C4 loses the look we were working on"): the 5.7 window as it is (cards with a colour edge,
+# number badges, filled main button with a darker bottom, tinted area header, tab with a colour top) + our plan
+# (C3b layout, less at first look) + a few Gemini bits (fine borders, quick buttons with a colour edge, status line)
+STYLES["c5"] = """
+QWidget { background: transparent; color: #e9ebee; font-size: 13px; }
+QWidget#page { background: #33373d; }
+QLabel[role="lab"] { color: #a2a7ae; font-size: 12px; }
+QLabel[role="dim"] { color: #a2a7ae; font-size: 12px; }
+QFrame#card { background: #3a3e45; border-radius: 9px; border: 1px solid #454a52; border-left: 3px solid ACCENT; }
+QLabel#cardTitle { font-weight: bold; font-size: 14px; }
+QLabel#num { background: ACCENT; color: #111; border-radius: 10px; font-weight: bold; font-size: 11px; }
+QPushButton { background: #4a4f57; border: 1px solid #565c65; border-radius: 6px; padding: 5px 10px; }
+QPushButton:hover { background: #575d66; }
+QPushButton[role="main"] { background: ACCENT; color: #111; font-weight: bold; font-size: 14px; border: none;
+                           border-radius: 8px; padding: 9px 12px; border-bottom: 3px solid ACCENT_DARK; }
+QPushButton[role="danger"] { background: #5a2f2d; border: 1px solid #b4544f; }
+QPushButton[role="seg"] { background: #2e3237; border: 1px solid #4a4f57; border-radius: 0px; padding: 5px 8px; }
+QPushButton[role="seg"][first="true"] { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+QPushButton[role="seg"][last="true"] { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+QPushButton[role="seg"]:checked { background: ACCENT; color: #111; font-weight: bold; border: 1px solid ACCENT; }
+QPushButton[role="fold"] { background: #33373d; border: 1px solid #4a4f57; border-radius: 6px; padding: 4px 10px;
+                           color: #c9cdd2; text-align: left; }
+QPushButton[role="chip"] { background: #4a4f57; border: 1px solid #565c65; border-radius: 6px; padding: 4px 7px;
+                           border-bottom: 2px solid ACCENT; }
+QCheckBox { spacing: 8px; }
+QCheckBox::indicator { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #8a9098; background: #202326; }
+QCheckBox::indicator:checked { background: ACCENT; border: 1.5px solid ACCENT; }
+QLineEdit, QComboBox, QListWidget, QPlainTextEdit { background: #202326; border: 1px solid #4a4f57;
+                           border-radius: 5px; padding: 4px 6px; }
+QLabel#light { border-radius: 6px; padding: 6px 8px; }
+"""
 STYLES["c3a"] = _C3
 STYLES["c3b"] = _C3
-OPT = {"c4": dict(section="drawer", desc=True, choice="seg", quick=True, light="#2b2a20", badge=True, fold=True,
+OPT = {"c5": dict(section="card", desc=True, choice="seg", quick=True, light="#6b5016", badge=True, fold=True,
+                  closed_desc=False, label="left", fold_lights=True),
+       "c4": dict(section="drawer", desc=True, choice="seg", quick=True, light="#2b2a20", badge=True, fold=True,
                   closed_desc=False, label="left", fold_lights=True),
        "c3a": dict(section="card", desc=True, choice="seg", quick=True, light="#4b4321", badge=True, fold=True,
                    closed_desc=False, label="top"),
@@ -801,8 +834,8 @@ QPushButton[role="tab2"] { background: transparent; border: 1px solid transparen
 QPushButton[role="tab2"]:checked { border: 1px solid %(accent)s; color: white; font-weight: bold; }
 QFrame#sel { background: rgba(0,0,0,0.18); border-radius: 6px; }
 """
-PAGE_BG = {"c4": "#16191e", "c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
-SIDE_BG = {"c4": "#22262d", "classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
+PAGE_BG = {"c5": "#33373d", "c4": "#16191e", "c3a": "#2b2e33", "c3b": "#2b2e33", "classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
+SIDE_BG = {"c5": "#26292d", "c4": "#22262d", "classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
 
 
 def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror", "Rename", "Pivots"),
@@ -854,13 +887,19 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     h.addWidget(side)
     main = QtWidgets.QWidget()
     mv = QtWidgets.QVBoxLayout(main)
-    mv.setContentsMargins(14, 12, 14, 0)
+    mv.setContentsMargins(14, 12, 14, 0) if style != "c5" else mv.setContentsMargins(0, 0, 0, 0)
     mv.setSpacing(6)
     from gus_rigtool.newui import window as W
     title = QtWidgets.QLabel("<b style='font-size:21px'>%s</b>&nbsp;&nbsp;<span style='color:#9aa0a8'>%s</span>" % (
         theme.area(area)[1].replace("&", "&amp;"), W.WHY.get(area, "")))
     title.setWordWrap(True)
-    mv.addWidget(title)
+    head = QtWidgets.QFrame()
+    head.setObjectName("head")
+    hv = QtWidgets.QVBoxLayout(head)
+    hv.setContentsMargins(0, 0, 0, 0) if style != "c5" else hv.setContentsMargins(14, 12, 14, 0)
+    hv.setSpacing(6)
+    hv.addWidget(title)
+    mv.addWidget(head)
     for row, cur, role in ((tabs, current or key.title(), "tab"), (tabs2, current2, "tab2")):
         if not row:
             continue
@@ -873,7 +912,7 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
             b.setChecked(t == cur)
             lay.addWidget(b)
         lay.addStretch(1)
-        mv.addLayout(lay)
+        hv.addLayout(lay)
     sel = QtWidgets.QFrame()
     sel.setObjectName("sel")
     sl = QtWidgets.QHBoxLayout(sel)
@@ -888,6 +927,28 @@ def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror",
     for lab in win.findChildren(QtWidgets.QLabel):
         if "ACCENT_TEXT" in lab.styleSheet():
             lab.setStyleSheet(lab.styleSheet().replace("ACCENT_TEXT", accent))
+    if style == "c5":
+        css = css.replace("ACCENT_DARK", theme.mix(accent, "#000000", 0.35))
+        css += """
+QFrame#head { border-top: 4px solid %(a)s;
+              background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %(top)s, stop:1 #33373d); }
+QPushButton[role="tab"] { background: transparent; color: #a2a7ae; border: none; border-radius: 7px;
+                          padding: 7px 12px; }
+QPushButton[role="tab"]:checked { background: #33373d; color: white; border-top: 3px solid %(a)s;
+                                  border-bottom-left-radius: 0px; border-bottom-right-radius: 0px; }
+QPushButton[role="tab2"] { background: transparent; color: #a2a7ae; border-radius: 11px; padding: 4px 11px;
+                           font-size: 12px; border: 1px solid transparent; }
+QPushButton[role="tab2"]:checked { background: %(soft)s; color: white; border: 1px solid %(a)s; }
+QPushButton[role="nav"]:checked { background: rgba(255,255,255,0.07); }
+QFrame#sel { background: #24272b; border-radius: 8px; margin: 0px 14px; }
+QWidget#page { margin: 0px; }
+QLabel#foot { background: #24272b; color: #a2a7ae; font-size: 11px; padding: 5px 10px; }
+""" % {"a": accent, "top": theme.mix(accent, "#33373d", 0.72), "soft": theme.mix(accent, "#3a3e45", 0.75)}
+        foot = QtWidgets.QLabel("<span style='color:%s'>●</span>  nothing selected  ·  %s  ›  %s" % (
+            accent, theme.area(area)[1].replace("&", "&amp;"), current2 or current or key.title()))
+        foot.setObjectName("foot")
+        page.layout().setContentsMargins(14, 4, 14, 12)
+        main.layout().addWidget(foot)
     if style == "c4":
         css += """
 QPushButton[role="tab"] { background: #343c4a; border: 1px solid #454f60; border-radius: 4px; padding: 4px 11px;
@@ -972,6 +1033,28 @@ def shoot_c2(names=None, width=760, style="c2"):
     return out
 
 
+def compare(names, out, width=520):
+    """Side by side, the same page in several looks, each with its name on top."""
+    pics = [(t, QtGui.QPixmap(f)) for t, f in names]
+    h = max(p.scaledToWidth(width, Qt.SmoothTransformation).height() for _t, p in pics) + 34
+    sheet = QtGui.QPixmap(width * len(pics) + 16 * (len(pics) + 1), h + 16)
+    sheet.fill(QtGui.QColor("#121417"))
+    q = QtGui.QPainter(sheet)
+    q.setRenderHint(QtGui.QPainter.Antialiasing)
+    f = q.font()
+    f.setPixelSize(17)
+    f.setBold(True)
+    q.setFont(f)
+    for i, (t, p) in enumerate(pics):
+        x = 16 + i * (width + 16)
+        q.setPen(QtGui.QColor("#e9ebee"))
+        q.drawText(x, 26, t)
+        q.drawPixmap(x, 40, p.scaledToWidth(width, Qt.SmoothTransformation))
+    q.end()
+    sheet.save(out)
+    print(out, sheet.width(), sheet.height())
+
+
 if __name__ == "__main__":
     if sys.argv[1:2] and sys.argv[1].startswith("c"):
         shoot_c2(sys.argv[2:], style=sys.argv[1])
@@ -980,3 +1063,4 @@ if __name__ == "__main__":
     for key in sys.argv[1:] or ("groups", "mirror", "pivots"):
         shoot(key, mixes)
     shoot("groups", mixes, width=760, whole=True)
+

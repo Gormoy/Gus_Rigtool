@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus on C4: "still not liking it - it seems better but loses the look we were working on; bring back
+  more of what we discussed and the images, with what is now + the updates we were planning + the new one; make a
+  new version first". Sent C5 (design/screens577/c5_*): today's 5.7 look as the base (cards with a colour edge,
+  number badges, filled main button with a darker bottom edge, tinted area header, tab with a colour top, sub-page
+  pills) + our plan (C3b: names in a short left column, one left edge, joined choices, Options folded with what's
+  set, presets folded, step lights folded) + a few Gemini bits (fine borders, quick buttons with a thin colour
+  edge, status line at the bottom). Comparison sheets: compare_groups.png, compare_face.png (Today | C3b | C4 |
+  C5). Waiting for his opinion.
+
 - 2026-11-21: Gus: (1) yes, one look for both tools - but first show how the Rigtool looks with the Gemini bits;
   (2) Rigtool first; the new look applied to the Rigtool's tools for now so he can see it in Maya and compare;
   (3) the three files are all for now; (4) the Rigtool can take the HTML's style, but he wants to look at
