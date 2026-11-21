@@ -218,7 +218,13 @@ the code; this file has what Gus said, decided and wants next.
   titles (Toolbox icon touches its name), and "apply to the rest after you see the results". His Groups shot:
   "Match _zero" (& eaten), "Above the objec" (choice button squeezed), something peeking at the right edge.
   5.7.8 plan sent with questions: push 5.7.7 now?; "the rest" = default new look / Settings / Animtool?; hide the
-  sidebar fully or keep icons?; what's at the right edge? - waiting. 5.7.7 not pushed yet. Then 5.8 Animtool from Gus's
+  sidebar fully or keep icons?; what's at the right edge? - waiting. 5.7.7 not pushed yet.
+- 2026-11-21: Gus: 1 wait for the rest of testing (no push); 5.8 is only for the Animtool; "the rest" = the
+  Toolbox improvements on every tab ("the other tabs aren't moving like in Controls or the Toolbox"); hidden
+  sidebar = thin strip; the right-edge question was the cut text. Splitting one-section pages: "ok"; Settings in
+  the new look: "yes". He couldn't move "Move the shape" above "Swap the shape" and asked for an edit button
+  for Move up / down. 5.7.8 plan sent: Arrange button per page, Swap section keeps its own items, order on
+  every tab, Settings new look, text never cut, sidebar strip, title spacing - waiting for his OK. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows
