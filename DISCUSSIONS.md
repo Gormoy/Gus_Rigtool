@@ -17,6 +17,20 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: NEW standalone tool asked by Gus: **Review Notes** (like SyncSketch, inside Maya): draw + write notes
+  on a camera and frames, see them later in Maya / in playblasts, status open / in progress / done. A separate
+  tool next to the onion skin (his choice: "I want it to be a separate tool"), branch `review-notes-tool`, folder
+  `scripts/review_notes/` (not inside Animtool). He liked the mock-up (artifact "Maya Review Notes") and asked for
+  a **bezier pen like Illustrator** (click = corner, click-drag = smooth, drag points / handles after, Alt breaks
+  a handle) - added to the mock-up and the file format (anchors [point, in, out]).
+  Agreed from the senior-animator review: one node draws all notes (not one per note); keep a small picture of
+  the frame with each note (retimes); SyncSketch import before our own playblast player; notes pinned to a
+  control in 3D = later. File: `<shot>.review.json` next to the scene, `_v###` dropped so notes follow versions,
+  reload-before-save for teams.
+  Rule 12: try-it sent first - `design/review_notes/tryit_review_draw.py` (a test plugin: 3 notes + a green box
+  on where it thinks the resolution gate is) and `expected_*.png` (what it should look like, from the same
+  drawing code). Waiting: his screenshots + Script Editor lines, and OK on the step 1 plan.
+
 - 2026-11-21: Gus "yes to all": 576 + all_pages outputs accepted, 5.7.6 pushed to main, Toolbox preview next (the
   last area; then the old window can go).
 
