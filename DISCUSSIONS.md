@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: After a Maya restart 0.1.1 DRAWS (Gus's screenshot: arc, arrow, label sized right). Gus: "yes to
+  option 1 and 2" -> 0.1.2: the plugin is a thin shell (drawing in reviewNotes/nodedraw.py, looked up on every
+  refresh, so updates work without a restart) and the installer clears undo to unload the plugin. Found from his
+  log: test.ma got `requires "reviewNotesNode.py"` on a normal save (the self test had only exported), so opening
+  it errors - 0.1.2 tells Maya not to write it, and the self test does a real save. test.ma keeps that line
+  until he opens and saves it again with 0.1.2 (rule 9: I don't edit his .ma).
+
 - 2026-11-21: Found why 0.1.0 drew nothing (Gus's diagnostic paste: "maya.api.OpenMaya has no attribute
   'MFileIO'"): the plugin asked the NEW API for the open scene's file; MFileIO is only in the old API
   (maya.OpenMaya). Every refresh failed before drawing. The tests missed it because their stand-in for Maya

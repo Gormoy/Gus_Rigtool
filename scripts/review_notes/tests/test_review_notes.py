@@ -320,7 +320,7 @@ class PluginTests(unittest.TestCase):
         mods, self.dm = fake_maya(self.state)
         self.saved = {k: sys.modules.get(k) for k in mods}
         sys.modules.update(mods)
-        sys.modules.pop("reviewNotes.plugin.reviewNotesNode", None)
+        sys.modules.pop("reviewNotes.nodedraw", None)
         sys.path.insert(0, os.path.join(os.path.dirname(HERE), "reviewNotes", "plugin"))
         import reviewNotesNode
         self.plugin = reviewNotesNode
@@ -332,6 +332,7 @@ class PluginTests(unittest.TestCase):
             else:
                 sys.modules[k] = v
         sys.modules.pop("reviewNotesNode", None)
+        sys.modules.pop("reviewNotes.nodedraw", None)
         sys.path.pop(0)
         shutil.rmtree(self.dir)
 
@@ -341,7 +342,19 @@ class PluginTests(unittest.TestCase):
     def test_new_api_has_no_mfileio(self):
         """0.1.0 asked maya.api.OpenMaya for MFileIO (it isn't there) and drew nothing."""
         self.assertFalse(hasattr(sys.modules["maya.api.OpenMaya"], "MFileIO"))
-        self.assertEqual(self.plugin.scene_file(), self.state["scene"])
+        self.assertEqual(self.plugin._drawing().scene_file(), self.state["scene"])
+
+    def test_update_works_without_restart(self):
+        """The plugin looks the drawing up on every refresh: after the installer reloads the folder (it drops the
+        reviewNotes modules), the NEW drawing code is used - no Maya restart (Gus, 2026-11-21)."""
+        o = self.plugin.ReviewNotesDrawOverride(None)
+        cam = types.SimpleNamespace(parts=["shotCam", "shotCamShape"])
+        obj = types.SimpleNamespace(node=lambda: None)
+        self.assertEqual(len(o.prepareForDraw(obj, cam, self.ctx(), None).items), 3)
+        new = types.ModuleType("reviewNotes.nodedraw")             # what an update would bring
+        new.prepare = lambda *a: ([("line", (0, 1, 0, 1), 1.0, [(0, 0), (1, 1)])], 1.0)
+        sys.modules["reviewNotes.nodedraw"] = new
+        self.assertEqual(len(o.prepareForDraw(obj, cam, self.ctx(), None).items), 1)
 
     def test_registers_node_override_and_show_menu(self):
         self.plugin.initializePlugin(None)

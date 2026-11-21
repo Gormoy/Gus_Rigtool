@@ -8,22 +8,26 @@ live in the review file, and a scene sent to someone without the tool opens clea
 
 Settings are the node's attributes (Attribute Editor): Review File (empty = next to the scene), Show Nearby,
 Nearby Frames, Only Open, Show Text, Opacity, Hide While Playing, Show Gate (the try-it's green box).
+
+A THIN SHELL (0.1.2, Gus OK'd): the drawing itself is in reviewNotes/nodedraw.py, looked up again on every
+refresh, so an update works as soon as the installer reloads the reviewNotes folder - no Maya restart. Only a
+change in this file (new settings, the node's id) needs the plugin reloaded; the installer does that too (it
+clears undo first, or Maya refuses to unload a plugin whose node is in the undo queue).
 """
 
+import importlib
+
 import maya.api.OpenMaya as om
-import maya.api.OpenMayaAnim as oma
 import maya.api.OpenMayaRender as omr
 import maya.api.OpenMayaUI as omui
 import maya.cmds as cmds
-
-from reviewNotes import draw, store
 
 NODE_TYPE = "reviewNotes"
 NODE_ID = 0x0007F3A2                      # local-use range (0 - 0x7ffff); a registered id later if it's shared
 CLASSIFICATION = "drawdb/geometry/reviewNotes"
 REGISTRANT = "reviewNotesDrawOverride"
 FILTER = "reviewNotes"                    # Show menu > Review notes
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 
 def maya_useNewAPI():
@@ -78,61 +82,19 @@ class DrawData(om.MUserData):
         self.scale = 1.0
 
 
-_said = {}
+_told = {}
 
 
-def _say(key, text):
-    """A line in the Script Editor, once per new message (drawing runs on every refresh)."""
-    if _said.get(key) != text:
-        _said[key] = text
+def _drawing():
+    """reviewNotes.nodedraw as it is NOW (after an update it's the new one: the installer reloads the folder)."""
+    return importlib.import_module("reviewNotes.nodedraw")
+
+
+def _tell_once(text):
+    if _told.get("error") != text:
+        _told["error"] = text
         if text:
             print("Review Notes: %s" % text)
-
-
-def _pixel_ratio():
-    """Screen pixels per point: 2 on a Mac Retina screen (MAYA_FACTS: view sizes are in screen pixels)."""
-    try:
-        try:
-            from PySide2 import QtGui
-        except ImportError:
-            from PySide6 import QtGui
-        return float(QtGui.QGuiApplication.primaryScreen().devicePixelRatio()) or 1.0
-    except Exception:
-        return 1.0
-
-
-def _render_aspect():
-    sel = om.MSelectionList()
-    sel.add("defaultResolution")
-    fn = om.MFnDependencyNode(sel.getDependNode(0))
-    w, h = fn.findPlug("width", False).asInt(), fn.findPlug("height", False).asInt()
-    return fn.findPlug("deviceAspectRatio", False).asFloat() or (w / float(max(1, h)))
-
-
-def scene_file():
-    """The open scene's file. MFileIO is only in Maya's OLD Python API (maya.OpenMaya), not in maya.api.OpenMaya
-    (0.1.0 used the new one: nothing was drawn - Gus, 2026-11-21)."""
-    try:
-        import maya.OpenMaya as om1
-        return om1.MFileIO.currentFile()
-    except Exception:
-        return cmds.file(query=True, sceneName=True)
-
-
-def review_file(node):
-    """The node's Review File, or the file next to the open scene when it's empty."""
-    path = om.MFnDependencyNode(node).findPlug("reviewFile", False).asString()
-    return path or store.path_for_scene(scene_file())
-
-
-def _options(node, scale):
-    fn = om.MFnDependencyNode(node)
-
-    def get(name):
-        return fn.findPlug(name, False)
-    return draw.Options(show_nearby=get("showNearby").asBool(), nearby_frames=get("nearbyFrames").asInt(),
-                        only_open=get("onlyOpen").asBool(), show_text=get("showText").asBool(),
-                        opacity=get("opacity").asFloat(), debug_gate=get("showGate").asBool(), scale=scale)
 
 
 class ReviewNotesDrawOverride(omr.MPxDrawOverride):
@@ -159,50 +121,20 @@ class ReviewNotesDrawOverride(omr.MPxDrawOverride):
     def prepareForDraw(self, objPath, cameraPath, frameContext, oldData):
         data = oldData if isinstance(oldData, DrawData) else DrawData()
         data.items = []
-        data.scale = _pixel_ratio()
         try:
-            node = objPath.node()
-            options = _options(node, data.scale)
-            if om.MFnDependencyNode(node).findPlug("hideWhilePlaying", False).asBool() and oma.MAnimControl.isPlaying():
-                return data
-            notes, problem = store.notes_for_drawing(review_file(node))
-            _say("file", problem)
-            if not notes and not options.debug_gate:
-                return data
-            cam_path = om.MDagPath(cameraPath)
-            shape = cam_path.partialPathName()
-            cam_path.pop()
-            names = draw.camera_names(shape, cam_path.partialPathName())
-            frame = int(round(oma.MAnimControl.currentTime().asUnits(om.MTime.uiUnit())))
-            _, _, w, h = frameContext.getViewportDimensions()
-            cam = om.MFnCamera(cameraPath)
-            view = cam.getViewingFrustum(w / float(max(1, h)), True, False, True)
-            render = cam.getRenderingFrustum(_render_aspect())
-            gate = draw.gate_rect(view, render, w, h)
-            data.items = draw.build_items(notes, names, frame, gate, options)
-            _say("error", "")
+            data.items, data.scale = _drawing().prepare(objPath, cameraPath, frameContext)
+            _tell_once("")
         except Exception as e:                     # a drawing problem must never break the viewport
-            _say("error", "nothing drawn (%s)" % e)
+            _tell_once("nothing drawn (%s)" % e)
         return data
 
     def addUIDrawables(self, objPath, dm, frameContext, data):
         if not isinstance(data, DrawData) or not data.items:
             return
-        k = data.scale
-        dm.beginDrawable()
-        for item in data.items:
-            if item[0] == "line":
-                _, rgba, width, pts = item
-                dm.setColor(om.MColor(rgba))
-                dm.setLineWidth(width * k)
-                dm.lineStrip(om.MPointArray([om.MPoint(x, y) for x, y in pts]), True)
-            else:
-                _, rgba, (x, y), text = item
-                dm.setColor(om.MColor(rgba))
-                dm.setFontSize(omr.MUIDrawManager.kDefaultFontSize)
-                dm.text2d(om.MPoint(x, y), text, omr.MUIDrawManager.kLeft,
-                          [int((len(text) * 8 + 24) * k), int(20 * k)], om.MColor((0.08, 0.08, 0.08, 0.75)), False)
-        dm.endDrawable()
+        try:
+            _drawing().paint(dm, data.items, data.scale)
+        except Exception as e:
+            _tell_once("nothing drawn (%s)" % e)
 
 
 def initializePlugin(obj):

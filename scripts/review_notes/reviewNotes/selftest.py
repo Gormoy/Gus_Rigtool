@@ -1,6 +1,6 @@
 """
 Review Notes self test - the things only real Maya can answer (CLAUDE.md rule 11). Run it in a NEW, EMPTY scene
-(it exports the scene to a temp file to see what gets saved; your scene is not changed or saved):
+(it saves that empty scene to a temp file to see what gets saved, then makes a new scene):
 
     import reviewNotes.selftest as t; t.run()
 
@@ -61,13 +61,22 @@ def _show_menu_in_views():
 
 
 def _not_saved():
-    path = os.path.join(tempfile.mkdtemp(prefix="review_notes_test"), "export_test.ma")
-    cmds.file(path, exportAll=True, type="mayaAscii", force=True)
+    """A real SAVE, not an export: 0.1.1 passed the export check but a normal save wrote 'requires'."""
+    if cmds.file(query=True, sceneName=True) or len(cmds.ls(dag=True)) > 30:
+        return None, "skipped: run the self test in a NEW, EMPTY scene (File > New Scene)"
+    path = os.path.join(tempfile.mkdtemp(prefix="review_notes_test"), "save_test.ma")
+    cmds.file(rename=path)
+    try:
+        cmds.file(save=True, type="mayaAscii", force=True)
+    finally:
+        cmds.file(new=True, force=True)
     with open(path) as f:
         text = f.read()
     node_in = "REVIEW_NOTES" in text or "createNode reviewNotes" in text
-    req = 'requires "reviewNotesNode"' in text
-    return not node_in and not req, "node in the file: %s, 'requires reviewNotesNode': %s" % (node_in, req)
+    req = any(line.startswith("requires") and "reviewNotesNode" in line for line in text.splitlines())
+    flag = cmds.pluginInfo(controller.PLUGIN, query=True, writeRequires=True)
+    return not node_in and not req, "saved scene: node in it %s, 'requires reviewNotesNode' %s (plugin's writeRequires %s)" % (
+        node_in, req, flag)
 
 
 def _file_round_trip():
@@ -94,9 +103,9 @@ def run():
     _check("one REVIEW_NOTES node", _one_node)
     _check("Show menu > Review notes", _show_menu)
     _check("Review notes shown in each view", _show_menu_in_views)
-    _check("node not saved in the scene", _not_saved)
     _check("review file: save, read again, change", _file_round_trip)
     _check("camera of the view", _camera)
+    _check("node not saved in the scene (a real save; ends with a new scene)", _not_saved)
     text = "\n".join(LINES)
     print(text)
     fails = sum(1 for line in LINES if line.startswith("FAIL"))

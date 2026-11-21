@@ -35,7 +35,19 @@ def _tell(msg, warn=False):
 def load_plugin():
     if not cmds.pluginInfo(PLUGIN, query=True, loaded=True):
         cmds.loadPlugin(PLUGIN_PATH, quiet=True)
+    no_requires()
     return cmds.pluginInfo(PLUGIN, query=True, loaded=True)
+
+
+def no_requires():
+    """Saved scenes must not ask for this plugin: 0.1.1 wrote 'requires "reviewNotesNode.py"' into test.ma on a
+    normal save (not on export), so opening it gave "Plug-in reviewNotesNode.py was not found" (Gus, 2026-11-21)."""
+    try:
+        cmds.pluginInfo(PLUGIN, edit=True, writeRequires=False)
+        return True
+    except Exception as e:
+        print("Review Notes: saved scenes may ask for the plugin (%s)" % e)
+        return False
 
 
 def node():

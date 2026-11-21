@@ -1,7 +1,7 @@
 """
 Installer - run by drag_to_maya.mel (drag that file into Maya's viewport). Same way as the onion skin's:
   - removes the REVIEW_NOTES node and unloads the old plugin if they're there (your notes are in the review
-    files, nothing is lost);
+    files, nothing is lost); to unload it, it CLEARS THE UNDO HISTORY (Gus OK'd, 0.1.2);
   - copies reviewNotes into the shared Maya scripts folder (every Maya version uses it):
         Windows  Documents/maya/scripts/reviewNotes
         Mac      ~/Library/Preferences/Autodesk/maya/scripts/reviewNotes
@@ -43,6 +43,8 @@ def _old_copy_off():
     try:
         for shape in cmds.ls(type="reviewNotes") or []:
             cmds.delete(cmds.listRelatives(shape, parent=True))
+        cmds.flushUndo()            # Maya won't unload a plugin whose node is still in the undo queue (Gus OK'd)
+        print("Review Notes installer: undo history cleared to update the plugin.")
         cmds.unloadPlugin(PLUGIN)
         return True
     except RuntimeError as e:
