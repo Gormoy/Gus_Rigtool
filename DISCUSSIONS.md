@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus picked C3b (names on the left, short, left-aligned) for the Rigtool look; "yes" the joined choice
+  buttons read better than round radio buttons; FOLD the step lights too (the number badge says ready / done).
+  He then sent his 5.8 Animtool work made with Gemini (kept in design/references/): a style guide
+  (gus_animtool_5_8_style_guide.md), a Maya test script with dummy actions (gus_animtool_5_8_ui_test_v3.py) and
+  an HTML workspace (gus_animtool_5_8_workspace_v3_1_1.html + workspace_v3_1_1.png). Gus: "the html is how it
+  should look more visually". Its 58 tools = today's 56 Animtool actions + 2 window openers (attach_window,
+  arcs_panel). I asked: one palette for both tools? Rigtool look first (5.7.7) then 5.8? and the Maya facts the
+  pie hotkey needs. Waiting.
+
 - 2026-11-21: Gus on C2: "keep more of this idea, but some tools are not centred or pushed to the right; I want to see
   it pushed more to the new style, just to have a look". Sent C3a (new-style cards, each field's name ABOVE it -
   one left edge, full-width controls) and C3b (same cards, names on the LEFT in a short left-aligned column);

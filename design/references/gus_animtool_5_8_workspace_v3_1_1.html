@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gus Animtool 5.8 — Interactive Maya 2024 Workspace (v3.1)</title>
+<style>
+  :root {
+    --bg: #16191e;
+    --panel: #22262d;
+    --card: #242933;
+    --btn: #343c4a;
+    --btn-hover: #404a5b;
+    --border: #454f60;
+    --border-subtle: #333a47;
+    --text: #f1f5f9;
+    --muted: #9aa5b5;
+    --active: #3898c8;
+    --cat-open: #4fb3d9;
+    --cat-pose: #d66b8c;
+    --cat-keys: #d9a13b;
+    --cat-timing: #38b2ac;
+    --cat-curves: #e07a3c;
+    --cat-limbs: #3ea87c;
+    --cat-space: #907ad6;
+    --cat-view: #cf6ba9;
+  }
+  body.okabe {
+    --active: #56b4e9;
+    --cat-open: #56b4e9;
+    --cat-pose: #cc79a7;
+    --cat-keys: #e69f00;
+    --cat-timing: #0072b2;
+    --cat-curves: #d55e00;
+    --cat-limbs: #009e73;
+    --cat-space: #f0e442;
+    --cat-view: #cc79a7;
+  }
+  * { box-sizing: border-box; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    font-size: 12px; overflow: hidden;
+  }
+
+  /* Layout Shell */
+  .app { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+
+  /* Top Control Bar (Demo Controls) */
+  .topbar {
+    height: 34px; background: #14171c; border-bottom: 1px solid #0b0d10;
+    display: flex; align-items: center; gap: 10px; padding: 0 12px; flex-shrink: 0;
+  }
+  .brand { font-weight: 700; font-size: 12px; color: var(--text); letter-spacing: 0.02em; }
+  .brand span { color: var(--active); }
+  .tb-sep { width: 1px; height: 16px; background: var(--border-subtle); }
+  .tb-btn {
+    background: var(--btn); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600;
+  }
+  .tb-btn:hover { background: var(--btn-hover); border-color: var(--active); }
+  .tb-btn.on { background: var(--active); color: #0f1419; border-color: var(--active); }
+  .tb-ctl { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+  .tb-ctl input[type=range] { width: 90px; accent-color: var(--active); }
+
+  /* Single-Row Maya Shelf (58 tools) */
+  .shelf-wrap {
+    background: #1e2229; border-bottom: 1px solid #0d0f13;
+    padding: 4px 8px; flex-shrink: 0; display: flex; flex-direction: column; gap: 3px;
+  }
+  .shelf-tabs { display: flex; gap: 4px; font-size: 10px; color: var(--muted); }
+  .shelf-tab { padding: 2px 8px; border-radius: 4px 4px 0 0; background: #171a20; }
+  .shelf-tab.on { background: #262b34; color: var(--text); font-weight: 700; border-top: 2px solid var(--active); }
+  .shelf-row {
+    display: flex; align-items: center; gap: 2px; overflow-x: auto; padding: 3px 2px;
+    background: #262b34; border-radius: 4px; border: 1px solid var(--border-subtle);
+  }
+  .shelf-row::-webkit-scrollbar { height: 5px; }
+  .shelf-row::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  .shelf-div { width: 1px; height: 24px; background: #475162; margin: 0 4px; flex-shrink: 0; }
+
+  /* Workspace Body: Viewport + Right Dock */
+  .workspace { flex: 1; display: flex; min-height: 0; position: relative; overflow: hidden; }
+  .viewport {
+    flex: 1; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 50% 45%, #2b323d 0%, #1d222a 65%, #161a20 100%);
+  }
+  .vp-hud-tl {
+    position: absolute; top: 10px; left: 12px; color: #94a3b8; font-size: 11px;
+    background: rgba(20, 23, 28, 0.72); padding: 4px 8px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: none;
+  }
+  .vp-hud-bl {
+    position: absolute; bottom: 12px; left: 12px; color: #94a3b8; font-size: 11px;
+    background: rgba(20, 23, 28, 0.72); padding: 5px 9px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: none;
+  }
+  .vp-svg { width: 100%; height: 100%; display: block; }
+
+  /* Toast */
+  .toast {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: rgba(20, 24, 30, 0.94); color: var(--text); border: 1px solid var(--border);
+    border-left: 3px solid var(--active); border-radius: 6px; padding: 6px 14px;
+    font-size: 11.5px; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity 0.18s;
+    z-index: 900; box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .toast.show { opacity: 1; }
+
+  /* Reusable Tool Tile */
+  .tile-cell {
+    display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+  }
+  .tile-btn {
+    position: relative; background: var(--btn); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text); overflow: hidden; flex-shrink: 0;
+  }
+  .tile-btn:hover { background: var(--btn-hover); border-color: var(--active); }
+  .tile-accent {
+    position: absolute; left: 2px; right: 2px; bottom: 1px; border-radius: 1.5px; pointer-events: none;
+  }
+  .tile-rmb {
+    position: absolute; right: 2px; width: 0; height: 0;
+    border-style: solid; border-color: transparent transparent #cbd5e1 transparent;
+    pointer-events: none;
+  }
+  .tile-badge {
+    font-weight: 800; letter-spacing: -0.02em; color: var(--text); pointer-events: none;
+    line-height: 1; text-align: center;
+  }
+  .tile-lbl {
+    font-size: 9px; color: var(--muted); text-align: center; line-height: 1.15;
+    margin-top: 2px; height: 21px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    word-break: break-word;
+  }
+  .tile-lbl.pill {
+    background: rgba(20, 23, 29, 0.92); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 4px; height: auto; min-height: 16px;
+  }
+
+  /* Floating Bar (v3.1 Proportional + Full-Info Column) */
+  .fbar {
+    position: absolute; top: 58px; left: 24px; z-index: 200;
+    background: var(--panel); border: 1px solid var(--border); border-top: 3px solid var(--cat-keys);
+    border-radius: 8px; padding: 5px; box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .fbar-chrome {
+    display: flex; align-items: center; gap: 4px; flex-wrap: nowrap;
+  }
+  .fbar-grip {
+    color: var(--muted); font-weight: 800; cursor: grab; padding: 2px 4px; font-size: 11px;
+  }
+  .fbar-grip:active { cursor: grabbing; }
+  .prof-tab {
+    background: var(--bg); color: var(--muted); border: 1px solid transparent;
+    border-bottom: 2px solid transparent; border-radius: 4px; padding: 2px 6px;
+    font-size: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .prof-tab:hover { background: var(--btn); color: var(--text); }
+  .prof-tab.on { background: var(--card); color: var(--text); border-color: var(--border); font-weight: 700; }
+  .prof-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+  .mode-btn {
+    background: var(--bg); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 5px; font-size: 10px; font-weight: 600; cursor: pointer;
+  }
+  .mode-btn:hover { background: var(--btn); color: var(--text); }
+  .mode-btn.on { background: var(--active); color: #0f1419; border-color: var(--active); font-weight: 700; }
+
+  .fbar-tools { display: flex; gap: 2px; align-items: center; }
+  .fbar-tools.grid-mode { display: grid; gap: 2px; align-items: start; }
+  .fbar-tools.col-mode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+  /* Column Chrome (Full-Info ~74px) */
+  .col-chrome { display: flex; flex-direction: column; gap: 3px; width: 100%; align-items: stretch; }
+  .col-top-row { display: flex; justify-content: space-between; align-items: center; }
+  .col-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .col-mini-row2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+  .col-prof-list { display: flex; flex-direction: column; gap: 2px; }
+  .col-prof-pill {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); color: var(--muted); border: 1px solid var(--border-subtle);
+    border-left: 3px solid transparent; border-radius: 4px; padding: 2px 5px;
+    font-size: 9.5px; font-weight: 700; cursor: pointer;
+  }
+  .col-prof-pill:hover { background: var(--btn); color: var(--text); }
+  .col-prof-pill.on { background: var(--card); color: var(--text); border-color: var(--border); }
+  .col-prof-cnt { font-size: 8.5px; opacity: 0.75; }
+
+  /* Proportional Tweener */
+  .tweener {
+    background: var(--bg); border: 1px solid var(--border); border-bottom: 2px solid var(--cat-pose);
+    border-radius: 6px; padding: 2px 5px; display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    flex-shrink: 0;
+  }
+  .tw-head { display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; }
+  .tw-val { color: var(--cat-pose); }
+  .tw-ovr {
+    margin-left: auto; background: var(--btn); color: var(--text); border: 1px solid var(--border);
+    border-radius: 3px; padding: 0 4px; font-size: 8.5px; cursor: pointer;
+  }
+  .tw-range { width: 100%; margin: 0; height: 10px; accent-color: var(--cat-pose); cursor: pointer; }
+  .tw-ticks { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .tw-tick {
+    height: 5px; background: var(--btn); border: none; border-radius: 2px; cursor: pointer; padding: 0;
+  }
+  .tw-tick.zero { background: #64748b; }
+  .tw-tick:hover { background: var(--cat-pose); }
+
+  /* Vertical Tweener (Full Info in Column Mode) */
+  .tweener-vert {
+    background: var(--bg); border: 1px solid var(--border); border-bottom: 2px solid var(--cat-pose);
+    border-radius: 6px; padding: 4px; width: 62px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .twv-body { display: flex; align-items: center; gap: 4px; height: 92px; }
+  .twv-ticks { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+  .twv-tick {
+    width: 18px; height: 11px; background: var(--btn); color: var(--muted); border: none;
+    border-radius: 2px; font-size: 7.5px; font-weight: 700; cursor: pointer; padding: 0;
+  }
+  .twv-tick:hover { background: var(--cat-pose); color: #111; }
+  .twv-slider {
+    writing-mode: vertical-lr; direction: rtl; height: 90px; width: 14px; accent-color: var(--cat-pose); cursor: pointer;
+  }
+
+  /* Attached RMB Settings Micro-Strip */
+  .micro-strip {
+    background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--active);
+    border-radius: 6px; padding: 5px 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 10.5px;
+  }
+  .ms-title { font-weight: 700; }
+  .ms-group { display: inline-flex; align-items: center; gap: 3px; }
+  .ms-lbl { color: var(--muted); font-size: 10px; }
+  .ms-btn {
+    background: var(--btn); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer;
+  }
+  .ms-btn.on { background: var(--active); color: #111; border-color: var(--active); font-weight: 700; }
+  .ms-close {
+    margin-left: auto; background: transparent; border: none; color: var(--muted);
+    font-weight: 700; cursor: pointer; font-size: 12px;
+  }
+
+  /* Narrow Dock (242px High Contrast + Auto Micro-Rail < 135px) */
+  .dock {
+    width: 242px; background: var(--bg); border-left: 1px solid #0b0d10;
+    display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.12s;
+  }
+  .dock-hdr {
+    background: var(--panel); padding: 6px; border-bottom: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .dock-top-row { display: flex; align-items: center; gap: 3px; }
+  .dock-scroll { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+  .dock-scroll::-webkit-scrollbar { width: 6px; }
+  .dock-scroll::-webkit-scrollbar-thumb { background: #454f60; border-radius: 3px; }
+  .dock-pv { display: flex; justify-content: space-between; gap: 2px; }
+  .dock-pinned { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+  .pin-btn {
+    background: var(--btn); color: var(--text); border: 1px solid var(--border);
+    border-top: 2px solid var(--active); border-radius: 4px; padding: 4px 3px;
+    font-size: 10px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+  .pin-btn:hover { background: var(--btn-hover); }
+
+  .drawer {
+    background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--active);
+    border-radius: 6px; overflow: hidden;
+  }
+  .drawer-hdr {
+    width: 100%; border: none; padding: 5px 7px; font-size: 10.5px; font-weight: 800;
+    text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  }
+  .drawer-body { padding: 5px; display: flex; flex-direction: column; gap: 3px; }
+  .split-row { display: flex; gap: 2px; }
+  .split-main {
+    flex: 3; background: var(--btn); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 6px; font-size: 11px; text-align: left; cursor: pointer; font-weight: 500;
+  }
+  .split-main:hover { background: var(--btn-hover); border-color: var(--active); }
+  .split-sub {
+    flex: 1; background: var(--bg); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 4px; font-size: 9.5px; cursor: pointer; font-weight: 600; text-align: center;
+  }
+  .split-sub:hover { background: var(--active); color: #111; border-color: var(--active); }
+
+  .dock-status {
+    height: 22px; background: #14171c; border-top: 1px solid var(--border-subtle);
+    padding: 0 8px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; color: var(--muted); flex-shrink: 0;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cat-limbs); display: inline-block; margin-right: 5px; }
+
+  /* Micro-Rail Mode */
+  .dock.rail .dock-hdr, .dock.rail .dock-status { display: none; }
+  .dock.rail .dock-scroll { align-items: center; padding: 6px 4px; gap: 5px; }
+  .rail-tag { font-size: 9px; font-weight: 800; color: var(--active); letter-spacing: 0.08em; }
+
+  /* Hotbox Radial Pie Overlay */
+  .pie-overlay {
+    position: fixed; inset: 0; z-index: 800; display: none;
+    background: rgba(10, 12, 16, 0.28);
+  }
+  .pie-overlay.open { display: block; }
+  .pie-wrap {
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transform: translate(-50%, -50%);
+  }
+  .pie-top {
+    background: rgba(22, 25, 30, 0.94); border: 1px solid var(--border); border-radius: 8px;
+    padding: 4px 6px; display: flex; gap: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  }
+  .pie-ring {
+    position: relative; width: 340px; height: 310px;
+  }
+  .pie-backdrop {
+    position: absolute; inset: 8px 18px; border-radius: 50%;
+    background: rgba(22, 25, 30, 0.90); border: 1.5px solid var(--border);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.65);
+  }
+  .pie-inner {
+    position: absolute; left: 50%; top: 50%; width: 148px; height: 136px;
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: rgba(34, 38, 45, 0.85); border: 1.5px dashed var(--active);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; pointer-events: none;
+  }
+  .pie-item { position: absolute; transform: translate(-50%, -50%); }
+  .pie-overflow {
+    background: rgba(22, 25, 30, 0.94); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 8px; display: flex; gap: 4px; align-items: center; flex-wrap: wrap; max-width: 560px;
+  }
+
+  /* Modals (Fuzzy Search & Edit Profile) */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 950;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    width: 420px; max-height: 78vh; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+  }
+  .modal-hdr {
+    padding: 10px 12px; background: var(--bg); border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: space-between; font-weight: 700;
+  }
+  .modal-body { padding: 10px 12px; overflow-y: auto; flex: 1; }
+  .search-inp {
+    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--active);
+    border-radius: 5px; padding: 7px 10px; font-size: 12px; margin-bottom: 8px; outline: none;
+  }
+  .search-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 6px 8px;
+    border-radius: 5px; cursor: pointer; background: var(--card); margin-bottom: 4px;
+    border: 1px solid transparent;
+  }
+  .search-row:hover { border-color: var(--active); background: var(--btn); }
+  .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .edit-chk {
+    display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: var(--card);
+    border-radius: 4px; cursor: pointer; font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Top Demo Controls -->
+  <div class="topbar">
+    <div class="brand">Gus Animtool <span>5.8</span> · Maya 2024 Preview (v3.1)</div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" id="btnOpenPie">Hold ` · Open Pie</button>
+    <button class="tb-btn" id="btnOpenSearch">Search 58 (Ctrl+K)</button>
+    <button class="tb-btn" id="btnToggleCB">Okabe-Ito CB</button>
+    <div class="tb-sep"></div>
+    <div class="tb-ctl">
+      <span>Dock:</span>
+      <input type="range" id="dockSlider" min="84" max="280" value="242" />
+      <span id="dockPxLbl">242px</span>
+      <button class="tb-btn" id="btnRail">88px Rail</button>
+      <button class="tb-btn" id="btnFullDock">242px</button>
+    </div>
+    <div style="margin-left:auto; color:var(--muted); font-size:11px;">
+      Ctrl+Scroll on Bar = Resize · Right-Click any tile = Tool Settings
+    </div>
+  </div>
+
+  <!-- Single-Row Maya Shelf (All 58 Tools) -->
+  <div class="shelf-wrap">
+    <div class="shelf-tabs">
+      <div class="shelf-tab">Curves</div>
+      <div class="shelf-tab">Rigging</div>
+      <div class="shelf-tab">Animation</div>
+      <div class="shelf-tab">Gus_Rigtool</div>
+      <div class="shelf-tab on">Gus_Animtool_58 (All 58 — Single Row)</div>
+    </div>
+    <div class="shelf-row" id="shelfRow"></div>
+  </div>
+
+  <!-- Main Workspace -->
+  <div class="workspace">
+    <!-- Viewport 2.0 -->
+    <div class="viewport" id="viewport">
+      <div class="vp-hud-tl">Viewport 2.0 · persp · Hare_Rig_v202 · <strong id="hudMode">IK</strong> · Frame <strong id="hudFrame">14</strong></div>
+      <div class="vp-hud-bl">Hold <strong>`</strong> (Backtick) for Hotbox Pie · Press <strong>1–5</strong> inside Pie to swap profiles</div>
+
+      <!-- Live Interactive SVG Arm Rig -->
+      <svg class="vp-svg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="900" height="560" fill="url(#grid)" />
+        <line x1="0" y1="360" x2="900" y2="360" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="450" y1="0" x2="450" y2="560" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <!-- Motion Arc -->
+        <path id="rigArc" d="M 330 330 Q 455 150 610 250" fill="none" stroke="#cf6ba9" stroke-width="2" stroke-dasharray="4 4" opacity="0.75"/>
+        <!-- Arm Bones -->
+        <g id="rigArm">
+          <line id="boneUpper" x1="370" y1="240" x2="475" y2="310" stroke="#94a3b8" stroke-width="10" stroke-linecap="round"/>
+          <line id="boneLower" x1="475" y1="310" x2="590" y2="245" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="370" cy="240" r="9" fill="#3898c8" stroke="#fff" stroke-width="2"/>
+          <circle id="jntElbow" cx="475" cy="310" r="8" fill="#3ea87c" stroke="#fff" stroke-width="2"/>
+          <rect id="ctrlHand" x="574" y="229" width="32" height="32" rx="6" fill="none" stroke="#3ea87c" stroke-width="3"/>
+          <text id="ctrlLabel" x="615" y="249" fill="#e2e8f0" font-size="12" font-weight="700">L_hand_ik_ctrl</text>
+          <!-- Prop Box -->
+          <rect id="propBox" x="600" y="255" width="24" height="24" rx="3" fill="rgba(144,122,214,0.35)" stroke="#907ad6" stroke-width="2"/>
+        </g>
+      </svg>
+
+      <!-- Floating Bar -->
+      <div class="fbar" id="floatingBar"></div>
+
+      <!-- Viewport Toast -->
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <!-- Right Narrow Dock -->
+    <div class="dock" id="dock"></div>
+  </div>
+</div>
+
+<!-- Hotbox Radial Pie Menu -->
+<div class="pie-overlay" id="pieOverlay">
+  <div class="pie-wrap" id="pieWrap"></div>
+</div>
+
+<!-- Fuzzy Search Modal -->
+<div class="modal-bg" id="searchModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span>Quick Search — All 58 Tools</span>
+      <button class="ms-close" id="closeSearch">×</button>
+    </div>
+    <div class="modal-body">
+      <input class="search-inp" id="searchInput" placeholder="Type tool name, tag, or category (e.g. mirror, ik, step, eul)..." />
+      <div id="searchResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span id="editTitle">Edit Profile</span>
+      <div style="display:flex;gap:6px;">
+        <button class="tb-btn" id="btnNewProf">+ New Profile</button>
+        <button class="ms-close" id="closeEdit">×</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="edit-grid" id="editGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ACTIONS = [
+  // Launchers (5)
+  ["main","Gus Animtool","open","text","GA",false,""],
+  ["picker","Picker","open","icon","picker",false,""],
+  ["poses","Poses","open","icon","poses",false,""],
+  ["clips","Clips","open","icon","clips",false,""],
+  ["bar","Floating Bar","open","icon","bar",false,""],
+  // Pose (6)
+  ["tween_prev","Tween <","pose","icon","tween_prev",true,"Alt+Shift+,"],
+  ["tween_next","Tween >","pose","icon","tween_next",true,"Alt+Shift+."],
+  ["mirror","Mirror Pose","pose","icon","mirror",true,""],
+  ["flip","Flip Pose","pose","icon","flip",false,""],
+  ["reset","Reset Pose","pose","icon","reset",true,""],
+  ["twin","Select Twin","pose","text","TWIN",false,""],
+  // Keys & Tangents (9)
+  ["key","Key Keep","keys","icon","key",true,""],
+  ["nudge_left","Nudge <","keys","icon","nudge_left",true,"Alt+,"],
+  ["nudge_right","Nudge >","keys","icon","nudge_right",true,"Alt+."],
+  ["tan_auto","Auto Tangent","keys","icon","tan_auto",false,""],
+  ["tan_spline","Spline Tangent","keys","icon","tan_spline",false,""],
+  ["tan_linear","Linear Tangent","keys","icon","tan_linear",false,""],
+  ["tan_flat","Flat Tangent","keys","icon","tan_flat",false,""],
+  ["tan_step","Stepped Tangent","keys","icon","tan_step",false,""],
+  ["blocking","Blocking / Spline","keys","text","BLK",true,""],
+  // Timing & Cycles (16)
+  ["copy_keys","Copy Keys","timing","icon","copy",true,""],
+  ["paste_keys","Paste Keys","timing","icon","paste",true,""],
+  ["inbetween_add","Add Inbetween","timing","text","+INB",true,"Alt+]"],
+  ["inbetween_remove","Remove Inbetween","timing","text","-INB",true,"Alt+["],
+  ["offset_minus","Offset -","timing","text","OFF-",true,""],
+  ["offset_plus","Offset +","timing","text","OFF+",true,""],
+  ["offset_back","Back Original","timing","text","ORIG",true,""],
+  ["mirror_cycle","Mirror Cycle","timing","text","MCYC",true,""],
+  ["cycle_continue","Continue Cycle","timing","text","CYC+",true,""],
+  ["cycle_place","Cycle In Place","timing","text","INPL",false,""],
+  ["cycle_forward","Cycle Forward","timing","text","FWD",false,""],
+  ["bake_keys","Bake Keys","timing","text","BAKE",true,""],
+  ["reduce_keys","Reduce Keys","timing","text","RED",true,""],
+  ["stretch","Slower / Faster","timing","text","STR",true,""],
+  ["reverse","Reverse Keys","timing","text","REV",false,""],
+  ["time_scale","Time Scale","timing","text","x1.2",true,""],
+  // Curves (7)
+  ["pull","Pull Keys","curves","icon","pull",false,"Alt+-"],
+  ["push","Push Keys","curves","icon","push",false,"Alt+="],
+  ["negate","Negate Keys","curves","text","NEG",false,"Alt+Shift+-"],
+  ["smooth","Smooth Curve","curves","icon","smooth",true,""],
+  ["noise","Add Noise","curves","icon","noise",true,""],
+  ["redundant","Clean Redundant","curves","text","CLN",false,""],
+  ["euler","Euler Filter","curves","text","EUL",false,""],
+  // Limbs (2)
+  ["ikfk","IK / FK Switch","limbs","text","IK/FK",true,""],
+  ["overlap","Overlap Chain","limbs","text","OVL",true,""],
+  // Spaces & Props (6)
+  ["temp_world","World Space","space","icon","world",false,""],
+  ["temp_pivot","Temp Pivot","space","icon","pivot",false,""],
+  ["bake_back","Bake Back","space","text","BK<-",false,""],
+  ["attach","Attach Prop","space","icon","attach",true,""],
+  ["release","Release Prop","space","icon","release",true,""],
+  ["attach_window","Attach Window","space","text","ATT=",false,""],
+  // Pick & View (7)
+  ["arcs","Motion Arcs","view","icon","arcs",true,""],
+  ["arcs_panel","Arcs Panel","view","text","ARC=",false,""],
+  ["hide_ctrls","Hide Controls","view","icon","hide",false,""],
+  ["isolate","Isolate Sel","view","icon","isolate",false,""],
+  ["hider","Body Parts","view","text","PART",true,""],
+  ["ghosts","Ghosts / Onion","view","icon","ghosts",true,""],
+  ["playblast","Playblast","view","icon","playblast",true,""]
+];
+
+const ACTION_MAP = {};
+ACTIONS.forEach(a => {
+  ACTION_MAP[a[0]] = { key:a[0], label:a[1], cat:a[2], kind:a[3], glyph:a[4], hasSettings:a[5], hotkey:a[6] };
+});
+
+const TOOL_SETTINGS = {
+  inbetween_add: ["Inbetween", [["Step", ["1","2","4"], 0], ["Scope", ["Sel","Char","All"], 1]]],
+  inbetween_remove: ["Inbetween", [["Step", ["1","2","4"], 0], ["Scope", ["Sel","Char","All"], 1]]],
+  offset_minus: ["Offset", [["Step", ["1","2","4"], 0], ["Mode", ["Same","Cascade"], 0]]],
+  offset_plus: ["Offset", [["Step", ["1","2","4"], 0], ["Mode", ["Same","Cascade"], 1]]],
+  mirror: ["Mirror Pose", [["Direction", ["L -> R","R -> L"], 0], ["Range", ["This Frame","Time Range"], 0]]],
+  reset: ["Reset Pose", [["Scope", ["Selection","Whole Character"], 0]]],
+  key: ["Key", [["Mode", ["Keep Curve","Key All Attrs"], 0]]],
+  blocking: ["Blocking / Spline", [["Mode", ["Stepped","Spline"], 0], ["Scope", ["Char","Sel"], 0]]],
+  ikfk: ["IK / FK Switch", [["Range", ["This Frame","Over Range"], 0], ["Key", ["Key on Switch","No Key"], 0]]],
+  overlap: ["Overlap", [["Feel", ["Soft","Normal","Stiff"], 1], ["Loop", ["Off","Cycle"], 0]]],
+  attach: ["Attach", [["Action", ["Attach","Hand-Over (4f)","Both Hands","Attach Win"], 0]]],
+  release: ["Release", [["Action", ["Release","Bake Sel","Bake All","Remove"], 0]]],
+  arcs: ["Motion Arcs", [["Range", ["Shot","Around 24f"], 0], ["Handles", ["Off","On"], 0]]],
+  bake_keys: ["Bake Keys", [["Every", ["1f","2f","4f"], 0]]],
+  reduce_keys: ["Reduce Keys", [["Tolerance", ["0.5%","1%","3%"], 1]]],
+  hider: ["Body Parts", [["Target", ["Controls","Geo","Both"], 0], ["Part", ["Show All","Head","Arms","Legs","Tail"], 0]]],
+  playblast: ["Playblast", [["Size", ["50%","100%"], 1]]],
+};
+
+const CAT_META = [
+  { id:"pose", title:"● 1 POSE", colorVar:"--cat-pose" },
+  { id:"keys", title:"■ 2 KEYS & TANGENTS", colorVar:"--cat-keys" },
+  { id:"limbs", title:"◆ 3 LIMBS", colorVar:"--cat-limbs" },
+  { id:"space", title:"▢ 4 SPACES & PROPS", colorVar:"--cat-space" },
+  { id:"timing", title:"▲ 5 TIMING & CYCLES", colorVar:"--cat-timing" },
+  { id:"curves", title:"〰 6 GRAPH CURVES", colorVar:"--cat-curves" },
+  { id:"view", title:"◉ 7 PICK & VIEW", colorVar:"--cat-view" },
+  { id:"open", title:"⊞ 8 LAUNCHERS", colorVar:"--cat-open" },
+];
+
+const SPLIT_CAPS = {
+  mirror:"R→L", reset:"All", key:"All", blocking:"Spline", inbetween_add:"-Inb",
+  offset_plus:"Casc", bake_keys:"1/2/4", reduce_keys:"Tol", ikfk:"Rng", overlap:"Cyc",
+  attach:"Win", release:"Bake", arcs:"Panel", playblast:"50%"
+};
+
+const state = {
+  profiles: [
+    { id:"blocking", short:"BLK", name:"Blocking", colorVar:"--cat-keys",
+      keys:["key","mirror","tween_prev","tween_next","inbetween_add","inbetween_remove","tan_step","ikfk","flip","attach","reset"] },
+    { id:"polish", short:"POL", name:"Polish", colorVar:"--cat-pose",
+      keys:["tween_prev","tween_next","nudge_left","nudge_right","tan_auto","tan_spline","pull","push","smooth","euler","arcs","overlap"] },
+    { id:"spaces", short:"SPC", name:"Spaces & Props", colorVar:"--cat-space",
+      keys:["attach","release","attach_window","temp_world","temp_pivot","bake_back","ikfk","key"] },
+    { id:"rigcheck", short:"RIG", name:"Rig Check", colorVar:"--cat-limbs",
+      keys:["picker","poses","mirror","flip","reset","twin","ikfk","hide_ctrls","isolate","hider"] },
+    { id:"all58", short:"ALL 58", name:"All Tools (58)", colorVar:"--cat-open",
+      keys:ACTIONS.map(a => a[0]) }
+  ],
+  activeProf: 0,
+  layoutMode: "row",       // row | 2r | col | grid (persists!)
+  showLabels: false,
+  targetPx: 34,            // 24..52
+  okabe: false,
+  dockWidth: 242,
+  closedDrawers: new Set(["timing","curves","view","open"]),
+  barSettingsKey: null,
+  pieSettingsKey: null,
+  settingsVals: {},
+  tweenVal: 0,
+  tweenMax: 100,
+  rigIK: true,
+  rigAttached: true,
+  rigFlipped: false,
+  rigShowArc: true
+};
+
+function catColor(cat) {
+  return getComputedStyle(document.body).getPropertyValue("--cat-" + cat).trim() || "#3898c8";
+}
+
+function glyphSVG(g, accent) {
+  const s = 'stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const a = `stroke="${accent}" fill="${accent}"`;
+  switch(g) {
+    case "picker": return `<circle cx="12" cy="6" r="2.5" ${s}/><rect x="9" y="10" width="6" height="7" rx="1" ${s}/><path d="M4 11l4 1M20 11l-4 1M10 17l-1 5M14 17l1 5" ${s}/>`;
+    case "poses": return `<rect x="4" y="4" width="7" height="7" rx="1" ${s}/><rect x="13" y="4" width="7" height="7" rx="1" ${s}/><rect x="4" y="13" width="7" height="7" rx="1" ${s}/><rect x="13" y="13" width="7" height="7" rx="1" ${s}/>`;
+    case "clips": return `<rect x="3" y="5" width="18" height="14" rx="2" ${s}/><polygon points="10,9 16,12 10,15" fill="currentColor"/>`;
+    case "bar": return `<rect x="2" y="8" width="20" height="8" rx="2.5" ${s}/><rect x="5" y="10.5" width="3" height="3" ${a}/><rect x="10.5" y="10.5" width="3" height="3" ${a}/><rect x="16" y="10.5" width="3" height="3" ${a}/>`;
+    case "tween_prev": return `<line x1="4" y1="12" x2="20" y2="12" ${s}/><circle cx="9" cy="12" r="3" ${a}/><path d="M7 7l-3 5 3 5" ${s}/>`;
+    case "tween_next": return `<line x1="4" y1="12" x2="20" y2="12" ${s}/><circle cx="15" cy="12" r="3" ${a}/><path d="M17 7l3 5-3 5" ${s}/>`;
+    case "mirror": return `<line x1="12" y1="3" x2="12" y2="21" stroke="${accent}" stroke-width="1.6" stroke-dasharray="2.5 2"/><polygon points="9,6 4,18 9,18" ${s}/><polygon points="15,6 20,18 15,18" ${s}/>`;
+    case "flip": return `<path d="M5 8h14m-4-3l4 3-4 3M19 16H5m4-3l-4 3 4 3" ${s}/>`;
+    case "reset": return `<path d="M18 8a7 7 0 1 0 1 6" ${s}/><path d="M17 5l2 4-4 0" ${s}/>`;
+    case "key": return `<polygon points="12,4 20,12 12,20 4,12" ${a}/>`;
+    case "nudge_left": return `<path d="M10 6H4m3-3L4 6l3 3" ${s}/><polygon points="14,10 19,15 14,20 9,15" ${a}/>`;
+    case "nudge_right": return `<path d="M14 6h6m-3-3l3 3-3 3" ${s}/><polygon points="10,10 15,15 10,20 5,15" ${a}/>`;
+    case "tan_auto": return `<path d="M3 18C10 18 14 6 21 6" ${s}/><circle cx="12" cy="12" r="2.2" ${a}/>`;
+    case "tan_spline": return `<path d="M3 18Q12 2 21 18" ${s}/><circle cx="12" cy="10" r="2.2" ${a}/>`;
+    case "tan_linear": return `<path d="M3 18L12 6l9 12" ${s}/><circle cx="12" cy="6" r="2.2" ${a}/>`;
+    case "tan_flat": return `<path d="M3 18l5-9h8l5 9" ${s}/><line x1="6" y1="9" x2="18" y2="9" stroke="${accent}" stroke-width="2"/>`;
+    case "tan_step": return `<path d="M3 18h8V7h10" ${s}/><circle cx="11" cy="7" r="2.2" ${a}/>`;
+    case "copy": return `<rect x="4" y="4" width="11" height="13" rx="1.5" ${s}/><rect x="9" y="8" width="11" height="13" rx="1.5" ${s}/>`;
+    case "paste": return `<rect x="5" y="6" width="14" height="15" rx="1.5" ${s}/><rect x="9" y="3" width="6" height="4" rx="1" ${s}/>`;
+    case "pull": return `<line x1="3" y1="12" x2="21" y2="12" ${s}/><path d="M12 3v6m-3-3l3 3 3-3M12 21v-6m-3 3l3-3 3 3" stroke="${accent}" stroke-width="2" fill="none"/>`;
+    case "push": return `<line x1="3" y1="12" x2="21" y2="12" ${s}/><path d="M12 9V3m-3 3l3-3 3 3M12 15v6m-3-3l3 3 3-3" stroke="${accent}" stroke-width="2" fill="none"/>`;
+    case "smooth": return `<path d="M3 12C7 3 11 21 15 12Q18 6 21 12" ${s}/>`;
+    case "noise": return `<polyline points="3,12 6,6 9,17 12,5 15,18 18,8 21,12" ${s}/>`;
+    case "world": return `<circle cx="12" cy="12" r="8" ${s}/><ellipse cx="12" cy="12" rx="4" ry="8" ${s}/><line x1="4" y1="12" x2="20" y2="12" ${s}/>`;
+    case "pivot": return `<path d="M12 4v16M4 12h16" ${s}/><circle cx="12" cy="12" r="2.6" ${a}/>`;
+    case "attach": return `<rect x="3" y="8" width="10" height="8" rx="4" ${s}/><rect x="11" y="8" width="10" height="8" rx="4" stroke="${accent}" stroke-width="2" fill="none"/>`;
+    case "release": return `<rect x="2" y="8" width="8" height="8" rx="3.5" ${s}/><rect x="14" y="8" width="8" height="8" rx="3.5" ${s}/><path d="M12 4v3M12 17v3" stroke="${accent}" stroke-width="2"/>`;
+    case "arcs": return `<path d="M4 18Q12 2 20 18" ${s}/><circle cx="4" cy="18" r="1.8" ${a}/><circle cx="12" cy="8" r="2" ${a}/><circle cx="20" cy="18" r="1.8" ${a}/>`;
+    case "hide": return `<path d="M3 12s4-6 9-6 9 6 9 6-4 6-9 6-9-6-9-6z" ${s}/><line x1="4" y1="19" x2="20" y2="5" stroke="${accent}" stroke-width="2"/>`;
+    case "isolate": return `<path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" ${s}/><circle cx="12" cy="12" r="3" ${a}/>`;
+    case "ghosts": return `<circle cx="7" cy="8" r="2" ${s}/><line x1="7" y1="10" x2="7" y2="19" ${s}/><circle cx="12" cy="8" r="2" stroke="${accent}" stroke-width="1.8" fill="none"/><line x1="12" y1="10" x2="12" y2="19" stroke="${accent}" stroke-width="1.8"/><circle cx="17" cy="8" r="2" ${s}/><line x1="17" y1="10" x2="17" y2="19" ${s}/>`;
+    case "playblast": return `<rect x="3" y="5" width="18" height="14" rx="2" ${s}/><polygon points="10,9 16,12 10,15" ${a}/>`;
+    default: return `<circle cx="12" cy="12" r="6" ${s}/>`;
+  }
+}
+
+function makeTile(key, px, showLbl, cellW, opts = {}) {
+  const act = ACTION_MAP[key];
+  const acc = catColor(act.cat);
+  const cell = document.createElement("div");
+  cell.className = "tile-cell";
+  cell.style.width = cellW + "px";
+
+  const btn = document.createElement("button");
+  btn.className = "tile-btn";
+  btn.style.width = px + "px";
+  btn.style.height = px + "px";
+  btn.title = `${act.label}${act.hotkey ? " (" + act.hotkey + ")" : ""}${act.hasSettings ? " · Right-click for settings" : ""}`;
+
+  const barH = Math.max(2, Math.round(px * 0.09));
+  if (act.kind === "text") {
+    const sp = document.createElement("span");
+    sp.className = "tile-badge";
+    const len = act.glyph.length;
+    sp.style.fontSize = Math.max(7, Math.round(px * (len <= 3 ? 0.31 : len === 4 ? 0.25 : 0.21))) + "px";
+    sp.style.marginBottom = barH + "px";
+    sp.textContent = act.glyph;
+    btn.appendChild(sp);
+  } else {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    const s = Math.max(14, px - barH - 6);
+    svg.setAttribute("width", s);
+    svg.setAttribute("height", s);
+    svg.style.marginBottom = barH + "px";
+    svg.innerHTML = glyphSVG(act.glyph, acc);
+    btn.appendChild(svg);
+  }
+
+  const bar = document.createElement("div");
+  bar.className = "tile-accent";
+  bar.style.height = barH + "px";
+  bar.style.background = acc;
+  btn.appendChild(bar);
+
+  if (act.hasSettings) {
+    const rmb = document.createElement("div");
+    rmb.className = "tile-rmb";
+    rmb.style.bottom = (barH + 2) + "px";
+    rmb.style.borderWidth = "0 0 5px 5px";
+    btn.appendChild(rmb);
+  }
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (opts.onClick) opts.onClick(key);
+    else runDummyAction(key);
+  });
+  btn.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (opts.onRMB) opts.onRMB(key);
+    else {
+      state.barSettingsKey = (state.barSettingsKey === key ? null : key);
+      renderFloatingBar();
+    }
+  });
+  cell.appendChild(btn);
+
+  if (showLbl) {
+    const lbl = document.createElement("div");
+    lbl.className = "tile-lbl" + (opts.labelPill ? " pill" : "");
+    lbl.style.width = Math.max(44, cellW - 2) + "px";
+    lbl.textContent = act.label;
+    cell.appendChild(lbl);
+  }
+  return cell;
+}
+
+let toastTimer = null;
+function showToast(msg, color) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.borderLeftColor = color || "var(--active)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+function updateViewportRig() {
+  const t = state.tweenVal / 100;
+  const flip = state.rigFlipped ? -1 : 1;
+  const shoulderX = 370, shoulderY = 240;
+  const elbowX = shoulderX + flip * (105 + t * 25);
+  const elbowY = shoulderY + (70 - t * 35);
+  const handX = elbowX + flip * (115 + t * 30);
+  const handY = elbowY - (65 + t * 40);
+
+  document.getElementById("boneUpper").setAttribute("x2", elbowX);
+  document.getElementById("boneUpper").setAttribute("y2", elbowY);
+  document.getElementById("boneLower").setAttribute("x1", elbowX);
+  document.getElementById("boneLower").setAttribute("y1", elbowY);
+  document.getElementById("boneLower").setAttribute("x2", handX);
+  document.getElementById("boneLower").setAttribute("y2", handY);
+  document.getElementById("jntElbow").setAttribute("cx", elbowX);
+  document.getElementById("jntElbow").setAttribute("cy", elbowY);
+
+  const ctrl = document.getElementById("ctrlHand");
+  ctrl.setAttribute("x", handX - 16);
+  ctrl.setAttribute("y", handY - 16);
+  ctrl.setAttribute("stroke", state.rigIK ? "#3ea87c" : "#d66b8c");
+  document.getElementById("ctrlLabel").setAttribute("x", handX + 24);
+  document.getElementById("ctrlLabel").setAttribute("y", handY + 4);
+  document.getElementById("ctrlLabel").textContent = state.rigIK ? "L_hand_ik_ctrl" : "L_hand_fk_ctrl";
+
+  const prop = document.getElementById("propBox");
+  prop.setAttribute("x", state.rigAttached ? handX + 8 : 650);
+  prop.setAttribute("y", state.rigAttached ? handY + 12 : 336);
+
+  document.getElementById("rigArc").setAttribute("opacity", state.rigShowArc ? "0.75" : "0");
+  document.getElementById("hudMode").textContent = state.rigIK ? "IK" : "FK";
+  const st = document.getElementById("dockStatusText");
+  if (st) st.textContent = `${state.rigIK ? "L_hand_ik" : "L_hand_fk"} · f14 · ${state.rigIK ? "IK" : "FK"}`;
+}
+
+function runDummyAction(key) {
+  const act = ACTION_MAP[key];
+  if (key === "ikfk") state.rigIK = !state.rigIK;
+  if (key === "mirror" || key === "flip") state.rigFlipped = !state.rigFlipped;
+  if (key === "reset") { state.tweenVal = 0; state.rigFlipped = false; }
+  if (key === "attach") state.rigAttached = true;
+  if (key === "release") state.rigAttached = false;
+  if (key === "arcs") state.rigShowArc = !state.rigShowArc;
+  if (key === "tween_prev") state.tweenVal = Math.max(-state.tweenMax, state.tweenVal - 33);
+  if (key === "tween_next") state.tweenVal = Math.min(state.tweenMax, state.tweenVal + 33);
+  updateViewportRig();
+  renderFloatingBar();
+  renderDock();
+  showToast(`Action: ${act.label} (dummy)`, catColor(act.cat));
+}
+
+function buildSettingsStrip(key, onClose) {
+  const act = ACTION_MAP[key];
+  const acc = catColor(act.cat);
+  const div = document.createElement("div");
+  div.className = "micro-strip";
+  div.style.borderLeftColor = acc;
+
+  const spec = TOOL_SETTINGS[key];
+  const title = document.createElement("span");
+  title.className = "ms-title";
+  title.style.color = acc;
+  title.textContent = spec ? spec[0] : act.label;
+  div.appendChild(title);
+
+  if (!spec) {
+    const n = document.createElement("span");
+    n.className = "ms-lbl";
+    n.textContent = "1-click tool (no extra settings)";
+    div.appendChild(n);
+  } else {
+    if (!state.settingsVals[key]) state.settingsVals[key] = {};
+    spec[1].forEach(([optName, choices, defIdx]) => {
+      const grp = document.createElement("span");
+      grp.className = "ms-group";
+      const lbl = document.createElement("span");
+      lbl.className = "ms-lbl";
+      lbl.textContent = optName + ":";
+      grp.appendChild(lbl);
+      const cur = state.settingsVals[key][optName] ?? defIdx;
+      choices.forEach((ch, idx) => {
+        const b = document.createElement("button");
+        b.className = "ms-btn" + (idx === cur ? " on" : "");
+        if (idx === cur) { b.style.background = acc; b.style.borderColor = acc; }
+        b.textContent = ch;
+        b.onclick = (e) => {
+          e.stopPropagation();
+          state.settingsVals[key][optName] = idx;
+          showToast(`${act.label} → ${optName}: ${ch}`, acc);
+          renderAll();
+          if (document.getElementById("pieOverlay").classList.contains("open")) renderPie();
+        };
+        grp.appendChild(b);
+      });
+      div.appendChild(grp);
+    });
+  }
+  const x = document.createElement("button");
+  x.className = "ms-close";
+  x.textContent = "×";
+  x.onclick = (e) => { e.stopPropagation(); onClose(); };
+  div.appendChild(x);
+  return div;
+}
+
+function makeHorizontalTweener(px, fullWidth = false) {
+  const tw = document.createElement("div");
+  tw.className = "tweener";
+  if (fullWidth) {
+    tw.style.width = "100%";
+    tw.style.height = "46px";
+  } else {
+    tw.style.width = Math.max(108, Math.round(px * 4.1)) + "px";
+    tw.style.height = Math.max(30, px + 4) + "px";
+  }
+  const compact = !fullWidth && px <= 28;
+  const hd = document.createElement("div");
+  hd.className = "tw-head";
+  hd.innerHTML = `<span style="color:var(--muted)">${compact ? "TW" : "TWEEN"}</span><span class="tw-val">${state.tweenVal >= 0 ? "+" : ""}${state.tweenVal}%</span>`;
+  const ovr = document.createElement("button");
+  ovr.className = "tw-ovr";
+  ovr.textContent = state.tweenMax + "%";
+  ovr.onclick = (e) => { e.stopPropagation(); state.tweenMax = state.tweenMax === 100 ? 150 : 100; renderAll(); };
+  hd.appendChild(ovr);
+  tw.appendChild(hd);
+
+  const inp = document.createElement("input");
+  inp.type = "range"; inp.className = "tw-range";
+  inp.min = -state.tweenMax; inp.max = state.tweenMax; inp.value = state.tweenVal;
+  inp.oninput = (e) => {
+    state.tweenVal = parseInt(e.target.value, 10);
+    hd.querySelector(".tw-val").textContent = (state.tweenVal >= 0 ? "+" : "") + state.tweenVal + "%";
+    updateViewportRig();
+  };
+  tw.appendChild(inp);
+
+  if (!compact) {
+    const ticks = document.createElement("div");
+    ticks.className = "tw-ticks";
+    [-75,-50,-25,0,25,50,75].forEach(v => {
+      const b = document.createElement("button");
+      b.className = "tw-tick" + (v === 0 ? " zero" : "");
+      b.title = `Tween ${v >= 0 ? "+" : ""}${v}%`;
+      b.onclick = (e) => { e.stopPropagation(); state.tweenVal = v; updateViewportRig(); renderAll(); };
+      ticks.appendChild(b);
+    });
+    tw.appendChild(ticks);
+  }
+  return tw;
+}
+
+function makeVerticalTweener() {
+  const tw = document.createElement("div");
+  tw.className = "tweener-vert";
+  const hd = document.createElement("div");
+  hd.style.cssText = "display:flex;width:100%;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;";
+  hd.innerHTML = `<span class="tw-val">${state.tweenVal >= 0 ? "+" : ""}${state.tweenVal}%</span>`;
+  const ovr = document.createElement("button");
+  ovr.className = "tw-ovr";
+  ovr.textContent = state.tweenMax + "%";
+  ovr.onclick = (e) => { e.stopPropagation(); state.tweenMax = state.tweenMax === 100 ? 150 : 100; renderAll(); };
+  hd.appendChild(ovr);
+  tw.appendChild(hd);
+
+  const body = document.createElement("div");
+  body.className = "twv-body";
+  const ticks = document.createElement("div");
+  ticks.className = "twv-ticks";
+  [75, 50, 25, 0, -25, -50, -75].forEach(v => {
+    const b = document.createElement("button");
+    b.className = "twv-tick";
+    b.textContent = v === 0 ? "0" : (v > 0 ? "+" + v : v);
+    b.onclick = (e) => { e.stopPropagation(); state.tweenVal = v; updateViewportRig(); renderAll(); };
+    ticks.appendChild(b);
+  });
+  const sld = document.createElement("input");
+  sld.type = "range"; sld.className = "twv-slider";
+  sld.min = -state.tweenMax; sld.max = state.tweenMax; sld.value = state.tweenVal;
+  sld.oninput = (e) => {
+    state.tweenVal = parseInt(e.target.value, 10);
+    hd.querySelector(".tw-val").textContent = (state.tweenVal >= 0 ? "+" : "") + state.tweenVal + "%";
+    updateViewportRig();
+  };
+  body.appendChild(ticks);
+  body.appendChild(sld);
+  tw.appendChild(body);
+  return tw;
+}
+
+function renderShelf() {
+  const row = document.getElementById("shelfRow");
+  row.innerHTML = "";
+  let lastCat = null;
+  ACTIONS.forEach(a => {
+    const key = a[0], cat = a[2];
+    if (lastCat && lastCat !== cat) {
+      const d = document.createElement("div");
+      d.className = "shelf-div";
+      row.appendChild(d);
+    }
+    lastCat = cat;
+    row.appendChild(makeTile(key, 30, false, 32));
+  });
+}
+
+function computeBarFit(keys, mode) {
+  const vp = document.getElementById("viewport").getBoundingClientRect();
+  const maxW = Math.max(420, vp.width - 48);
+  const maxH = Math.max(360, vp.height - 80);
+  const hasTween = keys.includes("tween_prev") && keys.includes("tween_next");
+  const n = keys.length;
+  const lblH = state.showLabels ? 23 : 0;
+
+  const cellWFor = (px) => state.showLabels ? Math.max(px + 6, 52) : (px + 4);
+
+  if (mode === "col") {
+    for (let px = state.targetPx; px >= 22; px -= 2) {
+      const h = 158 + n * (px + lblH + 4) + (hasTween ? 124 : 0);
+      if (h <= maxH) return { px, cellW: cellWFor(px), cols: 1, shrunk: px < state.targetPx };
+    }
+    return { px: 22, cellW: cellWFor(22), cols: 1, shrunk: true };
+  }
+  if (mode === "row") {
+    for (let px = state.targetPx; px >= 22; px -= 2) {
+      const cw = cellWFor(px);
+      const twW = hasTween ? Math.max(108, Math.round(px * 4.1)) : 0;
+      if (20 + n * (cw + 2) + twW <= maxW) return { px, cellW: cw, cols: n, shrunk: px < state.targetPx };
+    }
+    return { px: 22, cellW: cellWFor(22), cols: n, shrunk: true };
+  }
+  if (mode === "2r") {
+    const cols = Math.max(1, Math.ceil(n / 2));
+    for (let px = state.targetPx; px >= 22; px -= 2) {
+      const cw = cellWFor(px);
+      const twW = hasTween ? Math.max(108, Math.round(px * 4.1)) : 0;
+      if (20 + cols * (cw + 2) + twW <= maxW) return { px, cellW: cw, cols, shrunk: px < state.targetPx };
+    }
+    return { px: 22, cellW: cellWFor(22), cols, shrunk: true };
+  }
+  const idealCols = n > 24 ? 12 : (n > 8 ? 6 : Math.max(4, n));
+  for (let px = state.targetPx; px >= 22; px -= 2) {
+    const cw = cellWFor(px);
+    const cols = Math.min(idealCols, Math.max(3, Math.floor((maxW - 20) / (cw + 2))));
+    const rows = Math.ceil((n + (hasTween ? 2 : 0)) / cols);
+    if (70 + rows * (px + lblH + 4) <= maxH) return { px, cellW: cw, cols, shrunk: px < state.targetPx };
+  }
+  return { px: 22, cellW: cellWFor(22), cols: idealCols, shrunk: true };
+}
+
+function setProfile(idx) {
+  state.activeProf = idx;
+  if (state.profiles[idx].id === "all58" && (state.layoutMode === "row" || state.layoutMode === "col")) {
+    state.layoutMode = "grid";
+  }
+  renderAll();
+}
+
+function renderFloatingBar() {
+  const bar = document.getElementById("floatingBar");
+  const prof = state.profiles[state.activeProf];
+  const profColor = getComputedStyle(document.body).getPropertyValue(prof.colorVar).trim() || "#3898c8";
+  const mode = state.layoutMode;
+  const keys = prof.keys;
+  const { px, cellW, cols, shrunk } = computeBarFit(keys, mode);
+
+  bar.style.borderTopColor = profColor;
+  bar.style.width = mode === "col" ? Math.max(74, cellW + 14) + "px" : "auto";
+  bar.innerHTML = "";
+
+  if (mode === "col") {
+    // Full-Information Column Mode (~74px, Zero Color-Only Cues)
+    const ch = document.createElement("div");
+    ch.className = "col-chrome";
+
+    const topR = document.createElement("div");
+    topR.className = "col-top-row";
+    topR.innerHTML = `<span class="fbar-grip">::</span><span style="font-size:9px;color:${shrunk ? "var(--active)" : "var(--muted)"}">${px}px${shrunk ? "*" : ""}</span>`;
+    ch.appendChild(topR);
+
+    const mRow = document.createElement("div");
+    mRow.className = "col-mini-row";
+    [["row","Row"],["col","Col"],["grid","Grd"]].forEach(([mk, ml]) => {
+      const b = document.createElement("button");
+      b.className = "mode-btn" + (mode === mk ? " on" : "");
+      b.style.padding = "2px 0"; b.style.fontSize = "9px";
+      b.textContent = ml;
+      b.onclick = () => { state.layoutMode = mk; renderFloatingBar(); };
+      mRow.appendChild(b);
+    });
+    ch.appendChild(mRow);
+
+    const mRow2 = document.createElement("div");
+    mRow2.className = "col-mini-row2";
+    const lb = document.createElement("button");
+    lb.className = "mode-btn" + (state.showLabels ? " on" : "");
+    lb.style.fontSize = "9px"; lb.textContent = "Lbl";
+    lb.onclick = () => { state.showLabels = !state.showLabels; renderFloatingBar(); };
+    const pb = document.createElement("button");
+    pb.className = "mode-btn"; pb.style.fontSize = "9px"; pb.textContent = "Pie";
+    pb.onclick = () => openPie();
+    mRow2.appendChild(lb); mRow2.appendChild(pb);
+    ch.appendChild(mRow2);
+
+    const plist = document.createElement("div");
+    plist.className = "col-prof-list";
+    state.profiles.forEach((p, idx) => {
+      const pc = getComputedStyle(document.body).getPropertyValue(p.colorVar).trim();
+      const btn = document.createElement("button");
+      btn.className = "col-prof-pill" + (idx === state.activeProf ? " on" : "");
+      btn.style.borderLeftColor = pc;
+      btn.innerHTML = `<span>${p.short.replace(" 58","")}</span><span class="col-prof-cnt">${p.keys.length}</span>`;
+      btn.onclick = () => setProfile(idx);
+      plist.appendChild(btn);
+    });
+    ch.appendChild(plist);
+    bar.appendChild(ch);
+  } else {
+    const ch = document.createElement("div");
+    ch.className = "fbar-chrome";
+    ch.innerHTML = `<span class="fbar-grip">::</span>`;
+
+    state.profiles.forEach((p, idx) => {
+      const pc = getComputedStyle(document.body).getPropertyValue(p.colorVar).trim();
+      const b = document.createElement("button");
+      b.className = "prof-tab" + (idx === state.activeProf ? " on" : "");
+      if (idx === state.activeProf) b.style.borderBottomColor = pc;
+      b.innerHTML = `<span class="prof-dot" style="background:${pc}"></span>${p.short}`;
+      b.onclick = () => setProfile(idx);
+      ch.appendChild(b);
+    });
+
+    const sp = document.createElement("div");
+    sp.style.flex = "1"; sp.style.minWidth = "10px";
+    ch.appendChild(sp);
+
+    [["row","Row"],["2r","2R"],["col","Col"],["grid","Grid"]].forEach(([mk, ml]) => {
+      const b = document.createElement("button");
+      b.className = "mode-btn" + (mode === mk ? " on" : "");
+      b.textContent = ml;
+      b.onclick = () => { state.layoutMode = mk; renderFloatingBar(); };
+      ch.appendChild(b);
+    });
+
+    const lb = document.createElement("button");
+    lb.className = "mode-btn" + (state.showLabels ? " on" : "");
+    lb.textContent = "Lbl";
+    lb.onclick = () => { state.showLabels = !state.showLabels; renderFloatingBar(); };
+    ch.appendChild(lb);
+
+    const sld = document.createElement("input");
+    sld.type = "range"; sld.min = 24; sld.max = 52; sld.value = state.targetPx;
+    sld.style.width = "64px"; sld.style.accentColor = "var(--active)";
+    sld.oninput = (e) => { state.targetPx = parseInt(e.target.value, 10); renderFloatingBar(); };
+    ch.appendChild(sld);
+
+    const sz = document.createElement("span");
+    sz.style.cssText = `font-size:10px;color:${shrunk ? "var(--active)" : "var(--muted)"};min-width:28px;`;
+    sz.textContent = `${px}px${shrunk ? "*" : ""}`;
+    ch.appendChild(sz);
+
+    const ed = document.createElement("button");
+    ed.className = "mode-btn"; ed.textContent = "Edit";
+    ed.onclick = () => openEditModal();
+    ch.appendChild(ed);
+
+    bar.appendChild(ch);
+  }
+
+  // Tools container
+  const tools = document.createElement("div");
+  tools.className = "fbar-tools" + (mode === "col" ? " col-mode" : (mode === "2r" || mode === "grid") ? " grid-mode" : "");
+  if (mode === "2r" || mode === "grid") {
+    tools.style.gridTemplateColumns = `repeat(${cols}, ${cellW}px)`;
+  }
+
+  const hasTween = keys.includes("tween_prev") && keys.includes("tween_next");
+  keys.forEach(k => {
+    tools.appendChild(makeTile(k, px, state.showLabels, cellW));
+    if (hasTween && k === "tween_prev") {
+      if (mode === "col") {
+        tools.appendChild(makeVerticalTweener());
+      } else {
+        const tw = makeHorizontalTweener(px, false);
+        if (mode === "2r" || mode === "grid") {
+          tw.style.gridColumn = `span ${Math.min(3, cols)}`;
+          tw.style.width = "100%";
+        }
+        tools.appendChild(tw);
+      }
+    }
+  });
+  bar.appendChild(tools);
+
+  if (state.barSettingsKey) {
+    bar.appendChild(buildSettingsStrip(state.barSettingsKey, () => {
+      state.barSettingsKey = null; renderFloatingBar();
+    }));
+  }
+}
+
+function renderDock() {
+  const dock = document.getElementById("dock");
+  dock.style.width = state.dockWidth + "px";
+  const isRail = state.dockWidth < 135;
+  dock.classList.toggle("rail", isRail);
+  dock.innerHTML = "";
+
+  if (isRail) {
+    const sc = document.createElement("div");
+    sc.className = "dock-scroll";
+    sc.innerHTML = `<div class="rail-tag">RAIL</div>`;
+    state.profiles[state.activeProf].keys.slice(0, 8).forEach(k => {
+      sc.appendChild(makeTile(k, 32, false, 44));
+    });
+    dock.appendChild(sc);
+    return;
+  }
+
+  // Header
+  const hdr = document.createElement("div");
+  hdr.className = "dock-hdr";
+  const topR = document.createElement("div");
+  topR.className = "dock-top-row";
+  state.profiles.slice(0, 3).forEach((p, idx) => {
+    const pc = getComputedStyle(document.body).getPropertyValue(p.colorVar).trim();
+    const b = document.createElement("button");
+    b.className = "mode-btn" + (idx === state.activeProf ? " on" : "");
+    b.style.flex = "1";
+    if (idx === state.activeProf) { b.style.background = pc; b.style.borderColor = pc; }
+    b.textContent = p.short;
+    b.onclick = () => setProfile(idx);
+    topR.appendChild(b);
+  });
+  const srch = document.createElement("button");
+  srch.className = "mode-btn"; srch.textContent = "?"; srch.title = "Search All 58 (Ctrl+K)";
+  srch.onclick = () => openSearchModal();
+  topR.appendChild(srch);
+
+  const cb = document.createElement("button");
+  cb.className = "mode-btn" + (state.okabe ? " on" : ""); cb.textContent = "CB"; cb.title = "Okabe-Ito Color-Blind Safe";
+  cb.onclick = () => { state.okabe = !state.okabe; document.body.classList.toggle("okabe", state.okabe); renderAll(); };
+  topR.appendChild(cb);
+  hdr.appendChild(topR);
+
+  // Pick & View 6-icon strip
+  const pv = document.createElement("div");
+  pv.className = "dock-pv";
+  ["arcs","hide_ctrls","isolate","hider","ghosts","playblast"].forEach(k => {
+    pv.appendChild(makeTile(k, 28, false, 32));
+  });
+  hdr.appendChild(pv);
+  dock.appendChild(hdr);
+
+  // Scrollable Body
+  const sc = document.createElement("div");
+  sc.className = "dock-scroll";
+
+  // Calm 3x2 Pinned Grid
+  const pin = document.createElement("div");
+  pin.className = "dock-pinned";
+  state.profiles[state.activeProf].keys.slice(0, 6).forEach(k => {
+    const act = ACTION_MAP[k];
+    const b = document.createElement("button");
+    b.className = "pin-btn";
+    b.style.borderTopColor = catColor(act.cat);
+    b.textContent = act.kind === "text" ? act.glyph : act.label.split(" ")[0];
+    b.title = act.label;
+    b.onclick = () => runDummyAction(k);
+    pin.appendChild(b);
+  });
+  sc.appendChild(pin);
+
+  // Full-width Tweener
+  sc.appendChild(makeHorizontalTweener(34, true));
+
+  // All 58 Tools across 8 Collapsible Drawers
+  CAT_META.forEach(cm => {
+    const items = ACTIONS.filter(a => a[2] === cm.id);
+    const acc = getComputedStyle(document.body).getPropertyValue(cm.colorVar).trim();
+    const isOpen = !state.closedDrawers.has(cm.id);
+
+    const drw = document.createElement("div");
+    drw.className = "drawer";
+    drw.style.borderLeftColor = acc;
+
+    const dh = document.createElement("button");
+    dh.className = "drawer-hdr";
+    dh.style.color = acc;
+    dh.style.background = `color-mix(in srgb, ${acc} 12%, var(--card))`;
+    dh.innerHTML = `<span>${cm.title} (${items.length})</span><span>${isOpen ? "▾" : "▸"}</span>`;
+    dh.onclick = () => {
+      if (isOpen) state.closedDrawers.add(cm.id); else state.closedDrawers.delete(cm.id);
+      renderDock();
+    };
+    drw.appendChild(dh);
+
+    if (isOpen) {
+      const db = document.createElement("div");
+      db.className = "drawer-body";
+      items.forEach(a => {
+        const k = a[0], lbl = a[1];
+        const row = document.createElement("div");
+        row.className = "split-row";
+        const b1 = document.createElement("button");
+        b1.className = "split-main";
+        b1.textContent = lbl;
+        b1.onclick = () => runDummyAction(k);
+        row.appendChild(b1);
+        if (SPLIT_CAPS[k]) {
+          const b2 = document.createElement("button");
+          b2.className = "split-sub";
+          b2.textContent = SPLIT_CAPS[k];
+          b2.onclick = () => {
+            state.barSettingsKey = k;
+            renderFloatingBar();
+            showToast(`Split: ${lbl} (${SPLIT_CAPS[k]})`, acc);
+          };
+          row.appendChild(b2);
+        }
+        db.appendChild(row);
+      });
+      drw.appendChild(db);
+    }
+    sc.appendChild(drw);
+  });
+
+  dock.appendChild(sc);
+
+  // 20px Bottom Telemetry Bar
+  const foot = document.createElement("div");
+  foot.className = "dock-status";
+  foot.innerHTML = `<span><span class="status-dot"></span><span id="dockStatusText">${state.rigIK ? "L_hand_ik" : "L_hand_fk"} · f14 · ${state.rigIK ? "IK" : "FK"}</span></span><span>58 tools</span>`;
+  dock.appendChild(foot);
+}
+
+// Radial Pie Menu
+let lastMouse = { x: window.innerWidth * 0.42, y: window.innerHeight * 0.52 };
+window.addEventListener("mousemove", e => { lastMouse = { x: e.clientX, y: e.clientY }; });
+
+function openPie(atCursor = false) {
+  state.pieSettingsKey = null;
+  const ov = document.getElementById("pieOverlay");
+  const wrap = document.getElementById("pieWrap");
+  const cx = atCursor ? Math.max(240, Math.min(window.innerWidth - 260, lastMouse.x)) : window.innerWidth * 0.42;
+  const cy = atCursor ? Math.max(220, Math.min(window.innerHeight - 240, lastMouse.y)) : window.innerHeight * 0.52;
+  wrap.style.left = cx + "px";
+  wrap.style.top = cy + "px";
+  ov.classList.add("open");
+  renderPie();
+}
+
+function closePie() {
+  document.getElementById("pieOverlay").classList.remove("open");
+}
+
+function renderPie() {
+  const wrap = document.getElementById("pieWrap");
+  wrap.innerHTML = "";
+  const prof = state.profiles[state.activeProf];
+  const profColor = getComputedStyle(document.body).getPropertyValue(prof.colorVar).trim();
+
+  // Top 1-5 Profile Tabs
+  const top = document.createElement("div");
+  top.className = "pie-top";
+  state.profiles.forEach((p, idx) => {
+    const pc = getComputedStyle(document.body).getPropertyValue(p.colorVar).trim();
+    const b = document.createElement("button");
+    b.className = "mode-btn" + (idx === state.activeProf ? " on" : "");
+    if (idx === state.activeProf) { b.style.background = pc; b.style.borderColor = pc; }
+    b.textContent = `${idx + 1} · ${p.short}`;
+    b.onclick = (e) => { e.stopPropagation(); setProfile(idx); renderPie(); };
+    top.appendChild(b);
+  });
+  wrap.appendChild(top);
+
+  // Center Ring + Backdrop
+  const ring = document.createElement("div");
+  ring.className = "pie-ring";
+  ring.innerHTML = `<div class="pie-backdrop"></div><div class="pie-inner" style="border-color:${profColor}">
+    <strong style="font-size:11px;color:var(--text)">${prof.name}</strong>
+    <span style="font-size:9px;color:var(--muted);margin-top:2px">Hold \` · RMB = Opts</span>
+  </div>`;
+
+  const ringKeys = prof.keys.slice(0, 8);
+  const cx = 170, cy = 155, rx = 118, ry = 104;
+  ringKeys.forEach((k, i) => {
+    const ang = -Math.PI / 2 + i * (2 * Math.PI / Math.max(1, ringKeys.length));
+    const item = document.createElement("div");
+    item.className = "pie-item";
+    item.style.left = Math.round(cx + Math.cos(ang) * rx) + "px";
+    item.style.top = Math.round(cy + Math.sin(ang) * ry) + "px";
+    item.appendChild(makeTile(k, 36, true, 68, {
+      labelPill: true,
+      onClick: (key) => { runDummyAction(key); closePie(); },
+      onRMB: (key) => { state.pieSettingsKey = (state.pieSettingsKey === key ? null : key); renderPie(); }
+    }));
+    ring.appendChild(item);
+  });
+  wrap.appendChild(ring);
+
+  // Settings strip if RMB clicked inside pie
+  if (state.pieSettingsKey) {
+    wrap.appendChild(buildSettingsStrip(state.pieSettingsKey, () => {
+      state.pieSettingsKey = null; renderPie();
+    }));
+  }
+
+  // Overflow strip for >8 tools
+  const extra = prof.keys.slice(8, 18);
+  if (extra.length) {
+    const ovf = document.createElement("div");
+    ovf.className = "pie-overflow";
+    extra.forEach(k => {
+      ovf.appendChild(makeTile(k, 28, true, 56, {
+        labelPill: true,
+        onClick: (key) => { runDummyAction(key); closePie(); },
+        onRMB: (key) => { state.pieSettingsKey = key; renderPie(); }
+      }));
+    });
+    if (prof.keys.length > 18) {
+      const m = document.createElement("span");
+      m.style.cssText = "font-size:10px;color:var(--muted);padding:0 6px;";
+      m.textContent = `+${prof.keys.length - 18} more in Bar`;
+      ovf.appendChild(m);
+    }
+    wrap.appendChild(ovf);
+  }
+}
+
+// Search & Edit Modals
+function openSearchModal() {
+  document.getElementById("searchModal").classList.add("open");
+  const inp = document.getElementById("searchInput");
+  inp.value = ""; inp.focus();
+  renderSearchResults("");
+}
+function renderSearchResults(q) {
+  const box = document.getElementById("searchResults");
+  box.innerHTML = "";
+  const toks = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  ACTIONS.forEach(a => {
+    const hay = `${a[0]} ${a[1]} ${a[2]} ${a[4]}`.toLowerCase();
+    if (toks.every(t => hay.includes(t))) {
+      const row = document.createElement("div");
+      row.className = "search-row";
+      row.innerHTML = `<span><span class="prof-dot" style="background:${catColor(a[2])};margin-right:7px;"></span><strong>${a[1]}</strong> <span style="color:var(--muted);font-size:10px;">[${a[2].toUpperCase()}]</span></span><span style="color:var(--muted);font-size:10px;">${a[6] || ""}</span>`;
+      row.onclick = () => { runDummyAction(a[0]); document.getElementById("searchModal").classList.remove("open"); };
+      box.appendChild(row);
+    }
+  });
+}
+
+function openEditModal() {
+  const prof = state.profiles[state.activeProf];
+  document.getElementById("editTitle").textContent = "Edit Profile: " + prof.name;
+  const grid = document.getElementById("editGrid");
+  grid.innerHTML = "";
+  ACTIONS.forEach(a => {
+    const lbl = document.createElement("label");
+    lbl.className = "edit-chk";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = prof.keys.includes(a[0]);
+    cb.onchange = () => {
+      if (cb.checked && !prof.keys.includes(a[0])) prof.keys.push(a[0]);
+      if (!cb.checked) prof.keys = prof.keys.filter(k => k !== a[0]);
+      renderAll();
+    };
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(`${a[1]} (${a[3]==="text" ? a[4] : a[2]})`));
+    grid.appendChild(lbl);
+  });
+  document.getElementById("editModal").classList.add("open");
+}
+
+function renderAll() {
+  renderShelf();
+  renderFloatingBar();
+  renderDock();
+  updateViewportRig();
+}
+
+// Drag Floating Bar + Ctrl+Wheel Resize
+(() => {
+  const bar = document.getElementById("floatingBar");
+  let dragging = false, ox = 0, oy = 0;
+  bar.addEventListener("mousedown", e => {
+    if (e.target.closest("button, input")) return;
+    dragging = true;
+    ox = e.clientX - bar.offsetLeft;
+    oy = e.clientY - bar.offsetTop;
+  });
+  window.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    bar.style.left = Math.max(8, e.clientX - ox) + "px";
+    bar.style.top = Math.max(8, e.clientY - oy) + "px";
+  });
+  window.addEventListener("mouseup", () => { dragging = false; });
+
+  bar.addEventListener("wheel", e => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      state.targetPx = Math.max(24, Math.min(52, state.targetPx + (e.deltaY < 0 ? 2 : -2)));
+      renderFloatingBar();
+    }
+  }, { passive: false });
+})();
+
+// Global Events
+document.getElementById("btnOpenPie").onclick = () => openPie(false);
+document.getElementById("btnOpenSearch").onclick = () => openSearchModal();
+document.getElementById("btnToggleCB").onclick = () => {
+  state.okabe = !state.okabe;
+  document.body.classList.toggle("okabe", state.okabe);
+  document.getElementById("btnToggleCB").classList.toggle("on", state.okabe);
+  renderAll();
+};
+document.getElementById("dockSlider").oninput = e => {
+  state.dockWidth = parseInt(e.target.value, 10);
+  document.getElementById("dockPxLbl").textContent = state.dockWidth + "px";
+  renderDock();
+};
+document.getElementById("btnRail").onclick = () => {
+  state.dockWidth = 88; document.getElementById("dockSlider").value = 88;
+  document.getElementById("dockPxLbl").textContent = "88px"; renderDock();
+};
+document.getElementById("btnFullDock").onclick = () => {
+  state.dockWidth = 242; document.getElementById("dockSlider").value = 242;
+  document.getElementById("dockPxLbl").textContent = "242px"; renderDock();
+};
+document.getElementById("pieOverlay").onclick = () => closePie();
+document.getElementById("closeSearch").onclick = () => document.getElementById("searchModal").classList.remove("open");
+document.getElementById("searchInput").oninput = e => renderSearchResults(e.target.value);
+document.getElementById("closeEdit").onclick = () => document.getElementById("editModal").classList.remove("open");
+document.getElementById("btnNewProf").onclick = () => {
+  const name = prompt("New profile name (e.g. Facial, Walk):");
+  if (name && name.trim()) {
+    state.profiles.push({
+      id: "custom_" + Date.now(), short: name.trim().slice(0,4).toUpperCase(),
+      name: name.trim(), colorVar: "--cat-open", keys: [...state.profiles[state.activeProf].keys]
+    });
+    state.activeProf = state.profiles.length - 1;
+    document.getElementById("editModal").classList.remove("open");
+    renderAll();
+  }
+};
+
+window.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault(); openSearchModal(); return;
+  }
+  if (e.key === "`" && !e.repeat) {
+    e.preventDefault(); openPie(true); return;
+  }
+  if (e.key === "Escape") {
+    closePie();
+    document.getElementById("searchModal").classList.remove("open");
+    document.getElementById("editModal").classList.remove("open");
+  }
+  if (document.getElementById("pieOverlay").classList.contains("open") && "12345".includes(e.key)) {
+    const idx = parseInt(e.key, 10) - 1;
+    if (idx < state.profiles.length) { setProfile(idx); renderPie(); }
+  }
+});
+window.addEventListener("keyup", e => {
+  if (e.key === "`" && document.getElementById("pieOverlay").classList.contains("open") && !state.pieSettingsKey) {
+    closePie();
+  }
+});
+window.addEventListener("resize", () => renderFloatingBar());
+
+renderAll();
+</script>
+</body>
+</html>
