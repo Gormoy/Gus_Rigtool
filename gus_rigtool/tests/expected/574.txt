@@ -31,7 +31,7 @@ PASS Ribbon's own pages: Make a ribbon · Builds in the scene
 PASS ...the steps strip on top: Surface, Joints, Controls, Create
 PASS Surface: two curves selected, one drawn the other way - the light says so (Loft fixes it on copies)
 PASS ...the same way, 8 spans each: ready (a yellow dot on Surface, on the strip too)
-PASS Surface: Two curves (check, fix, loft) first and open; Make a plane, Edge to curve folded under it
+PASS Surface: Two curves (check, fix, loft) first and open; Make a plane, Edge to curve folded under it (in its Options fold)
 PASS Create and mirror: the rarer buttons under More (every one kept)
 PASS Builds in the scene: its own page (no steps strip)
 34/34 passed

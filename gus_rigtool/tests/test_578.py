@@ -9,9 +9,8 @@ from gus_rigtool.core import utils
 from gus_rigtool.newui.qt import QtCore, QtGui
 Qt = QtCore.Qt
 
-def set_look(name):
-    utils.save_setting(theme.LOOK_KEY, name)
-    theme.load_look()
+def set_look(name):                     # (5.7.9: one look)
+    pass
 
 def settle():
     for _ in range(3):
@@ -49,7 +48,7 @@ check("a name beside its control when there's room, above it when narrow (the co
       combo.width() >= combo.minimumSizeHint().width())
 
 crops = {}
-for look in ("today", "new"):
+for look in ("new",):
     set_look(look)
     for font in ("13px", "15px"):
         with mock.patch.object(theme, "stylesheet", (lambda real: lambda c: real(c).replace(
@@ -120,7 +119,7 @@ fr2.close()
 
 # --- 3. your order on every page (both looks): To top works everywhere, Build's pages too
 bad = []
-for look in ("today", "new"):
+for look in ("new",):
     set_look(look)
     utils.save_setting(W.STATE_KEY, {})
     fr = W.Frame(); fr.resize(700, 1200); fr.show()
@@ -178,7 +177,7 @@ a = fr.areas["settings"]
 cards = a._cards_of(("settings", None))
 check("Settings drawn in the new look: its sections (%s) can be arranged" % ("over 20" if len(cards) > 20 else
                                                                             len(cards)),
-      not isinstance(a.widgets.get(("settings", None)), W.OldPage) and len(cards) > 20)
+      not isinstance(a.widgets.get(("settings", None)), getattr(W, "OldPage", ())) and len(cards) > 20)
 check("...its options are on show (a page of options doesn't fold them)", not [fo for fo in
                                                                                  a.findChildren(widgets.Fold)
                                                                                  if fo.title == "Options"])
@@ -200,7 +199,7 @@ for sig in ("textChanged", "editingFinished", "returnPressed"):
     except Exception:
         pass
 check("...the Look buttons are still on it (you can always go back)", [b for b in a.findChildren(
-    QtWidgets.QAbstractButton) if "Today's look" in b.text()])
+    QtWidgets.QAbstractButton) if "Legacy look" in b.text()])
 fr.close()
 set_look("today")
 

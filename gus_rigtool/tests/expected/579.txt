@@ -1,0 +1,30 @@
+PASS Settings > Window: 'New window' / 'Legacy look' (today's look 5.7 taken out)
+PASS no legacy page inside the new window any more (Home is redone)
+PASS the shelf: the sidebar's order, a group per area (8 groups)
+PASS ...Build and Publish on it, Build rig not (it's Build's)
+  [info] shelf 'Gus_Rigtool' ready with 29 tool buttons and 14 shortcuts.
+PASS ...a gap between the areas
+PASS ...right-click on a tool: 'Settings of Groups...', favourites, Pop out
+PASS ...the new icons (every tool, the shortcuts)
+PASS ...the bar along the bottom in the area's colour (Skin: pink)
+PASS the bar: your favourites as the new tiles
+PASS ...a short row stays tight: only the essentials (the rest under =), as wide as its tiles
+PASS ...= opens the bar's settings under it: Row / 2R / Col / Grid, names, size, Edit
+PASS ...2 rows: the tiles in two rows
+PASS ...a column: narrow and even (one width)
+PASS ...the size stays 24 - 52 px
+PASS ...Ctrl + mouse wheel: smaller
+PASS ...a corner triangle where right-click has options (Groups has options)
+PASS right-click a tile: its options in a strip under the bar (Groups: 6)
+PASS ...a change is saved at once (as in Settings)
+PASS ...beside a column: names above their boxes, narrow (Gus: B)
+PASS names under the tiles: on two lines when one needs it ('Stick to skin')
+PASS Home: Next step, the five steps, For what's selected, Any time
+PASS ...each step with its state (empty scene: Guides is next)
+PASS ...For what's selected follows the selection
+PASS ...no lone 'Home' tab, the description once
+PASS ...nothing cut off at 300 / 326 / 420 px
+PASS Settings: no 'Selected' box (it has nothing to do with the selection)
+PASS edges counted from Maya's ranges (e[10:25] + e[3] = 17), not one by one
+PASS one selection change: the selection read once (5.7.8: twice - the page and the status line)
+28/28 passed

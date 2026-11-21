@@ -172,7 +172,7 @@ check("search 'Edit shape': the Controls area on Edit shape", f.area == "control
 f._search_go("settings"); app.processEvents()
 check("search 'settings': Settings, in the new window's look too (every area is redone)",
       f.area == "settings" and f.areas["settings"].current == ("settings", None) and
-      not isinstance(f.areas["settings"].widgets[("settings", None)], window.OldPage))
+      not isinstance(f.areas["settings"].widgets[("settings", None)], getattr(window, "OldPage", ())))
 f.go(("controls", None)); app.processEvents()
 check("an area opens on the sub-page you used last", f.areas["controls"].current == ("controls_tab", 2))
 import gus_rigtool.main as gr
@@ -183,8 +183,8 @@ with mock.patch.object(ui, "open_panel", lambda k: None):
 check("Toolbox > Settings > Window > the old window: gr.show() opens the old one from now on", not gr.new_window())
 utils.save_setting(gr.WINDOW_KEY, "new")
 st = open(os.path.join(ROOT, "tools", "settings_tab.py")).read()
-check("...the switch is on Settings (both windows show it)", '"Use the old window (5.6)"' in st and
-      '"Use the new window"' in st)
+check("...the switch is on Settings (both windows show it): New window / Legacy look", '"Legacy look"' in st and
+      '"New window"' in st)
 check("old keys (the Shapes / Make controls shelf buttons) open the right page",
       window.area_of("shapes") == ("controls", "controls_tab", 2) and
       window.area_of("makectrl") == ("controls", "controls_tab", 1))

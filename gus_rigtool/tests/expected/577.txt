@@ -1,7 +1,5 @@
-PASS first time: today's look (5.7)
-PASS Settings > Window > New look: saved, the window opens again in it
-PASS ...Today's look: back
-PASS new look: every control of today's look is there, on all 26 pages
+PASS one look in the new window - Settings > Window: New window / Legacy look (no Look switch)
+PASS every page drawn, its controls named (27 pages)
 PASS ...and none twice
 PASS rarely changed choices fold into 'Options (n)' (on many sections)
 PASS ...closed at first, the count on the button
@@ -25,5 +23,4 @@ PASS Move down: back
 PASS remembered: a new window (restart) shows your order
 PASS ...per tab: Make keeps the tool's order
 PASS Reset order: the tool's own order again
-PASS today's look: the order works there too
-28/28 passed
+25/25 passed

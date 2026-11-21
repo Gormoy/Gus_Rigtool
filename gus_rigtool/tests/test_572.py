@@ -149,7 +149,7 @@ FV.rename_profile("Face", "Face rig")
 check("Rename the profile", FV.current() == "Face rig" and "Face rig" in FV.profiles()[1])
 bar = FV.FavBar(); bar.show(); app.processEvents()
 check("the floating bar shows the same profile", list(bar.buttons) == FV.keys() and
-      bar.profile.text().startswith("Face rig"))
+      "Face rig" in bar.profile.toolTip())
 bar.flip(); app.processEvents()
 FV.set_current("My tools"); app.processEvents()
 check("each profile keeps its own bar shape (Face rig: a column; My tools: a row)", not bar.vertical)

@@ -270,8 +270,33 @@ def loft_curves(rep):
             cmds.delete(arc)
 
 
+def shelf_tabs(rep):
+    """5.7.9: is a shelf tab you haven't opened since Maya started empty to a script? (5.7.8.1's shelf check found
+    the Gus_Animtool shelf with no buttons, though Gus hadn't touched it.)"""
+    import maya.mel as mel
+    if cmds.about(batch=True):
+        rep.add(INFO, "shelf tabs", "no window (mayapy): no shelves - Test this release answers this")
+        return
+    top = mel.eval("$gusFactsTop = $gShelfTopLevel")
+    tabs = cmds.shelfTabLayout(top, query=True, childArray=True) or []
+    here = cmds.shelfTabLayout(top, query=True, selectTab=True)
+
+    def count(tab):
+        return len([b for b in cmds.shelfLayout(tab, query=True, childArray=True) or []
+                    if cmds.objectTypeUI(b) == "shelfButton"])
+    before = dict((t, count(t)) for t in tabs if t in ("Gus_Animtool", "Gus_Rigtool"))
+    after = {}
+    for t in before:
+        cmds.shelfTabLayout(top, edit=True, selectTab=t)
+        cmds.refresh()
+        after[t] = count(t)
+    cmds.shelfTabLayout(top, edit=True, selectTab=here)
+    rep.add(INFO, "shelf tabs: buttons before / after opening the tab (the tab you had: %s)" % here,
+            ", ".join("%s %d / %d" % (t, before[t], after[t]) for t in before) or "no Gus shelves here")
+
+
 FACTS = [zero_threshold, empty_ls, undo_state, key_moves, mesh_points, controllers, bookmarks, node_types,
-         curve_replace, loft_curves]
+         curve_replace, loft_curves, shelf_tabs]
 
 
 def facts(rep):

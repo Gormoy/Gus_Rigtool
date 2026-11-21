@@ -79,14 +79,50 @@ def _icon(key):
     return path.replace("\\", "/") if os.path.isfile(path) else "pythonFamily.png"
 
 
+# 5.7.9: the shelf in the sidebar's order, a gap between areas (Build rig is Build's: not twice)
+SHELF_GROUPS = [["home"], ["build", "face", "ribbon", "joints"], ["skin", "fixes"],
+                ["controls_tab", "behaviour", "attrs", "channels", "spaces", "follow", "stick"],
+                ["constrain", "connect", "nodes", "sdk"], ["checker", "organize", "publish"],
+                ["select", "groups", "mirror", "rename", "pivots"], ["settings", "main", "reload"]]
+
+
 def _shelf_buttons():
-    buttons = [("Main", "main", "Gus_Rigtool - every tool in tabs",
-                "import gus_rigtool.main as gr; gr.show()")]
-    for key, label, _mod, subtitle in registry.TOOLS:
-        buttons.append((label, key, subtitle, "import gus_rigtool.main as gr; gr.show_tool('%s')" % key))
-    buttons.append(("Reload", "reload", "Reload Gus_Rigtool after updating its files",
-                    "import gus_rigtool; gus_rigtool.reload_all(); import gus_rigtool.main as gr; gr.show()"))
-    return buttons
+    """[[(label, key, tooltip, command)]] - one list per area, in the sidebar's order."""
+    tools = dict((k, (lab, sub)) for k, lab, _m, sub in registry.TOOLS)
+    special = {"main": ("Main", "Gus_Rigtool - every tool", "import gus_rigtool.main as gr; gr.show()"),
+               "reload": ("Reload", "Reload Gus_Rigtool after updating its files",
+                          "import gus_rigtool; gus_rigtool.reload_all(); import gus_rigtool.main as gr; gr.show()")}
+    groups = []
+    for keys in SHELF_GROUPS:
+        g = []
+        for k in keys:
+            if k in special:
+                lab, tip, cmd = special[k]
+                g.append((lab, k, tip, cmd))
+            else:
+                try:                                       # (Publish is a page of Check & publish, not a tab)
+                    lab, sub = tools[k] if k in tools else registry.get(k)[1::2]
+                except KeyError:
+                    continue
+                g.append((lab, k, sub, "import gus_rigtool.main as gr; gr.show_tool('%s')" % k))
+        if g:
+            groups.append(g)
+    return groups
+
+
+def _shelf_menu(key):
+    """Right-click on a tool's shelf button: its settings, and favourites (5.7.9)."""
+    items = []
+    try:
+        if getattr(registry.module(key), "SCHEMA", None):
+            items.append(("Settings of %s..." % registry.get(key)[1],
+                          "import gus_rigtool.newui.favourites as F; F.open_settings('%s')" % key))
+    except Exception:
+        pass
+    items.append(("Add to / take off favourites",
+                  "import gus_rigtool.newui.favourites as F; F.toggle('%s')" % key))
+    items.append(("Pop out (its own panel)", "import gus_rigtool.newui.favourites as F; F.pop('%s')" % key))
+    return items
 
 
 def make_shelf(*_):
@@ -103,10 +139,26 @@ def make_shelf(*_):
                 pass
     else:
         mel.eval('addNewShelfTab "%s"' % SHELF)
-    buttons = _shelf_buttons()
-    for label, key, annotation, command in buttons:
-        cmds.shelfButton(parent=SHELF, label=label, annotation=annotation, image=_icon(key),
-                         command=command, sourceType="python")
+    groups = _shelf_buttons()
+    buttons = [b for g in groups for b in g]
+    for gi, group in enumerate(groups):
+        if gi:
+            try:
+                cmds.separator(parent=SHELF, style="shelf", horizontal=False)
+            except RuntimeError:
+                pass
+        for label, key, annotation, command in group:
+            flags = {}
+            if key not in ("main", "reload"):
+                menu = _shelf_menu(key)
+                flags = {"menuItem": menu, "menuItemPython": list(range(len(menu)))}
+            tip = annotation + (" (right-click: its settings)" if flags else "")
+            try:
+                cmds.shelfButton(parent=SHELF, label=label, annotation=tip, image=_icon(key), command=command,
+                                 sourceType="python", **flags)
+            except (RuntimeError, TypeError):           # its menu refused: the button anyway, without it
+                cmds.shelfButton(parent=SHELF, label=label, annotation=annotation, image=_icon(key),
+                                 command=command, sourceType="python")
     shortcuts = quick.shelf_buttons()
     if shortcuts:
         try:

@@ -27,7 +27,7 @@ PASS search 'settings': Settings, in the new window's look too (every area is re
 PASS an area opens on the sub-page you used last
 PASS the new window is the default
 PASS Toolbox > Settings > Window > the old window: gr.show() opens the old one from now on
-PASS ...the switch is on Settings (both windows show it)
+PASS ...the switch is on Settings (both windows show it): New window / Legacy look
 PASS old keys (the Shapes / Make controls shelf buttons) open the right page
 PASS Qt: PySide6 (Maya 2025+) or PySide2 (Maya 2024)
 PASS the window is rebuilt when Maya reopens it at start-up, with this version's title

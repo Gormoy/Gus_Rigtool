@@ -63,7 +63,6 @@ def tool_label(tool):
     return TOOL_LABEL.get(tool) or registry.get(tool)[1]
 FACE_STEPS = {"brows": "Brows", "eyes": "Eyes", "eyelids": "Eyelids", "mouth": "Mouth", "strip": "Facial strips"}
 RIBBON_STEPS = ["Surface", "Follicles", "Controls", "Build and mirror"]
-OLD_PAGE = ()                                    # 5.7.8: none - Settings is drawn in the new look too
 CATEGORY = {"home": "home", "build": "build", "skin": "skin", "controls": "controls", "connect": "links",
             "check": "finish", "toolbox": "toolbox", "settings": "settings"}
 WHY = {"home": "Where you are in the rig, and the next step.",
@@ -117,42 +116,6 @@ def area_of(key):
     return "home", tool, page
 
 
-# --------------------------------------------------------------------------- a page from today's window
-class OldPage(QtWidgets.QWidget):
-    """Today's page of a tool, inside the new window (areas not redone yet). In Maya it's the real page."""
-
-    def __init__(self, key, parent=None):
-        super(OldPage, self).__init__(parent)
-        self.key = key
-        self.filled = False
-        v = QtWidgets.QVBoxLayout(self)
-        v.setContentsMargins(4, 4, 4, 4)
-
-    def fill(self):
-        if self.filled:
-            return
-        self.filled = True
-        if not in_maya():
-            self.layout().addWidget(widgets.label("Today's %s page (shown here in Maya)." % self.key, "dim"))
-            return
-        import maya.cmds as mc
-        from gus_rigtool.core import ui
-        from gus_rigtool.newui.qt import maya_widget
-        here = mc.setParent(query=True)
-        try:
-            mc.setParent(WS)
-            col = mc.columnLayout(adjustableColumn=True)
-            ui._build_tool(self.key, "n7_%s_" % self.key)
-            w = maya_widget(col, "layout")
-            if w is not None:
-                self.layout().addWidget(w)
-        finally:
-            try:
-                mc.setParent(here)
-            except RuntimeError:
-                pass
-
-
 # --------------------------------------------------------------------------- one area
 class Area(QtWidgets.QWidget):
     """An area's pages (one shown at a time) under its header."""
@@ -198,6 +161,9 @@ class Area(QtWidgets.QWidget):
         self.pin_slot = QtWidgets.QVBoxLayout()
         self.pin_slot.setContentsMargins(0, 0, 0, 0)
         self.inner.addWidget(self.selbox)
+        if key == "settings":                   # 5.7.9: Settings has nothing to do with the selection
+            self.selbox.setVisible(False)
+            self.selbox.setProperty("off", True)
         self.arranging = False
         self.arrange_bar = QtWidgets.QFrame()          # 5.7.8: Arrange - put this page's sections in your order
         self.arrange_bar.setObjectName("gusArrangeBar")
@@ -253,12 +219,8 @@ class Area(QtWidgets.QWidget):
             w = homepage.HomePage(self)
             self.widgets[(tool, page)] = w
             self.body.addWidget(w)
-        elif self.key in NEW_LOOK and tool not in OLD_PAGE:
+        else:                                   # 5.7.9: every page is drawn by the window (no legacy page)
             self._build_new(tool)
-        else:
-            w = OldPage(tool)
-            self.widgets[(tool, page)] = w
-            self.body.addWidget(w)
         return self.widgets.get((tool, page))
 
     def _build_new(self, tool):
@@ -453,8 +415,6 @@ class Area(QtWidgets.QWidget):
 
     def arrange(self, on):
         """5.7.8: Arrange on / off - each section closed to its title, with Up / Down / To top."""
-        if on and self.current and isinstance(self.widgets.get(tuple(self.current[:2])), OldPage):
-            return
         self.arranging = bool(on)
         self.arrange_bar.setVisible(self.arranging)
         if self.current:
@@ -472,8 +432,6 @@ class Area(QtWidgets.QWidget):
         target = self.page_widget(sub)
         for key, w in self.widgets.items():
             w.setVisible(w is target)
-        if isinstance(target, OldPage):
-            target.fill()
         if hasattr(target, "refresh") and target.__class__.__name__ == "HomePage":
             target.refresh()
         self.current = sub
@@ -802,10 +760,56 @@ def selection():
         import maya.cmds as mc
         from gus_rigtool.core import utils
         nodes = utils.selected_transforms()
-        edges = len([e for e in mc.ls(selection=True, flatten=True) or [] if ".e[" in e])
-    except Exception:
+        edges = count_components(mc.ls(selection=True) or [], ".e[")   # 5.7.9: no flattening (thousands of
+    except Exception:                                                 # vertices made every click slow)
         return [], [], 0
     return [widgets.kind_of(n) for n in nodes], [n.split("|")[-1] for n in nodes], edges
+
+
+def count_components(items, tag):
+    """How many components 'mesh.e[10:25]', 'mesh.e[3]' name (Maya's compact form), without listing each one."""
+    n = 0
+    for x in items:
+        if tag not in x:
+            continue
+        inside = x.split(tag, 1)[1].rstrip("]")
+        if ":" in inside:
+            a, b = inside.split(":", 1)
+            try:
+                n += int(b) - int(a) + 1
+            except ValueError:
+                n += 1
+        else:
+            n += 1
+    return n
+
+
+class _SelectionWait(object):
+    """5.7.9: one selection update 80 ms after the last change (a drag-select: once, not 50 times), read once, and
+    nothing while the animation plays. Only in Maya (the tests update at once)."""
+
+    def __init__(self, owner):
+        self.owner = owner
+        self.timer = None
+
+    def __call__(self, *_):
+        if not in_maya():
+            return self.owner._selection_now()
+        if self.timer is None:
+            self.timer = QtCore.QTimer(self.owner)
+            self.timer.setSingleShot(True)
+            self.timer.timeout.connect(self._fire)
+        self.timer.start(80)
+
+    def _fire(self):
+        try:
+            import maya.cmds as mc
+            if mc.play(query=True, state=True):
+                self.timer.start(300)                   # playing: look again when it stops
+                return
+        except Exception:
+            pass
+        self.owner._selection_now()
 
 
 def _subtitle(tool):
@@ -846,9 +850,6 @@ def _head_buttons(owner):
 def _arrange(owner):
     a = owner.areas.get(owner.area) if hasattr(owner, "areas") else None
     if a is None or not hasattr(a, "arrange"):
-        return
-    if not a.arranging and a.current and isinstance(a.widgets.get(tuple(a.current[:2])), OldPage):
-        _set_status(owner, "This page can't be arranged yet.", "info")
         return
     a.arrange(not a.arranging)
 
@@ -1280,13 +1281,23 @@ class Frame(QtWidgets.QWidget):
 
     # -------------------------------------------------- selection, status, size
     def selection(self):
-        return selection()
+        got = getattr(self, "_sel", None)               # read once per change (the page, the status line)
+        return got if got is not None else selection()
 
     def on_selection(self, *_):
-        a = self.areas.get(self.area)
-        if a is not None:
-            a.refresh_selection()
-        self._breadcrumb()
+        if not hasattr(self, "_wait"):
+            self._wait = _SelectionWait(self)
+        self._wait()
+
+    def _selection_now(self):
+        self._sel = selection()
+        try:
+            a = self.areas.get(self.area)
+            if a is not None:
+                a.refresh_selection()
+            self._breadcrumb()
+        finally:
+            self._sel = None
 
     def _breadcrumb(self):
         """New look: the status line says what's selected and where you are (until a tool says something)."""
@@ -1317,11 +1328,7 @@ class Frame(QtWidgets.QWidget):
         a = self.areas.get(self.area)
         if a is None or not a.current:
             return
-        tool = a.current[0]
-        if self.area in NEW_LOOK:
-            return show_pop(tool, a.current[1])
-        from gus_rigtool.core import ui
-        ui.open_panel(tool)                   # pages not redone yet: their own panel, as before
+        return show_pop(a.current[0], a.current[1])
 
     def rebuild(self, key):
         """A tool asked for its page again (My shapes changed...): drawn again."""
@@ -1569,10 +1576,20 @@ class PopFrame(QtWidgets.QWidget):
                 self.tabs.layout().addWidget(b)
 
     def selection(self):
-        return selection()
+        got = getattr(self, "_sel", None)
+        return got if got is not None else selection()
 
     def on_selection(self, *_):
-        self.body.refresh_selection()
+        if not hasattr(self, "_wait"):
+            self._wait = _SelectionWait(self)
+        self._wait()
+
+    def _selection_now(self):
+        self._sel = selection()
+        try:
+            self.body.refresh_selection()
+        finally:
+            self._sel = None
 
     def set_status(self, message, level="info"):
         _set_status(self, message, level)

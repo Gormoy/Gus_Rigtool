@@ -6,19 +6,14 @@ from gus_rigtool.newui import window as W, widgets
 from gus_rigtool import main as M
 from gus_rigtool.core import utils
 
-def set_look(name):
-    utils.save_setting(theme.LOOK_KEY, name)
-    theme.load_look()
+def set_look(name):                     # (5.7.9: one look - today's (5.7) was taken out, Gus)
+    pass
 
-# --- 1. the Look switch: today's look unless you choose the new one; it is remembered
-utils.save_setting(theme.LOOK_KEY, None)
-check("first time: today's look (5.7)", theme.load_look() == "today" and not theme.new_look())
-with mock.patch.object(cmds, "evalDeferred", lambda f: None, create=True):
-    M.use_look("new")
-check("Settings > Window > New look: saved, the window opens again in it", theme.load_look() == "new")
-with mock.patch.object(cmds, "evalDeferred", lambda f: None, create=True):
-    M.use_look("today")
-check("...Today's look: back", theme.load_look() == "today")
+# --- 1. one look (5.7.9): no Look switch any more; the legacy look (5.6) stays one click away
+st = open(os.path.join(ROOT, "tools", "settings_tab.py")).read()
+check("one look in the new window - Settings > Window: New window / Legacy look (no Look switch)",
+      not hasattr(M, "use_look") and not hasattr(theme, "LOOK_KEY") and '"Legacy look"' in st and
+      '"Today\'s look (5.7)"' not in st)
 
 # --- 2. both looks: the same controls on every page of the redone areas (nothing lost, nothing twice)
 f0 = W.Frame()
@@ -35,14 +30,11 @@ def inventory(key):
     return page, sorted(n for _k, n, _l, _h in page.inventory)
 lost, twice, folds, chips = [], [], [], 0
 for key in tools:
-    set_look("today")
-    _p, today = inventory(key)
-    set_look("new")
     page, new = inventory(key)
-    lost += ["%s: %s" % (key, n) for n in today if n not in new]
+    lost += ["%s: %s" % (key, n) for n in new if not n]
     twice += ["%s: %s" % (key, n) for n in set(new) if new.count(n) > 1]
     folds += [(key, fo) for fo in page.widget.findChildren(widgets.Fold)]
-check("new look: every control of today's look is there, on all %d pages" % len(tools), not lost and len(tools) > 15)
+check("every page drawn, its controls named (%d pages)" % len(tools), not lost and len(tools) > 15)
 if lost:
     print("   lost:", lost[:10])
 check("...and none twice", not twice)
@@ -147,11 +139,4 @@ c = f2.areas["controls"]._cards_of(sub)[0]
 c.moved.emit(c.title, "@Reset order"); app.processEvents()
 check("Reset order: the tool's own order again", [c.title for c in f2.areas["controls"]._visual(sub)] == first)
 
-set_look("today")
-f3 = W.Frame(); f3.resize(760, 1500); f3.show(); f3.go(sub, as_tool=True); app.processEvents()
-a3 = f3.areas["controls"]
-c = [c for c in a3._cards_of(sub) if c.title.startswith("Size")][0]
-c.moved.emit(c.title, "@Move to top"); app.processEvents()
-check("today's look: the order works there too", [c.title for c in a3._visual(sub)][0].startswith("Size"))
-c.moved.emit(c.title, "@Reset order"); app.processEvents()
 print("%d/%d passed" % (sum(ok), len(ok)))

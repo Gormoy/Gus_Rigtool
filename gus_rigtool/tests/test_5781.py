@@ -52,9 +52,9 @@ if fails:
     print("  ", fails[:5])
 check("...your order is put back after them", W._state().get("order") == yours)
 names = [r[2] for r in rep.rows]
-check("...every page goes through once (in your look), the other look only Edit shape",
+check("...every page goes through once (one look)",
       len([n for n in names if "work on every page" in n]) == 1 and
-      len([n for n in names if n.endswith("an Arrange button in the header")]) == 2)
+      len([n for n in names if n.endswith("an Arrange button in the header")]) == 1)
 check("...the order isn't checked twice (it's in 'arrange' only now)", not [n for n in names if
                                                                           "right-click > Move to top" in n])
 print("%d/%d passed" % (sum(ok), len(ok)))

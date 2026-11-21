@@ -613,6 +613,11 @@ class FavBar(QtWidgets.QWidget):
                 self.chrome.deleteLater()
                 self.chrome = tight
                 self._fill_tiles(shape, self.size_px)
+        for i in range(root.count()):                    # drawn again: its new parts shown before it's measured
+            w = root.itemAt(i).widget()                   # (5.7.9: a change of layout shrank it to 14 x 11 px)
+            if w is not None:
+                w.show()
+        root.activate()
         self.adjustSize()
         self.setFixedSize(self.sizeHint())               # exactly its tiles (a window can keep a wider minimum)
         if self.strip_key == BAR_SETTINGS:
@@ -657,8 +662,11 @@ class FavBar(QtWidgets.QWidget):
         shown = [n for n in mine][:4]
         if current() not in shown:
             shown.append(current())
+        self.profile = None
         for name in shown:
             pill = self._pill(name)
+            if name == current():
+                self.profile = pill                        # (the profile shown - its full name in the tooltip)
             if short:                                     # the mock-up's short pills (BLK, POL...)
                 words = [w for w in name.replace("&", " ").split() if w]
                 pill.setText("".join(w[0] for w in words).upper()[:3] if len(words) > 1 else name[:3].upper())

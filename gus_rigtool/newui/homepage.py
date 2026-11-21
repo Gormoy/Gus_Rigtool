@@ -78,7 +78,7 @@ class HomePage(QtWidgets.QWidget):
                               ("The Guide", "Rigging with Gus_Rigtool, step by step", _guide),
                               ("Map", "Where everything is: every area and page", _map),
                               ("Refresh", "Look at the scene again", self.refresh)):
-            b = QtWidgets.QPushButton(text)
+            b = widgets.button(text)
             b.setToolTip(tip)
             b.setCursor(Qt.PointingHandCursor)
             b.setProperty("stretch", True)
@@ -132,7 +132,7 @@ class HomePage(QtWidgets.QWidget):
         self.sel_what.setText("Selected: %s" % what)
         _clear(self.sel_box.layout())
         for label, tool, sec in items:
-            b = QtWidgets.QPushButton("%s  ›" % label)
+            b = widgets.button("%s  ›" % label)            # wraps when narrow (5.7.9: nothing cut off)
             b.setCursor(Qt.PointingHandCursor)
             try:
                 b.setToolTip("Open %s" % registry.get(tool)[1])

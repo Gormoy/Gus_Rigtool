@@ -185,8 +185,11 @@ check("...the same way, 8 spans each: ready (a yellow dot on Surface, on the str
       l1.level == "ready" and [c for c in rp.cards if c.title == "Surface"][0].num.text() == "●" and
       a.strip.states[0] == "ready")
 inner = [c.title for c in a.findChildren(widgets.Card) if c.property("inner") == "true" and c.isVisibleTo(a)]
-check("Surface: Two curves (check, fix, loft) first and open; Make a plane, Edge to curve folded under it",
-      inner[:4] == ["Two curves: check, fix, loft", "Loft options", "Make a plane", "Edge to curve"])
+surf = [c for c in rp.cards if c.title == "Surface"][0]
+folded = [c.title for f in surf.findChildren(widgets.Fold) for c in f.findChildren(widgets.Card)]
+check("Surface: Two curves (check, fix, loft) first and open; Make a plane, Edge to curve folded under it "
+      "(in its Options fold)", inner[:2] == ["Two curves: check, fix, loft", "Loft options"] and
+      "Make a plane" in folded and "Edge to curve" in folded)
 more = [c for c in a.findChildren(widgets.Card) if c.title.startswith("More:")]
 names = [b.text() for b in more[0].findChildren(QtWidgets.QPushButton)] if more else []
 check("Create and mirror: the rarer buttons under More (every one kept)", more and more[0].closed and

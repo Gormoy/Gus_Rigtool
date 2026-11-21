@@ -2,6 +2,6 @@ PASS Reset order: the tool's own order at once (the page isn't drawn again - 5.7
 PASS ...also in a window opened with your order already on it (Reset goes to the tool's order, not yours)
 PASS the new-look and arrange checks pass with your own order on Edit shape (5.7.8: 1 FAIL)
 PASS ...your order is put back after them
-PASS ...every page goes through once (in your look), the other look only Edit shape
+PASS ...every page goes through once (one look)
 PASS ...the order isn't checked twice (it's in 'arrange' only now)
 6/6 passed

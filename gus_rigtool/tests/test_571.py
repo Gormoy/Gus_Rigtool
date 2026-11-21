@@ -92,7 +92,7 @@ with mock.patch.object(QT, "maya_widget", lambda name, kind="layout": hosts.get(
         popped = f.pop_out()
     check("Pop out Settings (redone too): Settings in its own panel, in the new look",
           W.alive(popped) and popped.body.widgets.get(("settings", None)) is not None and
-          not isinstance(popped.body.widgets.get(("settings", None)), W.OldPage) and not opened)
+          not isinstance(popped.body.widgets.get(("settings", None)), getattr(W, "OldPage", ())) and not opened)
 
 # --- 3. no button text cut off - also in a wider font, like Maya's
 f = W.Frame(); f.show()

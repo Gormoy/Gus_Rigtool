@@ -327,6 +327,11 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   window_checks.arrange.
 - **5.7.8.1**: Area._orig (each sub-page's first order) -> Reset order without rebuild; window_checks.arrange
   saves / restores state["order"], every page once in Gus's look; new_look's order part removed.
+- **5.7.9**: theme: one look (no LOOK / new_look); newui/tiles.py (tile drawings: shelf icons + bar), newui/homepage.py
+  (Home); favourites.FavBar rewritten (shape row/2r/col/grid, size, labels, strip = option_rows from a tool's
+  SCHEMA, tight / short controls, BAR_SETTINGS); main._shelf_buttons groups + _shelf_menu; window: no OldPage,
+  NEW_LOOK + home, _SelectionWait (80 ms, playback), count_components, Frame._sel read once; maya_facts.shelf_tabs;
+  window_checks.rig_shelf.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

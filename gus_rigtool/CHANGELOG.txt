@@ -1,3 +1,66 @@
+Gus_Rigtool 5.7.9 - one look, Home redone, the favourites bar from Gus's mock-up, the shelf in the new look
+
+Gus: "take out the 5.7 version" (today's look), the 5.6 window "we can call it legacy look"; the shelf "everything"
+with the new icons; the bar "with the principles of profiles and favourites, right-click for the tool's settings",
+Gus's Gemini mock-up layout in the Rigtool's colours ("2 rigtool with mockup layout", "4 options fold"); Home in
+this release; "make them work better but lighter".
+
+The window:
+- One look: today's look (5.7) is gone. Settings > Window: New window / Legacy look (Maya's window, 5.6).
+- Home redone: Next step (what to do now, a big button in that step's colour), the five steps each with its state
+  (Done / Next / To do / Any time) and Go, For what's selected (changes as you select), Any time (Toolbox, the Guide,
+  Map, Refresh). Its sections can be arranged. The legacy look keeps its own Home.
+- An area with one page (Home, Settings) shows no lone tab, and its description once.
+- Settings: no 'Selected' box (it has nothing to do with the selection).
+- No legacy page inside the new window any more: every page is drawn by it.
+
+The favourites bar (Toolbox > the window's Bar, or the bar's own button):
+- The profiles as pills (yours and the one shown; ▾ for all, New / Rename / Delete).
+- Row / 2R / Col / Grid, names on / off (one line, two when a name needs it), size 24 - 52 px (the slider or
+  Ctrl + mouse wheel over the bar); it shrinks to stay on the screen.
+- The tiles are the shelf's new icons; a small white corner triangle: right-click has options.
+- Right-click a tile: its options in a strip under the bar (beside a column: names above their boxes, narrow -
+  Gus: "B"). A change is saved at once and its page picks it up. 8 at most; the rest: 'All n in Settings...'.
+  Also Open its page, Pop out, Remove.
+- A row stays tight (Gus): when its controls would be wider than its tiles, only the grip, the size, your profile,
+  ▾ and = stay; = opens the bar's settings under it (layout, names, size, Edit, Choose..., Open the window, Close).
+- A column is narrow and even (64 px at 34 px tiles).
+- Clicking a tile never takes the keyboard from Maya (Space, S...).
+
+The Gus_Rigtool shelf (Settings > Make Gus_Rigtool shelf, or Test this release makes it):
+- The new icons (the Animtool shelf's style: a dark tile, a line drawing, a bar in the area's colour).
+- In the sidebar's order, a gap between areas: Home · Build, Face, Ribbon, Joints · Skin, Fixes · Controls... ·
+  Connect... · Checker, Organize, Publish · Select, Groups, Mirror, Rename, Pivots · Settings, Main, Reload; then
+  the shortcuts. Build and Publish on it, Build rig not (it's Build's).
+- Right-click a tool: Settings of <tool>... (opens Settings at its section), Add to / take off favourites, Pop out.
+
+Lighter:
+- The selection is read once per change (5.7.8: twice), 80 ms after the last change (a drag-select: once, not
+  50 times), and not while the animation plays (in Maya).
+- Selected edges are counted from Maya's ranges, not listed one by one (thousands of vertices made every click
+  slow).
+
+Test this release:
+- The shelf check opens the Gus_Animtool shelf's tab when it looks empty, counts again, and goes back (5.7.8.1's
+  FAIL: the tab hadn't been opened yet). A new Maya fact asks it plainly (Maya facts > shelf tabs).
+- A new part: the Gus_Rigtool shelf (the sidebar's order, Build rig not on it, right-click menus). It makes the
+  shelf again (as Settings > Make Gus_Rigtool shelf does).
+
+Fixed on the way:
+- The bar shrank to a speck (14 x 11 px) after a change of layout, size or names - it measured itself before its
+  new parts were shown.
+- Home's suggestion buttons were cut off at 326 px (they wrap now).
+
+Only tested here off-screen (PySide6) and with the fake Maya.
+
+Decisions I made:
+- Lighter items: Gus didn't pick - I did 1 (the selection) and 4 (no legacy page); Publish in its own file and the
+  Checker as one table: the next release (Gus: "we can do it in the next").
+- The bar's options strip shows the options a tool saves (its section in Settings) - the ones its right-click
+  can change without opening the page.
+- A row's tiles keep their order; a column's tiles are centred.
+- The shelf icons are 32 px (as the Animtool's).
+
 Gus_Rigtool 5.7.8.1 - Reset order at once; Test this release keeps your order and is faster
 
 Gus's 5.7.8 tests: everything ok but one FAIL, and "it is taking too long in test" (255 s, was 66 s). Plan approved

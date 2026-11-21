@@ -97,16 +97,51 @@ def shelf(rep):
     if not cmds.shelfLayout(toolbar.SHELF, exists=True):
         rep.add(NOTE, "no Gus_Animtool shelf", "Animtool window > Settings > Make the shelf")
         return
-    labels = []
-    for b in cmds.shelfLayout(toolbar.SHELF, query=True, childArray=True) or []:
+    def labels_now():
+        out = []
+        for b in cmds.shelfLayout(toolbar.SHELF, query=True, childArray=True) or []:
+            try:
+                if cmds.objectTypeUI(b) == "shelfButton":
+                    out.append(cmds.shelfButton(b, query=True, label=True))
+            except RuntimeError:
+                pass
+        return out
+    labels = labels_now()
+    if not labels:                     # 5.7.9: a tab not opened yet can look empty - open it, count, go back
         try:
-            if cmds.objectTypeUI(b) == "shelfButton":
-                labels.append(cmds.shelfButton(b, query=True, label=True))
-        except RuntimeError:
-            pass
+            import maya.mel as mel
+            top = mel.eval("$gusCheckTop = $gShelfTopLevel")
+            here = cmds.shelfTabLayout(top, query=True, selectTab=True)
+            cmds.shelfTabLayout(top, edit=True, selectTab=toolbar.SHELF)
+            cmds.refresh()
+            labels = labels_now()
+            cmds.shelfTabLayout(top, edit=True, selectTab=here)
+            rep.add(INFO, "the shelf looked empty until its tab was opened", "%d buttons after opening it" %
+                    len(labels))
+        except Exception as e:
+            rep.add(INFO, "couldn't open the shelf's tab to count", str(e))
     missing = [label for _k, label, _t, _g in AC.ACTIONS if label not in labels]
     rep.expect("every tool has its button (Attach too)", not missing,
                (", ".join(missing) + " - fix: Animtool window > Settings > Make the shelf") if missing else "")
+
+
+def rig_shelf(rep):
+    """5.7.9: the Gus_Rigtool shelf in the new look - the sidebar's order, Build rig not twice, right-click menus."""
+    import gus_rigtool.main as gr
+    rep.start("The Gus_Rigtool shelf (5.7.9)")
+    gr.make_shelf()
+    kids = cmds.shelfLayout(gr.SHELF, query=True, childArray=True) or []
+    buttons = [b for b in kids if cmds.objectTypeUI(b) == "shelfButton"]
+    labels = [cmds.shelfButton(b, query=True, label=True) for b in buttons]
+    want = [b[0] for g in gr._shelf_buttons() for b in g]
+    rep.expect("its tools in the sidebar's order (Home, Build..., Settings, Main, Reload), then the shortcuts",
+               labels[:len(want)] == want, ", ".join(labels[:8]) + "...")
+    rep.expect("Build rig isn't on it (Build and Publish are)", "Build rig" not in labels and "Publish" in labels)
+    menus = [b for b in buttons[:len(want)] if cmds.shelfButton(b, query=True, numberOfPopupMenus=True)]
+    rep.expect("right-click on the tools: their settings, favourites, Pop out", len(menus) >= len(want) - 3,
+               "%d of %d" % (len(menus), len(want)))
+    rep.add(INFO, "look at the shelf", "Gus_Rigtool: the new icons, a gap between areas; right-click Groups > "
+            "Settings of Groups... opens Settings at Groups")
 
 
 def undo(rep):
@@ -433,12 +468,10 @@ def new_window(rep):
 def new_look(rep):
     """5.7.7: the new look (Settings > Window > Look), the Toolbox in the new window, and your own section order
     (it opens the window in the new look, then puts back the look you had)."""
-    from gus_rigtool.core import utils
-    from gus_rigtool.newui import theme, widgets
+    from gus_rigtool.newui import widgets
     from gus_rigtool.newui import window as W
     from gus_rigtool.newui.qt import QtWidgets
     rep.start("The new look (5.7.7)")
-    was = utils.load_setting(theme.LOOK_KEY, "today")
 
     def settle():
         for _i in range(3):
@@ -452,9 +485,8 @@ def new_look(rep):
         return f
 
     try:
-        utils.save_setting(theme.LOOK_KEY, "new")
         f = reopen()
-        rep.expect("Settings > Window > New look: the window opens in it", f is not None and theme.new_look())
+        rep.expect("the new window opens (one look since 5.7.9)", f is not None)
         if f is None:
             return
 
@@ -483,19 +515,16 @@ def new_look(rep):
 
         rep.guard("new look: pages", pages)
     finally:
-        utils.save_setting(theme.LOOK_KEY, was)
         reopen()
 
 
 def arrange(rep):
     """5.7.8: Arrange on every page (Up / Down / To top, Reset, Done), a drop on a section's title, Settings in
     the new look, the sidebar strip - in today's look and the new one (it puts back the look you had)."""
-    from gus_rigtool.core import utils
-    from gus_rigtool.newui import theme
     from gus_rigtool.newui import window as W
     from gus_rigtool.newui.qt import QtCore, QtGui, QtWidgets
     rep.start("Arrange and your order (5.7.8)")
-    was = utils.load_setting(theme.LOOK_KEY, "today")
+    was = "new"                                            # 5.7.9: one look
     import copy
     yours = copy.deepcopy(W._state().get("order", {}))     # 5.7.8.1: your own order - put back at the end
     st = W._state()
@@ -515,8 +544,7 @@ def arrange(rep):
         return f
 
     try:
-        for look in [was] + [x for x in ("today", "new") if x != was]:   # your look first: every page in it
-            utils.save_setting(theme.LOOK_KEY, look)
+        for look in [was]:                                 # 5.7.9: one look
             f = reopen()
             if f is None:
                 rep.expect("the window opens (%s look)" % look, False)
@@ -605,7 +633,7 @@ def arrange(rep):
             settle()
             a = f._area("settings")
             rep.expect("Settings in the new look: its sections can be arranged",
-                       not isinstance(a.widgets.get(("settings", None)), W.OldPage) and len(a._cards_of(
+                       not isinstance(a.widgets.get(("settings", None)), getattr(W, "OldPage", ())) and len(a._cards_of(
                            ("settings", None))) > 20)
             hidden = f.side_hidden
             f.toggle_side()
@@ -621,11 +649,10 @@ def arrange(rep):
         st["order"] = yours
         W._save_state(st)
         rep.add(INFO, "your own order", "put back as it was (%d page(s) you arranged)" % len(yours))
-        utils.save_setting(theme.LOOK_KEY, was)
         reopen()
 
 
-CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("undo", undo),
+CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the Rigtool shelf", rig_shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
           ("new window", new_window), ("new look", new_look), ("arrange", arrange), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 

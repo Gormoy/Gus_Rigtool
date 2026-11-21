@@ -255,6 +255,10 @@ the code; this file has what Gus said, decided and wants next.
   under tiles on two lines "yes"; beside a column: "B" (names above the boxes, narrow); "be sure that the row
   stays tight like other designs and don't let a lot of negative space" -> a row keeps only grip, profile, ▾, =
   when its controls are wider than its tiles; = opens the bar's settings under it.
+- 2026-11-21: Gus: tight row "yes"; Publish in its own file "we can do it in the next" (with the Checker rewrite).
+  5.7.9 built - waiting for his Maya tests and OK to push.
+- Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
+  "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
   Gemini UI/UX ideas, combined. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
