@@ -437,6 +437,7 @@ class _Item(object):
 KEEP_SHOWN = ("From_", "Mode", "Style")             # choices that say how a step works: never folded
 OPTION_KINDS = ("radioButtonGrp", "checkBox", "checkBoxGrp")
 LABEL_W = 88
+NO_FOLD = ("settings",)        # 5.7.8: a page that is all options (Settings) shows them, it doesn't fold them
 
 
 def _labelled(text, w):
@@ -837,7 +838,7 @@ class Page(object):
                 shown.insert(0, w)                  # a step's state line: right under the title
                 lights.append(c.name)
                 continue
-            if _is_option(c):
+            if _is_option(c) and self.key not in NO_FOLD:
                 if fold is None:
                     fold = widgets.Fold("Options", lambda: self._summary(opts))
                     shown.append(("fold", fold))

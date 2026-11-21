@@ -1,0 +1,29 @@
+PASS '&' shows as '&' ('Match & zero', not 'Match _zero')
+PASS a picked choice (bold) is as wide as its words ('Above the objec' was cut)
+PASS a tick box's words are plain text ('<name>' is not read as a tag)
+PASS ...never narrower than its longest word
+PASS a name beside its control when there's room, above it when narrow (the control keeps its width)
+PASS nothing cut off on any page: both looks, 300 / 326 / 700 px, normal and wider font (your Mac's)
+PASS an Arrange button in every page's header
+PASS Arrange: every section closed to its title, with Up / Down / To top; the bar with Reset order and Done
+PASS To top: 'Move the shape' above 'Swap the shape' (Gus's example)
+PASS Up: one place up
+PASS Down: back
+PASS ...clicking a title while arranging doesn't open it
+PASS Done: the sections open / closed as they were, the order kept
+PASS remembered after a restart
+PASS Reset order (in Arrange): the tool's order, still arranging
+PASS Edit shape: 'Select the controls to change' and 'Keep their size and place' inside 'Swap the shape' (they move with it)
+PASS To top works on every page with two sections or more, both looks (5.7.7: not on Build > Animation, Existing rig, Advanced)
+PASS split into sections: Bind · Add joints / Save · Load weights / Prune · Limit · Remove unused / Publish · Deliver / Stick · Find what's stuck
+PASS ...the moved controls are the tool's own (the tool reads and fills them as before)
+PASS Settings drawn in the new look: its sections (over 20) can be arranged
+PASS ...its options are on show (a page of options doesn't fold them)
+PASS ...Search options: 'mirror' shows only the options about mirroring
+PASS ...the Look buttons are still on it (you can always go back)
+PASS the sidebar: '‹' at its top
+PASS ...click: a thin strip of icons ('›' to open it)
+PASS ...remembered after a restart
+PASS ...'›': back
+PASS a gap between the area's icon and its name (the Toolbox title)
+28/28 passed

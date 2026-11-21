@@ -5,7 +5,7 @@ PASS search 'Settings' goes there
 PASS Skin's sub-pages: Bind, Copy & mirror, Save / load, Clean, Weights, Cloth & jiggle, Fixes
 PASS nothing lost: every named control of today's Skin and Fixes pages is there (100 controls)
 PASS nothing twice, nothing left undrawn
-PASS every Skin card is on exactly one sub-page (9 cards)
+PASS every Skin card is on exactly one sub-page (13 cards: Bind, Save / load and Clean are split)
 PASS Copy & mirror: Copy skin and Mirror weights, numbered 1 and 2 on their sub-page
 PASS Fixes: the Fixes page, as a Skin sub-page
 PASS nothing cut off: every Skin sub-page at 300, 420 and 700 px (button text too)

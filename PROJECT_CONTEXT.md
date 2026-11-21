@@ -319,6 +319,12 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   drag + right-click menu, pin on hover. window: NEW_LOOK + toolbox, SPLITS pivots, Area order (_order_key,
   _apply_order, _place / _move_next_to across layouts, move_card, _visual), state["order"]; _breadcrumb.
   record: floatFieldGrp value lists (Mirror). main.use_look. window_checks.new_look.
+- **5.7.8**: widgets.SegButton (bold width, '&&'), widgets.FormLayout (names above when narrow; replaces
+  QFormLayout in render), WrapCheckBox plain text + longest-word minimum; Area.arrange / arrange_bar, Card.arr
+  (Up / Down / To top), Card.set_title / set_arranging; header "Arrange"; _cards_of skips hidden tab pages
+  (Build TABBED), moved -> current sub; _loose_before_cards (Edit shape swap); CARD_SPLITS + _split_cards;
+  OLD_PAGE = () (Settings drawn, render.NO_FOLD); Frame.side_hidden / toggle_side; header gap 12.
+  window_checks.arrange.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

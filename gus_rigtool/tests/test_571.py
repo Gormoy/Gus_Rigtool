@@ -90,8 +90,9 @@ with mock.patch.object(QT, "maya_widget", lambda name, kind="layout": hosts.get(
     with mock.patch.object(ui, "open_panel", lambda k: opened.append(k)):
         f.go(("settings", None)); app.processEvents()
         popped = f.pop_out()
-    check("Pop out Settings (today's page, the only one not redone): today's Settings page in its own panel",
-          W.alive(popped) and isinstance(popped.body.widgets.get(("settings", None)), W.OldPage))
+    check("Pop out Settings (redone too): Settings in its own panel, in the new look",
+          W.alive(popped) and popped.body.widgets.get(("settings", None)) is not None and
+          not isinstance(popped.body.widgets.get(("settings", None)), W.OldPage) and not opened)
 
 # --- 3. no button text cut off - also in a wider font, like Maya's
 f = W.Frame(); f.show()
@@ -118,9 +119,9 @@ if crops:
 # --- 4. the old window's good parts
 f.resize(700, 900); f.go(("behaviour", None)); app.processEvents()
 names = [b.text() for b in f.head_buttons.findChildren(QtWidgets.QPushButton)]
-check("the header: Favourite, Pop out, Guide, Simple / Full view, What's new, Update... (as in the old window)",
-      names[0] in ("☆ Favourite", "★ Favourite") and names[1:3] == ["Pop out", "Guide"] and
-      names[3] in ("Full view", "Simple view") and names[4:] == ["What's new", "Update..."])
+check("the header: Favourite, Pop out, Arrange, Guide, Simple / Full view, What's new, Update...",
+      names[0] in ("☆ Favourite", "★ Favourite") and names[1:4] == ["Pop out", "Arrange", "Guide"] and
+      names[4] in ("Full view", "Simple view") and names[5:] == ["What's new", "Update..."])
 check("the tool's own description under the sub-pages", "limits" in f.subtitle.text().lower())
 import contextlib, io
 try:

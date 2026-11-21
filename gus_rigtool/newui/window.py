@@ -63,7 +63,7 @@ def tool_label(tool):
     return TOOL_LABEL.get(tool) or registry.get(tool)[1]
 FACE_STEPS = {"brows": "Brows", "eyes": "Eyes", "eyelids": "Eyelids", "mouth": "Mouth", "strip": "Facial strips"}
 RIBBON_STEPS = ["Surface", "Follicles", "Controls", "Build and mirror"]
-OLD_PAGE = ("settings",)                         # drawn as today's page even in a new-look area
+OLD_PAGE = ()                                    # 5.7.8: none - Settings is drawn in the new look too
 CATEGORY = {"home": "home", "build": "build", "skin": "skin", "controls": "controls", "connect": "links",
             "check": "finish", "toolbox": "toolbox", "settings": "settings"}
 WHY = {"home": "Where you are in the rig, and the next step.",

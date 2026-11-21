@@ -1,3 +1,50 @@
+Gus_Rigtool 5.7.8 - Arrange on every page, text never cut, Settings in the new look
+
+Gus's 5.7.7 tests: "the result seems great overall"; text still cut, a button to hide the sidebar, spacing in the
+titles, and "the other tabs aren't moving like in Controls or the Toolbox" - "did you put the edit button in each
+page so I can use the move up, move down?". Plan approved ("1 yes / 2 yes").
+
+Arrange (every page, in the header next to Pop out):
+- Click Arrange: every section closes to its title, with Up / Down / To top. The bar on top: Reset order, Done.
+  Done: the sections open again as they were, in your order. Dragging a title and right-click still work.
+- Works on every page now: Build > Animation / Existing rig / Advanced didn't move before (a move there went to
+  Rig builder's order).
+- Edit shape: "Select the controls to change", its button and "Keep their size and place" are inside "Swap the
+  shape" now, so they move with it.
+- Pages that were one section are a few now, so they can be arranged (Gus: "ok"):
+  - Skin > Bind: Bind · Add joints
+  - Skin > Save / load: Save weights · Load weights
+  - Skin > Clean: Prune · Limit influences · Remove unused joints
+  - Check & publish > Publish: Publish · Deliver to animators
+  - Controls > Stick to skin: Stick · Find what's stuck
+  Same buttons and fields (nothing lost); the old window is as before.
+- Settings is drawn in the new window's look too (Gus: "yes"): its sections can be arranged, its options are on
+  show (not folded), Search options works, the Look buttons are still there.
+
+Text never cut (both looks):
+- A picked choice turns bold - it's now as wide as its bold words ("Above the objec" was cut).
+- "&" shows as "&" ("Match _zero" was "Match & zero").
+- When a name and its control don't both fit, the name goes above (the Spaces drop-downs, sliders were squeezed).
+- Tick boxes: plain words ("Shapes follow (<name>Shape)" was read as a tag) and never narrower than their longest
+  word.
+- Checked on every page at 300 / 326 / 700 px, with the normal font and a wider one like the Mac's.
+
+The window:
+- The sidebar: '‹' at its top hides it to a thin strip of icons, '›' brings it back. Remembered.
+- A gap between the area's icon and its name ("Toolbox" touched its icon).
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release has a new part, "arrange": Arrange
+on Edit shape (your example), To top on every page in both looks, a drop on "Swap the shape", Settings, the
+sidebar. Dragging with the mouse can't be tested by a script - it asks you to try one drag by hand.
+
+Decisions I made:
+- Arrange closes the sections while you arrange (Gus: "yes") and opens them again as they were on Done.
+- The splits are made by the new window (a table, CARD_SPLITS), not in the tools: the old window keeps its pages,
+  and a split is easy to change or take back.
+- Ribbon > Builds in the scene stays one section (a list and its buttons belong together).
+- The names-above-when-narrow form is used everywhere a name sits beside its control (both looks).
+- A page made only of options (Settings) doesn't fold them under "Options".
+
 Gus_Rigtool 5.7.7 - the new look (beside today's), the Toolbox in the new window, your own section order
 
 Gus approved the plan: the C6 look on all Rigtool pages, steps "all open", today's look kept and one click away, and

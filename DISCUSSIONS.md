@@ -224,7 +224,10 @@ the code; this file has what Gus said, decided and wants next.
   sidebar = thin strip; the right-edge question was the cut text. Splitting one-section pages: "ok"; Settings in
   the new look: "yes". He couldn't move "Move the shape" above "Swap the shape" and asked for an edit button
   for Move up / down. 5.7.8 plan sent: Arrange button per page, Swap section keeps its own items, order on
-  every tab, Settings new look, text never cut, sidebar strip, title spacing - waiting for his OK. Then 5.8 Animtool from Gus's
+  every tab, Settings new look, text never cut, sidebar strip, title spacing - waiting for his OK.
+- 2026-11-21: Gus: "1 yes / 2 yes" (build 5.7.8; Arrange closes the sections while arranging). Section splits
+  (pictures in design/screens578): "ok, you can put it together". 5.7.8 built - waiting for his Maya tests and
+  OK to push (5.7.7 and 5.7.8 both unpushed; he said wait for the rest of testing). Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows

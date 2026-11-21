@@ -71,8 +71,8 @@ for label, _titles in W.SPLITS["skin"]:
     f.go(("skin", label)); app.processEvents()
     seen[label] = [c.title for c in pg.cards if c.isVisibleTo(a.scroll.widget())]
 every = [t for v in seen.values() for t in v]
-check("every Skin card is on exactly one sub-page (9 cards)", sorted(every) == sorted(c.title for c in pg.cards)
-      and len(every) == 9)
+check("every Skin card is on exactly one sub-page (13 cards: Bind, Save / load and Clean are split)",
+      sorted(every) == sorted(c.title for c in pg.cards) and len(every) == 13)
 check("Copy & mirror: Copy skin and Mirror weights, numbered 1 and 2 on their sub-page",
       seen["Copy & mirror"] == ["Copy skin", "Mirror weights"] and
       [c.num.text() for c in pg.cards if c.title in seen["Copy & mirror"]] == ["1", "2"])

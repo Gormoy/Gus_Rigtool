@@ -515,9 +515,135 @@ def new_look(rep):
         reopen()
 
 
+def arrange(rep):
+    """5.7.8: Arrange on every page (Up / Down / To top, Reset, Done), a drop on a section's title, Settings in
+    the new look, the sidebar strip - in today's look and the new one (it puts back the look you had)."""
+    from gus_rigtool.core import utils
+    from gus_rigtool.newui import theme
+    from gus_rigtool.newui import window as W
+    from gus_rigtool.newui.qt import QtCore, QtGui, QtWidgets
+    rep.start("Arrange and your order (5.7.8)")
+    was = utils.load_setting(theme.LOOK_KEY, "today")
+    sub = ("controls_tab", 2)
+
+    def settle():
+        for _i in range(3):
+            QtWidgets.QApplication.processEvents()
+
+    def reopen():
+        W.close()
+        settle()
+        f = W.show()
+        settle()
+        return f
+
+    try:
+        for look in ("today", "new"):
+            utils.save_setting(theme.LOOK_KEY, look)
+            f = reopen()
+            if f is None:
+                rep.expect("the window opens (%s look)" % look, False)
+                continue
+
+            def edit_shape(f=f, look=look):
+                f.go(sub, as_tool=True)
+                settle()
+                a = f._area("controls")
+                first = [c.title for c in a._visual(sub)]
+                btn = [b for b in f.head_buttons.findChildren(QtWidgets.QPushButton) if b.text() == "Arrange"]
+                rep.expect("%s look: an Arrange button in the header" % look, bool(btn))
+                if not btn:
+                    return
+                btn[0].click()
+                settle()
+                mv = [c for c in a._cards_of(sub) if c.title.startswith("Move the shape")]
+                rep.expect("...Arrange: Up / Down / To top on every section", a.arranging and mv and
+                           all(c.arr.isVisible() for c in a._cards_of(sub)))
+                if not mv:
+                    return
+                mv[0].arr_buttons[2].click()
+                settle()
+                now = [c.title for c in a._visual(sub)]
+                rep.expect("...To top: 'Move the shape' above 'Swap the shape' (your example)",
+                           now[0].startswith("Move the shape"), str([t[:18] for t in now[:3]]))
+                btn[0].click()
+                settle()
+                g = reopen()
+                g.go(sub, as_tool=True)
+                settle()
+                a = g._area("controls")
+                rep.expect("...kept when the window opens again", a._visual(sub)[0].title.startswith(
+                    "Move the shape"))
+                swap = [c for c in a._cards_of(sub) if c.title.startswith("Swap")][0]
+                size = [c for c in a._cards_of(sub) if c.title == "Size and turn"][0]
+                mime = QtCore.QMimeData()
+                mime.setText("gus-card:" + size.title)
+                pt = QtCore.QPointF(20, 10)
+                try:
+                    ev = QtGui.QDropEvent(pt, QtCore.Qt.MoveAction, mime, QtCore.Qt.LeftButton,
+                                          QtCore.Qt.NoModifier)
+                except TypeError:
+                    ev = QtGui.QDropEvent(pt.toPoint(), QtCore.Qt.MoveAction, mime, QtCore.Qt.LeftButton,
+                                          QtCore.Qt.NoModifier)
+                swap.dropEvent(ev)
+                settle()
+                t = [c.title for c in a._visual(sub)]
+                rep.expect("...a section dropped on 'Swap the shape' goes above it", t.index("Size and turn") ==
+                           t.index(swap.title) - 1, str([x[:14] for x in t]))
+                a.move_card(sub, "", "@Reset order")
+                settle()
+                rep.expect("...Reset order: the tool's own order", [c.title for c in g._area("controls")._visual(
+                    sub)] == first)
+
+            def every_page(f=f, look=look):
+                f = W.show() or f
+                bad = []
+                for key in W.NEW_LOOK:
+                    a = f._area(key)
+                    for x in a.subs:
+                        s = tuple(x[:2])
+                        f.go(s, as_tool=True)
+                        settle()
+                        vis = a._visual(s)
+                        if len(vis) < 2:
+                            continue
+                        last = vis[-1]
+                        last.moved.emit(last.title, "@Move to top")
+                        settle()
+                        if a._visual(s)[0] is not last:
+                            bad.append(x[-1])
+                        last.moved.emit(last.title, "@Reset order")
+                        settle()
+                rep.expect("%s look: To top works on every page (Build's pages, Settings too)" % look, not bad,
+                           str(bad[:5]))
+
+            rep.guard("%s look: Edit shape" % look, edit_shape)
+            rep.guard("%s look: every page" % look, every_page)
+        f = W.show()
+        if f is not None:
+            f.go(("settings", None))
+            settle()
+            a = f._area("settings")
+            rep.expect("Settings in the new look: its sections can be arranged",
+                       not isinstance(a.widgets.get(("settings", None)), W.OldPage) and len(a._cards_of(
+                           ("settings", None))) > 20)
+            hidden = f.side_hidden
+            f.toggle_side()
+            settle()
+            rep.expect("the sidebar: '‹' hides it to a thin strip of icons, '›' brings it back",
+                       f.side.width() == (196 if hidden else 54))
+            f.toggle_side()
+            settle()
+        rep.add(INFO, "try it by hand", "Edit shape: drag 'Size and turn' by its title onto 'Swap the shape' - it "
+                "should go above it (dragging can't be tested by a script). Then Arrange > Reset order.")
+    finally:
+        utils.save_setting(theme.LOOK_KEY, was)
+        reopen()
+
+
 CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
-          ("new window", new_window), ("new look", new_look), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
+          ("new window", new_window), ("new look", new_look), ("arrange", arrange), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 
 
 def run(ask=True):

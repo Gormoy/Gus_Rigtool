@@ -9,7 +9,7 @@ Settings: every option of every Gus_Rigtool tool in one place, and your own defa
   Reset to Gus_Rigtool      : back to the Gus_Rigtool defaults (your saved defaults are cleared).
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.8)
 
 from gus_rigtool import registry
 from gus_rigtool.core import colors, quick, ui, utils
