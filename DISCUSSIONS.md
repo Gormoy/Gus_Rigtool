@@ -239,7 +239,16 @@ the code; this file has what Gus said, decided and wants next.
   was 255 s). Gus: "you can go ahead and push it" - 5.7.7, 5.7.8, 5.7.8.1 pushed, main = 5.7.8.1.
 - 2026-11-21: Gus: "I think we can start to take out the 5.7 version, the only thing to maintain is the old look
   before that, the one using maya" - next: plan to remove the new window's "Today's look (5.7)" so the new window
-  has one look (C6), and keep the old Maya window (5.6) as the way back. Plan to be shown first. Then 5.8 Animtool from Gus's
+  has one look (C6), and keep the old Maya window (5.6) as the way back. Plan to be shown first.
+- 2026-11-21: Gus: "1 yes, maintain like we have now, but call it legacy look; 2 removing it" (today's look out;
+  the 5.6 window = "Legacy look"). Shelf: he didn't remove it ("strange") - the shelf tab is probably empty to a
+  script until opened (Maya fact to ask). Shelf: "everything" (every tool), icons OK, but the bar must follow
+  profiles + favourites with right-click to a tool's settings; Home redone in 5.7.9; "bring me the list" (lighter
+  tools); shelf keeps Build and Publish (Build rig out). He asked if I understood his Gemini bar (profiles pills,
+  Row/2R/Col/Grid, size slider + Ctrl+wheel, labels, right-click settings strip, auto-shrink, NoFocus) - answered;
+  updated 5.7.9 plan + lighter list sent, waiting for his OK.
+- After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
+  Gemini UI/UX ideas, combined. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows
