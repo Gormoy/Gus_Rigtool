@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Review Notes try-it RESULT (Gus's screenshot, persp, Maya 2024 Mac): the drawing works - arc made
+  with the curve tool, arrow, label, the next note faint orange. The gate maths sits exactly on Maya's gate
+  (overscan 1.0 and 1.3; facts added to MAYA_FACTS.md). Problem: the label box was cut short on his Retina screen
+  (sizes are in screen pixels, 2 per point) - fixed in the try-it (scaled by the pixel ratio). He said he couldn't
+  find the things to check in Maya - answered with menu paths. Still to see: the top camera, onion skin ON,
+  playblast, the fixed label.
+
 - 2026-11-21: NEW standalone tool asked by Gus: **Review Notes** (like SyncSketch, inside Maya): draw + write notes
   on a camera and frames, see them later in Maya / in playblasts, status open / in progress / done. A separate
   tool next to the onion skin (his choice: "I want it to be a separate tool"), branch `review-notes-tool`, folder

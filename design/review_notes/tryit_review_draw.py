@@ -9,8 +9,9 @@ Editor and run it, with the camera you want to test in the active view. It:
 Run it again to start fresh. Remove everything with:  review_try_remove()
 
 What to look at (and screenshot):
-  a. Display > Camera / Light Manipulator off; turn on the Resolution Gate (the view's gate button).
-     The thin GREEN box with the + must sit exactly on Maya's gate. Resize the panel, 2D pan/zoom: still on it?
+  a. Turn on the Resolution Gate (view menu: View > Camera Settings > Resolution Gate, or the view's gate
+     button). The thin GREEN box with the + must sit exactly on Maya's gate (on its edge, so it's hard to
+     see - the + in the middle is easy). Resize the panel, 2D pan/zoom: still on it?
   b. Frames F..F+5: red arc (made with the curve tool) + label. F+6..F+9: yellow circle + arrow.
      F-6..F-1 and after: the same notes very faint (orange before, blue after).
   c. Look through "top": only the "top" note shows there.
@@ -113,15 +114,17 @@ def camera_matches(note_camera, names):
     return want in names or want.split(":")[-1] in names
 
 
-def build_items(notes, camera_names, frame, gate, nearby=NEARBY):
-    """Everything to draw: ("line", rgba, width, [screen points]) and ("text", rgba, (x, y), text)."""
+def build_items(notes, camera_names, frame, gate, nearby=NEARBY, scale=1.0):
+    """Everything to draw: ("line", rgba, width, [screen points]) and ("text", rgba, (x, y), text).
+    scale = screen pixels per point (2 on a Mac Retina screen): the + and the labels' rows grow with it."""
     items = []
     x0, y0, x1, y1 = gate
     green = (0.35, 1.0, 0.45, 0.9)
     cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
     items.append(("line", green, 1.0, [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)]))
-    items.append(("line", green, 1.0, [(cx - 10, cy), (cx + 10, cy)]))
-    items.append(("line", green, 1.0, [(cx, cy - 10), (cx, cy + 10)]))
+    arm = 10 * scale
+    items.append(("line", green, 1.0, [(cx - arm, cy), (cx + arm, cy)]))
+    items.append(("line", green, 1.0, [(cx, cy - arm), (cx, cy + arm)]))
     row = 0
     for note in sorted(notes, key=lambda n: n.get("frame", 0)):
         if not camera_matches(note.get("camera", ""), camera_names):
@@ -144,7 +147,7 @@ def build_items(notes, camera_names, frame, gate, nearby=NEARBY):
         if tint is None and note.get("text"):
             label = "%s  %s" % (note.get("type", "note").upper(), note["text"])
             items.append(("text", TYPE_COLOURS.get(note.get("type"), (1, 1, 1)) + (1.0,),
-                          (x0 + 10, y1 - 24 - row * 22), label))
+                          (x0 + 10 * scale, y1 - (24 + row * 24) * scale), label))
             row += 1
     return items
 
@@ -196,8 +199,20 @@ if IN_MAYA:
             except TypeError:
                 om.MUserData.__init__(self)
             self.items = []
+            self.scale = 1.0
 
     _last = {"said": None}
+
+    def _pixel_ratio():
+        """Screen pixels per point: 2 on a Mac Retina screen (the view's sizes are in screen pixels)."""
+        try:
+            try:
+                from PySide2 import QtGui
+            except ImportError:
+                from PySide6 import QtGui
+            return float(QtGui.QGuiApplication.primaryScreen().devicePixelRatio()) or 1.0
+        except Exception:
+            return 1.0
 
     def _render_aspect():
         sel = om.MSelectionList()
@@ -230,6 +245,7 @@ if IN_MAYA:
         def prepareForDraw(self, objPath, cameraPath, frameContext, oldData):
             data = oldData if isinstance(oldData, DrawData) else DrawData()
             data.items = []
+            data.scale = _pixel_ratio()
             try:
                 plug = om.MFnDependencyNode(objPath.node()).findPlug("reviewFile", False)
                 notes = load_notes(plug.asString())
@@ -251,7 +267,7 @@ if IN_MAYA:
                     print("Review Notes try: camera %s, view %dx%d, gate x %d-%d y %d-%d (render %dx%d, overscan %.2f)"
                           % (shape.partialPathName(), w, h, gate[0], gate[2], gate[1], gate[3], rw, rh,
                              cam.overscan))
-                data.items = build_items(notes, names, frame, gate)
+                data.items = build_items(notes, names, frame, gate, scale=data.scale)
             except Exception as e:
                 if _last.get("err") != str(e):
                     _last["err"] = str(e)
@@ -272,7 +288,9 @@ if IN_MAYA:
                     _, rgba, (x, y), text = item
                     dm.setColor(om.MColor(rgba))
                     dm.setFontSize(omr.MUIDrawManager.kDefaultFontSize)
-                    dm.text2d(om.MPoint(x, y), text, omr.MUIDrawManager.kLeft, [len(text) * 8 + 20, 20],
+                    k = data.scale              # the box was too short on a Retina screen (Gus, 2026-11-21)
+                    dm.text2d(om.MPoint(x, y), text, omr.MUIDrawManager.kLeft,
+                              [int((len(text) * 8 + 24) * k), int(20 * k)],
                               om.MColor((0.08, 0.08, 0.08, 0.75)), False)
             dm.endDrawable()
 

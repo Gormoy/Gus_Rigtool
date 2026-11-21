@@ -9,6 +9,8 @@ Gus's answer, then build.
 
 | Fact | What Maya does | Found | Version |
 |---|---|---|---|
+| Where the resolution gate is in a view (Review Notes) | `MFnCamera.getViewingFrustum(viewW/viewH, True, False, True)` vs `getRenderingFrustum(deviceAspectRatio)`: their ratio puts the gate exactly on Maya's own gate, at overscan 1.0 and 1.3 (Gus's Mac, persp, 960x540) | Review Notes try-it, Gus's screenshot | try-it 2026-11-21 |
+| View sizes in a draw override on a Mac Retina screen | `frameContext.getViewportDimensions()` and 2D drawing are in SCREEN pixels (2 per point: a 1634-point view reports 3268); text sizes must be scaled by the pixel ratio | Review Notes try-it (label box cut short) | try-it 2026-11-21 |
 | `multiplyDivide` dividing by a small number | warns "divide by zero" at 0.00001 and below, quiet from 0.00002 (Gus's Mac, Maya 2024); the attach's 0.001 is quiet | Gus's log; facts 5.6.46 | 5.6.43 / 5.6.46 |
 | `clamp` floor 0.001 | stored as a float: 0.0010000000474974513 | real-Maya case j | 5.6.43 |
 | `cmds.ls([])` (an empty list) | lists NOTHING, with or without flags (type='mesh', long, dag, objectsOnly), and `listRelatives([])` too (Gus's Mac) - the 'lists everything' line here before was WRONG; the fake Maya matches since 5.6.48 | facts 5.6.46 / 5.6.47 | 5.6.46 / 5.6.48 |
