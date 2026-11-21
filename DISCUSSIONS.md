@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Review Notes 0.1.0 self test: all ok (plugin, one node, Show menu entry, node NOT saved and no
+  'requires' line, review file round trip, camera). BUT the sample note did NOT show in persp1 (frames 0-5) -
+  the try-it's notes did. Cause unknown: sent a diagnostic paste (same steps as the drawing, printed) + Show Gate
+  on; waiting for its lines. Facts added to MAYA_FACTS.md.
+
 - 2026-11-21: Review Notes 0.1.0 in Gus's Maya: installed, Review button works, "save the scene first" message
   shown on an unsaved scene, rn.sample() wrote test.review.json next to test.ma (n_0001 on persp1, frames 0-5).
   The self test didn't run: my message had a full stop after the command and he pasted it (syntax error) - the

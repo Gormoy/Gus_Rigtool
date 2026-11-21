@@ -9,6 +9,8 @@ Gus's answer, then build.
 
 | Fact | What Maya does | Found | Version |
 |---|---|---|---|
+| A plugin locator marked do-not-write (`MFnDependencyNode.setDoNotWrite(True)` on shape in postConstructor + on the transform) | NOT written to the scene, and no `requires` line for its plugin: the scene opens clean without the tool (Gus's Mac, export of a scene with REVIEW_NOTES) | Review Notes self test 0.1.0 | 2026-11-21 |
+| `cmds.pluginDisplayFilter(name, register=True, classification='drawdb/geometry/...')` | adds a Show menu entry; it's ON in every model panel by default | Review Notes self test 0.1.0 | 2026-11-21 |
 | Where the resolution gate is in a view (Review Notes) | `MFnCamera.getViewingFrustum(viewW/viewH, True, False, True)` vs `getRenderingFrustum(deviceAspectRatio)`: their ratio puts the gate exactly on Maya's own gate, at overscan 1.0 and 1.3 (Gus's Mac, persp, 960x540) | Review Notes try-it, Gus's screenshot | try-it 2026-11-21 |
 | View sizes in a draw override on a Mac Retina screen | `frameContext.getViewportDimensions()` and 2D drawing are in SCREEN pixels (2 per point: a 1634-point view reports 3268); text sizes must be scaled by the pixel ratio | Review Notes try-it (label box cut short) | try-it 2026-11-21 |
 | `multiplyDivide` dividing by a small number | warns "divide by zero" at 0.00001 and below, quiet from 0.00002 (Gus's Mac, Maya 2024); the attach's 0.001 is quiet | Gus's log; facts 5.6.46 | 5.6.43 / 5.6.46 |
