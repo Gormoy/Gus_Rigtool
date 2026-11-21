@@ -1,0 +1,29 @@
+PASS first time: today's look (5.7)
+PASS Settings > Window > New look: saved, the window opens again in it
+PASS ...Today's look: back
+PASS new look: every control of today's look is there, on all 26 pages
+PASS ...and none twice
+PASS rarely changed choices fold into 'Options (n)' (on many sections)
+PASS ...closed at first, the count on the button
+PASS ...the summary says what's set (all but folds of number fields)
+PASS ...in short words, none twice
+PASS ...click: open
+PASS Presets in one fold
+PASS Face: step lights shown as a tag on the title line (✓ Made / ● Ready / To do)
+PASS all steps open (Face, Ribbon)
+PASS the status line says what's selected and where you are
+PASS ...with the sub-page's name (Controls › Edit shape)
+PASS new look: nothing cut off on any page, 300 / 420 / 700 px
+PASS Toolbox: Select · Groups · Mirror · Rename · Pivots: Move · Remember & reset
+PASS Mirror is drawn (its number fields read back right)
+PASS Groups fits 300 px (a long choice no longer widens it)
+PASS Move to top, and drop 'Size and turn' on the swap-shape grid: both above it
+PASS ...nothing lost
+PASS ...the numbers follow the new order
+PASS Move up: one place up
+PASS Move down: back
+PASS remembered: a new window (restart) shows your order
+PASS ...per tab: Make keeps the tool's order
+PASS Reset order: the tool's own order again
+PASS today's look: the order works there too
+28/28 passed

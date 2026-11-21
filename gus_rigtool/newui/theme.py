@@ -61,7 +61,52 @@ def axis_of(label):
     return None
 
 
+# 5.7.7: which look the new window has - "today" (5.7) or "new" (C6: Gus's pick after design/UI_PRINCIPLES.md);
+# Settings > Window > Look. Read when a window is made.
+LOOK = {"name": "today"}
+LOOK_KEY = "newWindowLook"
+
+
+def load_look():
+    from gus_rigtool.core import utils
+    LOOK["name"] = "new" if utils.load_setting(LOOK_KEY, "today") == "new" else "today"
+    return LOOK["name"]
+
+
+def new_look():
+    return LOOK["name"] == "new"
+
+
 def stylesheet(accent):
+    return _stylesheet(accent) + (_new_look(accent) if new_look() else "")
+
+
+def _new_look(accent):
+    """C6 on top of today's look: fine borders, quick buttons with a colour edge, the Options / Presets folds,
+    each step's state tag."""
+    return """
+QWidget#gusPage QPushButton { border: 1px solid #565c65; }
+QWidget#gusPage QPushButton[role="big"] { border: none; border-bottom: 3px solid %(dark)s; }
+QWidget#gusPage QPushButton[role="seg"] { border: 1px solid %(LINE)s; }
+QWidget#gusPage QPushButton[role="help"] { border: 1px solid %(LINE)s; }
+QWidget#gusPage QPushButton[role="chip"] { padding: 4px 8px; border-bottom: 2px solid %(accent)s; }
+QPushButton[role="fold"] { background: %(PANEL)s; border: 1px solid %(LINE)s; border-radius: 6px; padding: 4px 10px;
+                           color: #c9cdd2; text-align: left; }
+QFrame#gusCard { border: 1px solid #454a52; border-left: 3px solid %(accent)s; }
+QFrame#gusCard[inner="true"] { border: 1px solid rgba(255,255,255,0.06); }
+QLabel#gusChip { border-radius: 9px; padding: 1px 9px; font-size: 11px; font-weight: bold; }
+QLabel#gusDesc { color: %(DIM)s; font-size: 12px; }
+QLabel[role="lab"] { color: %(DIM)s; font-size: 12px; }
+""" % dict(globals(), accent=accent, dark=mix(accent, "#000000", 0.35))
+
+
+# the state tag of a step (C6): level -> (background, text colour, words)
+CHIP = {"made": ("#2f5a35", "#c8efcd", "✓ Made"), "ready": ("#5c5418", "#f3e3a0", "● Ready"),
+        "ok": ("#2f5a35", "#c8efcd", "OK"), "warn": ("#6b5016", "#f3d9a0", "! Check"),
+        "idle": ("#3f444c", "#c9cdd2", "To do"), "info": ("#3f444c", "#c9cdd2", "To do")}
+
+
+def _stylesheet(accent):
     """The whole window's style, with this area's colour."""
     dark = mix(accent, "#000000", 0.35)
     soft = mix(accent, CARD, 0.75)

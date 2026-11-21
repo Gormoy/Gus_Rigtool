@@ -237,6 +237,15 @@ def build(prefix="p_settings_"):
     cmds.button(label="Use the new window", height=26, command=_w(_guard(lambda *_: gr.use_window("new"))))
     cmds.button(label="Use the old window (5.6)", height=26, command=_w(_guard(lambda *_: gr.use_window("old"))))
     cmds.setParent("..")
+    from gus_rigtool.newui import theme as _theme       # 5.7.7: the new window's look, to compare in Maya
+    ui.note("Look of the new window: %s." % ("the new one (5.7.7)" if utils.load_setting(_theme.LOOK_KEY, "today")
+                                             == "new" else "today's (5.7)"))
+    ui.row(2, 170)
+    cmds.button(label="New look (5.7.7)", height=26, command=_w(_guard(lambda *_: gr.use_look("new"))),
+                annotation="Less at first look: the rarely changed choices under Options, each step's state as a "
+                           "tag. Same buttons, same tools.")
+    cmds.button(label="Today's look (5.7)", height=26, command=_w(_guard(lambda *_: gr.use_look("today"))))
+    cmds.setParent("..")
     _end()
 
     ui.section("Update", help_text="Install a newer Gus_Rigtool from its zip (the one you downloaded - no "

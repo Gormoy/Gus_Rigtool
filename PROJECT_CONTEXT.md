@@ -313,6 +313,12 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   NP (Publish fields' own prefix, _PUB) / SKIP_PUBLISH (window.MOVED_OUT while recording Build); window.EXTRA_TOOLS
   {"check": ["publish"]} (area_of, search); Area records registry.builder(tool). checker (_show, find_repairs) and
   organize_tool (analyze) fill their rows through proxy.refill.
+- **5.7.7**: theme.LOOK / LOOK_KEY "newWindowLook" ("today" default / "new"), load_look, new_look; stylesheet adds
+  _new_look (scoped to QWidget#gusPage). render: _labelled (QFormLayout WrapLongRows), _card_new (Options Fold +
+  summary, light first, desc), _Combo (current-text width), _short. widgets: Fold, Card.chip / set_desc / moved /
+  drag + right-click menu, pin on hover. window: NEW_LOOK + toolbox, SPLITS pivots, Area order (_order_key,
+  _apply_order, _place / _move_next_to across layouts, move_card, _visual), state["order"]; _breadcrumb.
+  record: floatFieldGrp value lists (Mirror). main.use_look. window_checks.new_look.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

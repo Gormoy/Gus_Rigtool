@@ -289,6 +289,7 @@ class Area(QtWidgets.QWidget):
                                 "Click a shape: on Make it makes the controls at once; on Edit shape it goes on "
                                 "the selected controls. Hover (Edit shape): you see it on them first.")
             card.pin.hide()
+            card.no_pin = True
             card.add(grid)
             w.layout().insertWidget(0, card)
             w.layout().setContentsMargins(0, 0, 0, 0)
@@ -308,6 +309,7 @@ class Area(QtWidgets.QWidget):
                             "(press its button), grey not made yet. The right side (dashed) is mirrored for you. "
                             "Click a part: its step.")
         card.pin.hide()
+        card.no_pin = True
         row = widgets.flow_box(14)                     # narrow: the key goes under the face
         self.face_map = widgets.FaceMap()
         row.layout().addWidget(self.face_map)
@@ -431,6 +433,7 @@ class Area(QtWidgets.QWidget):
                 except Exception:
                     pass
         self._place_pin()
+        self._apply_order(sub)
         self.refresh_selection()
         self.scroll.verticalScrollBar().setValue(0)
 
@@ -469,6 +472,106 @@ class Area(QtWidgets.QWidget):
         self.frame.go((tool, sub), as_tool=True)
 
     # -------------------------------------------------- pinning
+    # -------------------------------------------------- 5.7.7: your own order of the sections, per page
+    def _order_key(self, sub):
+        return "%s|%s" % (sub[0], sub[1])
+
+    def _cards_of(self, sub):
+        """The cards shown on this sub-page (the tool's, and the window's own - the shape grid, the face map)."""
+        w = self.widgets.get(tuple(sub)) or self.widgets.get((sub[0], None))
+        if w is None:
+            return []
+        return [c for c in w.findChildren(widgets.Card) if c.property("inner") != "true" and
+                not (self.pinned and c is self.pinned[0]) and (c.isVisibleTo(w) or not c.isHidden())
+                and not c.isHidden()]
+
+    def _apply_order(self, sub):
+        want = _state().get("order", {}).get(self._order_key(sub))
+        for card in self._cards_of(sub):
+            if not getattr(card, "order_hooked", False):
+                card.moved.connect(lambda src, to, s=tuple(sub[:2]): self.move_card(s, src, to))
+                card.order_hooked = True
+        if want:
+            self._place(sub, want)
+
+    def _place(self, sub, titles):
+        """Put the cards in this order. Only the cards move (into the place of the card they go before or after);
+        everything else on the page keeps its place."""
+        cards = dict((c.title, c) for c in self._cards_of(sub))
+        seq = [cards[t] for t in titles if t in cards]
+        seq += [c for c in self._visual(sub) if c not in seq]
+        for i, c in enumerate(seq):
+            vis = self._visual(sub)
+            if i == 0:
+                if vis and vis[0] is not c:
+                    self._move_next_to(c, vis[0], after=False)
+            elif vis.index(c) != vis.index(seq[i - 1]) + 1:
+                self._move_next_to(c, seq[i - 1], after=True)
+        page = self.pages.get(sub[0])
+        if page is not None:
+            rank = dict((id(c), i) for i, c in enumerate(self._visual(sub)))
+            pos = dict((id(c), i) for i, c in enumerate(page.cards))
+            page.cards.sort(key=lambda c: (rank.get(id(c), len(rank) + pos[id(c)])))
+            if sub[0] in SPLITS:
+                self._show_cards(page, sub)
+            else:
+                page.renumber()
+
+    @staticmethod
+    def _move_next_to(card, other, after):
+        lay = other.parentWidget().layout() if other.parentWidget() else None
+        if not isinstance(lay, QtWidgets.QBoxLayout):
+            return
+        old = card.parentWidget().layout() if card.parentWidget() else None
+        if old is not None:
+            old.removeWidget(card)
+        lay.insertWidget(lay.indexOf(other) + (1 if after else 0), card)
+        card.show()
+
+    def move_card(self, sub, src, to):
+        """Drag a card onto another (it goes before it), or Move up / down / to top, Reset order."""
+        s = _state()
+        order = s.setdefault("order", {})
+        key = self._order_key(sub)
+        titles = [c.title for c in self._visual(sub)]
+        if to == "@Reset order":
+            order.pop(key, None)
+            _save_state(s)
+            if self.current and tuple(self.current) == tuple(sub):
+                self.frame.rebuild(sub[0])
+            return
+        if src not in titles:
+            return
+        i = titles.index(src)
+        titles.pop(i)
+        if to == "@Move up":
+            titles.insert(max(0, i - 1), src)
+        elif to == "@Move down":
+            titles.insert(min(len(titles), i + 1), src)
+        elif to == "@Move to top":
+            titles.insert(0, src)
+        elif to in titles:
+            titles.insert(titles.index(to), src)
+        else:
+            titles.insert(i, src)
+        order[key] = titles
+        _save_state(s)
+        self._place(sub, titles)
+
+    def _visual(self, sub):
+        """The cards in the order they're shown (by where they sit in the page's layouts, top to bottom)."""
+        def path(w):
+            out = []
+            while w is not None and w.parentWidget() is not None:
+                p = w.parentWidget()
+                lay = p.layout()
+                out.insert(0, lay.indexOf(w) if lay is not None else 0)
+                if p is self:
+                    break
+                w = p
+            return out
+        return sorted(self._cards_of(sub), key=path)
+
     def toggle_pin(self, card, tool):
         s = _state()
         if self.pinned and self.pinned[0] is card:
@@ -685,6 +788,7 @@ def _what(kinds):
 # --------------------------------------------------------------------------- the frame
 class Frame(QtWidgets.QWidget):
     def __init__(self, parent=None):
+        theme.load_look()                       # 5.7.7: today's look or the new one (Settings > Window)
         super(Frame, self).__init__(parent)
         import gus_rigtool
         self.setObjectName("gusFrame")
@@ -896,6 +1000,7 @@ class Frame(QtWidgets.QWidget):
             area_obj.show_sub(sub)
         self._fill_tabs(area_obj, sub)
         self.subtitle.setText(_subtitle(sub[0]))
+        self._breadcrumb()
         _star_label(self)
         s = _state()
         s["area"] = area
@@ -972,6 +1077,28 @@ class Frame(QtWidgets.QWidget):
         a = self.areas.get(self.area)
         if a is not None:
             a.refresh_selection()
+        self._breadcrumb()
+
+    def _breadcrumb(self):
+        """New look: the status line says what's selected and where you are (until a tool says something)."""
+        if not theme.new_look() or not hasattr(self, "status"):
+            return
+        text = self.status.text().strip()
+        if text and text != "Ready." and not text.startswith("●"):
+            return
+        a = self.areas.get(self.area)
+        if a is None or not a.current:
+            return
+        try:
+            kinds, names, _e = self.selection()
+        except Exception:
+            names = []
+        sel = "nothing selected" if not names else ("%s selected" % names[0].split("|")[-1] if len(names) == 1
+                                                    else "%d selected" % len(names))
+        sub = [x[2] for x in a.subs if tuple(x[:2]) == tuple(a.current[:2])]
+        sub = sub[0] if sub else tool_label(a.current[0])
+        self.status.setText("  ●  %s   ·   %s  ›  %s" % (sel, theme.area(self.area)[1], sub))
+        self.status.setStyleSheet("QLabel { background: #24272b; color: %s; padding: 4px 8px; }" % theme.DIM)
 
     def set_status(self, message, level="info"):
         _set_status(self, message, level)

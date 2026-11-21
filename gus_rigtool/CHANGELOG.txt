@@ -1,3 +1,46 @@
+Gus_Rigtool 5.7.7 - the new look (beside today's), the Toolbox in the new window, your own section order
+
+Gus approved the plan: the C6 look on all Rigtool pages, steps "all open", today's look kept and one click away, and
+his own order of the sections ("this is exactly what I want").
+
+The new look (Settings > Window > Look: New look (5.7.7) / Today's look (5.7)):
+- Today's look stays the default, so you can compare them in Maya. The choice is remembered; the window opens
+  again in it, on the page you were on.
+- Names in one short column on the left, controls on the right, one left edge on every page.
+- The choices you rarely change fold into "Options (n) ▾" with what's set beside it (e.g. "Match & zero · Above
+  the object"). From / Mode / Style, fields, lists, the quick buttons and the main button are never folded.
+- Presets: one fold at the top.
+- Steps (Face, Ribbon): the light is a tag on the title line (✓ Made / ● Ready / To do); every step open.
+- The status line at the bottom says what's selected and where you are ("Toolbox › Groups").
+- The section's pin shows when you hover its title.
+
+The Toolbox in the new window (Toolbox in the sidebar): Select · Groups · Mirror · Rename · Pivots - Pivots in two
+pages, Move and Remember & reset.
+
+Your own order (both looks):
+- Drag a section by its title onto another, or right-click a title: Move up / Move down / Move to top / Reset order.
+- Remembered per tab and page (Edit shape's order is not Make's), after a restart too. Reset order puts back the
+  tool's order. The section numbers follow your order; Pin still works.
+- On Edit shape, "Size and turn" and "Move the shape" can go above the swap-shape grid (your example).
+
+Fixed on the way:
+- Mirror stopped while being drawn in the new window (its number fields read back wrong). Fixed.
+- Groups was too wide at 300 px (a long choice in a drop-down). A drop-down is now as wide as its current choice;
+  the list that opens is as wide as the longest.
+- Ribbon in the new window: a step's light set while the page was being made lost its state (no tag, the old dark
+  box). Fixed for every tool's step lights.
+
+Only tested here off-screen (PySide6) and with the fake Maya. Test this release checks the new look and your order
+in your Maya (it opens the window in the new look, then puts back the look you had).
+
+Decisions I made:
+- A drop-down is as wide as its current choice (not its longest), so narrow pages fit.
+- In the new look, when the window is narrow, a name goes above its control instead of squeezing it.
+- A section's options fold only when there are two or more; a single one stays on show.
+- The Options summary uses each choice's short name (up to a bracket or dash, at most 4 words); "all off" when
+  nothing is ticked.
+- Settings stays in today's look in both (it's where you switch back).
+
 Gus_Rigtool 5.7.6 - Check & publish in the new look; Publish moved there
 
 Gus approved the plan: Publish moves to Check & publish ("move"), Checker and Organize as they are.

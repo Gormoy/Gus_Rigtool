@@ -6,7 +6,7 @@ PASS Pop out: Behaviour in its own panel, in the new look
   [info] tx limited -45 .. 90 on 1 control(s).
 PASS ...the panel and the main window each use their own fields (-10..10 there, -45..90 here)
 PASS Pop out the Controls tab: Make / Edit shape in it, on the page you were on (several panels open)
-PASS Pop out a page not redone yet (Toolbox > Select): its own panel, as before
+PASS Pop out Settings (today's page, the only one not redone): today's Settings page in its own panel
 PASS no button text cut off (Delete, Load...): every Controls page, 300 / 420 / 700 px, normal and wider font
 PASS the header: Favourite, Pop out, Guide, Simple / Full view, What's new, Update... (as in the old window)
 PASS the tool's own description under the sub-pages

@@ -209,7 +209,11 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.7 approved (C6 look as a switch, all steps open, + Toolbox) - next to build. Then 5.8 Animtool from Gus's
+- 2026-11-21: Gus asked to arrange each tab's sections himself ("like in the edit shape I want to put the size and
+  turn in front of the swap shape ... organize the way I want each tab"); plan approved: "this is exactly what I
+  want" - drag a title, right-click Move up / down / to top / Reset order, remembered per tab and page, both looks.
+- 5.7.7 built (C6 look as a switch, default Today; all steps open; Toolbox in the new window; your own order) -
+  waiting for his Maya tests and OK to push. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows

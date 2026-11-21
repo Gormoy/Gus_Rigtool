@@ -223,6 +223,15 @@ class Field(object):
             hx = _hex(v)
             if self.kind == "button" and hx and not self._label():
                 w.setStyleSheet("QPushButton { background: %s; border-radius: 5px; }" % hx)
+        elif key == "_level" and theme.new_look() and self._in_card():
+            w.setStyleSheet("QLabel { background: transparent; padding: 0px; color: %s; font-size: 12px; }" %
+                            theme.CHIP.get(v, theme.CHIP["idle"])[1])
+            self.level = v
+            card = w.parentWidget()
+            while card is not None and not isinstance(card, widgets.Card):
+                card = card.parentWidget()
+            if card is not None and hasattr(card, "set_state") and not card.property("inner") == "true":
+                card.set_state(v)
         elif key == "_level":
             w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" %
                             theme.LEVEL.get(v, theme.LEVEL["idle"]))
@@ -243,6 +252,14 @@ class Field(object):
         else:
             self.node.kw[key] = v
         return self.node.name
+
+    def _in_card(self):
+        p = self.widget.parentWidget()
+        while p is not None:
+            if isinstance(p, widgets.Card):
+                return True
+            p = p.parentWidget()
+        return False
 
     def delete(self):
         self.alive = False
@@ -414,6 +431,71 @@ class _Item(object):
     def delete(self):
         proxy.REGISTRY.pop(self.item["_name"], None)
         self.field.remove_item(self.item)
+
+
+# ---------------------------------------------------------------------------- 5.7.7 the new look (C6)
+KEEP_SHOWN = ("From_", "Mode", "Style")             # choices that say how a step works: never folded
+OPTION_KINDS = ("radioButtonGrp", "checkBox", "checkBoxGrp")
+LABEL_W = 88
+
+
+def _labelled(text, w):
+    """New look: the name in a short, left-aligned column, the control beside it (one left edge for all); when the
+    window is too narrow for both, the name goes above its control (nothing is cut off)."""
+    box = QtWidgets.QWidget()
+    form = QtWidgets.QFormLayout(box)
+    form.setContentsMargins(0, 0, 0, 0)
+    form.setRowWrapPolicy(QtWidgets.QFormLayout.WrapLongRows)
+    form.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+    form.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+    form.setHorizontalSpacing(10)
+    lab = widgets.label(str(text), wrap=True)
+    lab.setProperty("role", "lab")
+    lab.setMinimumWidth(min(LABEL_W, lab.sizeHint().width()))
+    lab.setMaximumWidth(LABEL_W)
+    form.addRow(lab, w)
+    return box
+
+
+def _short(text):
+    """A choice's name for the Options summary: up to its first bracket or dash, at most 4 words."""
+    t = text.replace("&&", "&")
+    for cut in (" (", " - ", " — ", ":"):
+        t = t.split(cut)[0]
+    w = t.split()
+    return " ".join(w[:4]) + ("…" if len(w) > 4 else "")
+
+
+def _first_sentence(text):
+    text = str(text or "").strip()
+    m = re.match(r"(.+?(?<!e\.g)\.)(\s+[A-Z(]|$)", text)
+    text = m.group(1) if m else text
+    return text if len(text) <= 120 else text[:117].rsplit(" ", 1)[0] + "..."
+
+
+def _is_option(n):
+    """A choice you rarely change (it folds under Options in the new look)."""
+    if any(k in n.name for k in KEEP_SHOWN):
+        return False
+    if n.kind in OPTION_KINDS:
+        return True
+    if n.kind == "frameLayout":
+        return "Two curves" not in str(n.label())
+    if n.kind == "rowLayout":
+        kinds = set(k.kind for k in n.children)
+        return bool(kinds) and kinds <= set(OPTION_KINDS + ("text",)) and kinds != {"text"} and \
+            not any(any(x in k.name for x in KEEP_SHOWN) for k in n.children)
+    return False
+
+
+def _has_light(n):
+    stack = list(n.children)
+    while stack:
+        c = stack.pop()
+        if c.kw.get("_light"):
+            return True
+        stack += c.children
+    return False
 
 
 def _fit_list(lw):
@@ -637,10 +719,45 @@ class Page(object):
             for c in kids:
                 self._note(c, "the card's own ?")          # ui.section's help row: the card has its own '?'
             return None
+        if theme.new_look():
+            got = self._row_new(n, ctx)
+            if got is not None:
+                return got
         box = widgets.flow_box(6)
         self._children(n, box.layout(), ctx)
         Field(self, n, box)
         return box
+
+    def _row_new(self, n, ctx):
+        """New look: a row named by its first label -> the name column; presets -> one fold; quick buttons -> chips."""
+        kids = n.children
+        if kids and kids[0].kind == "optionMenu" and any(str(i.get("label")) == "(presets)" for i in kids[0].items):
+            box = widgets.flow_box(6)
+            self._children(n, box.layout(), ctx)
+            Field(self, n, box)
+            fold = widgets.Fold("Presets")
+            fold.add(box)
+            return fold
+        if kids and all(k.kind == "button" for k in kids) and len(kids) >= 4:
+            box = widgets.flow_box(6)
+            self._children(n, box.layout(), ctx)
+            for b in box.findChildren(QtWidgets.QPushButton):
+                if not b.property("role"):
+                    b.setProperty("role", "chip")
+                    widgets.restyle(b)
+            Field(self, n, box)
+            return box
+        if len(kids) > 1 and kids[0].kind == "text" and str(kids[0].label()).strip() and \
+                not kids[0].kw.get("_light") and kids[0].name.startswith("text__"):      # a plain label, not a field
+            self._note(kids[0], "shown")
+            rest = widgets.flow_box(6)
+            for c in kids[1:]:
+                w = self._node(c, ctx)
+                if w is not None:
+                    rest.layout().addWidget(w)
+            Field(self, n, rest)
+            return _labelled(str(kids[0].label()).strip(), rest)
+        return None
 
     _flowLayout = _rowLayout
     _gridLayout = _rowLayout
@@ -653,7 +770,7 @@ class Page(object):
         form = QtWidgets.QFormLayout(w)
         form.setContentsMargins(0, 0, 0, 0)
         form.setRowWrapPolicy(QtWidgets.QFormLayout.WrapLongRows)    # narrow: the label goes above its field
-        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        form.setLabelAlignment((Qt.AlignLeft if theme.new_look() else Qt.AlignRight) | Qt.AlignVCenter)
         form.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         form.setHorizontalSpacing(10)
         form.setVerticalSpacing(6)
@@ -662,8 +779,10 @@ class Page(object):
             a = self._node(kids[i], ctx)
             b = self._node(kids[i + 1], ctx) if i + 1 < len(kids) else None
             if isinstance(a, QtWidgets.QLabel):
-                a.setWordWrap(False)
+                a.setWordWrap(theme.new_look())
                 _role(a, "dim")
+                if theme.new_look():
+                    a.setFixedWidth(LABEL_W)
             if a is not None and b is not None:
                 form.addRow(a, b)
             elif a is not None:
@@ -683,23 +802,104 @@ class Page(object):
         if "(advanced)" in title:
             title, closed = title.replace("(advanced)", "").strip(), True
         inside = ctx.get("card") is not None              # 5.7.3: a section inside a card - a lighter panel
+        if theme.new_look() and not inside and _has_light(n):
+            closed = False                                # 5.7.7 (Gus: "all open"): every step open
         card = widgets.Card(title, None if inside else number, str(n.kw.get("annotation") or ""), closed)
         if inside:
             card.setProperty("inner", "true")
             card.pin.hide()
+            card.no_pin = True
+            card.no_move = True                      # (it moves with its card)
             widgets.restyle(card)
         else:
             self.cards.append(card)
         inner = {"card": card}
-        for c in n.children:
-            w = self._node(c, inner)
-            if w is not None:
-                card.add(w)
+        if theme.new_look() and not inside:
+            self._card_new(n, card, inner)
+        else:
+            for c in n.children:
+                w = self._node(c, inner)
+                if w is not None:
+                    card.add(w)
         card.peek.setText(_peek(n))
         card.set_closed(closed)
         f = Field(self, n, card)
         f.kind = "frameLayout"
         return card
+
+    def _card_new(self, n, card, ctx):
+        """New look: the section's job on show, the rarely changed choices folded under Options (what's set beside
+        it), one line saying what the section does (a step whose light speaks needs none)."""
+        items = []
+        for c in n.children:
+            if c.kind == "columnLayout" and c.name.startswith("columnLayout__"):   # the section's own column only
+                items += [(c, g) for g in c.children]
+            else:
+                items.append((n, c))
+        if not _has_light(n):
+            card.set_desc(_first_sentence(n.kw.get("annotation")))
+        fold, opts, shown, lights = None, [], [], []
+        for _parent, c in items:
+            w = self._node(c, ctx)
+            if w is None:
+                continue
+            if c.kw.get("_light"):
+                shown.insert(0, w)                  # a step's state line: right under the title
+                lights.append(c.name)
+                continue
+            if _is_option(c):
+                if fold is None:
+                    fold = widgets.Fold("Options", lambda: self._summary(opts))
+                    shown.append(("fold", fold))
+                fold.add(w)
+                opts.append((c, w))
+                for seg in w.findChildren(widgets.Segmented) + ([w] if isinstance(w, widgets.Segmented) else []):
+                    seg.changed.connect(fold.refresh)
+                for cb in w.findChildren(QtWidgets.QCheckBox) + ([w] if isinstance(w, QtWidgets.QCheckBox) else []):
+                    cb.toggled.connect(fold.refresh)
+                for co in w.findChildren(QtWidgets.QComboBox) + ([w] if isinstance(w, QtWidgets.QComboBox) else []):
+                    co.currentIndexChanged.connect(fold.refresh)
+            else:
+                shown.append(w)
+        if fold is not None and len(opts) == 1:     # one thing alone: no fold (a panel is its own fold already)
+            i = shown.index(("fold", fold))
+            w = opts[0][1]
+            fold.body_layout.removeWidget(w)
+            shown[i] = w
+            fold.deleteLater()
+            fold = None
+        if fold is not None:                        # the fold goes just before the section's main button
+            shown.remove(("fold", fold))
+            bigs = [i for i, x in enumerate(shown) if isinstance(x, QtWidgets.QAbstractButton) and
+                    x.property("role") == "big"]
+            shown.insert(bigs[0] if bigs else len(shown), fold)
+        for w in shown:
+            card.add(w)
+        for name in lights:                         # a light the tool set while the page was being made: now in
+            f = self.fields.get(name)               # its card, it takes the new look and tags the card
+            if f is not None and getattr(f, "level", None):
+                f.cmd("text", [], {"edit": True, "_level": f.level})
+
+    def _summary(self, opts):
+        words, any_box = [], False
+        for c, w in opts:
+            if c.kind == "frameLayout":
+                continue                            # (a folded panel's own choices aren't the section's)
+            segs = w.findChildren(widgets.Segmented) + ([w] if isinstance(w, widgets.Segmented) else [])
+            for seg in segs:
+                b = [x for x in seg.findChildren(QtWidgets.QPushButton) if x.isChecked()]
+                if b:
+                    words.append(_short(b[0].text()))
+            boxes = w.findChildren(QtWidgets.QCheckBox) + ([w] if isinstance(w, QtWidgets.QCheckBox) else [])
+            for cb in boxes:
+                if cb.isChecked():
+                    words.append(_short(cb.text()))
+            for co in w.findChildren(QtWidgets.QComboBox) + ([w] if isinstance(w, QtWidgets.QComboBox) else []):
+                if co.currentText().strip():
+                    words.append(_short(co.currentText()))
+            any_box = any_box or bool(boxes)
+        words = [x for i, x in enumerate(words) if x and x not in words[:i]]
+        return "  ·  ".join(words) or ("all off" if any_box else "")
 
     def _tabLayout(self, n, ctx):
         labels = dict(n.kw.get("tabLabel") or n.kw.get("tl") or [])
@@ -727,7 +927,7 @@ class Page(object):
             w.setObjectName("gusLight")
             w.setWordWrap(True)
             self._note(n, "shown")
-            Field(self, n, w)
+            Field(self, n, w).level = n.kw.get("_level")   # (the new look's card tag reads it once in its card)
             w.setStyleSheet("QLabel { background: %s; border-radius: 6px; padding: 6px 8px; }" %
                             theme.LEVEL.get(n.kw.get("_level"), theme.LEVEL["idle"]))
             return w
@@ -860,6 +1060,8 @@ class Page(object):
         self._note(n, "shown")
         Field(self, n, w)
         lab = n.label()
+        if lab and theme.new_look():
+            return _labelled(lab, w)
         if lab:
             box = widgets.flow_box(8)
             box.layout().addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
@@ -1062,8 +1264,12 @@ class Page(object):
         return lb
 
     def _group(self, n, ctx, make):
-        box = widgets.flow_box(8)
         lab = n.label()
+        if lab and theme.new_look():
+            w = make()
+            self._note(n, "shown")
+            return _labelled(lab, w), w
+        box = widgets.flow_box(8)
         if lab:
             box.layout().addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
         w = make()

@@ -430,9 +430,94 @@ def new_window(rep):
     f.go(("controls_tab", 1))
 
 
+def new_look(rep):
+    """5.7.7: the new look (Settings > Window > Look), the Toolbox in the new window, and your own section order
+    (it opens the window in the new look, then puts back the look you had)."""
+    from gus_rigtool.core import utils
+    from gus_rigtool.newui import theme, widgets
+    from gus_rigtool.newui import window as W
+    from gus_rigtool.newui.qt import QtWidgets
+    rep.start("The new look (5.7.7)")
+    was = utils.load_setting(theme.LOOK_KEY, "today")
+    sub = ("controls_tab", 2)
+
+    def settle():
+        for _i in range(3):
+            QtWidgets.QApplication.processEvents()
+
+    def reopen():
+        W.close()
+        settle()
+        f = W.show()
+        settle()
+        return f
+
+    try:
+        utils.save_setting(theme.LOOK_KEY, "new")
+        f = reopen()
+        rep.expect("Settings > Window > New look: the window opens in it", f is not None and theme.new_look())
+        if f is None:
+            return
+
+        def pages():
+            cut = {}
+            for width in (330, 700):
+                try:
+                    cmds.workspaceControl(W.WS, edit=True, resizeWidth=width)
+                except RuntimeError:
+                    pass
+                for key in W.NEW_LOOK:
+                    a = f._area(key)
+                    for x in a.subs:
+                        f.go(tuple(x[:2]), as_tool=True)
+                        settle()
+                        got = W.cut_off(a)
+                        if got:
+                            cut["%s > %s at %d" % (key, x[-1], f.width())] = got[:2]
+            rep.expect("new look: nothing cut off on any redone page, narrow and wide", not cut,
+                       str(list(cut.items())[:3]))
+            f.go(("groups", None), as_tool=True)
+            settle()
+            folds = [x for x in f.findChildren(widgets.Fold) if x.isVisible() and x.title == "Options"]
+            rep.expect("Toolbox > Groups: 'Options (n)' folded, what's set beside it",
+                       folds and folds[0].words.text().strip(), folds[0].words.text() if folds else "no fold")
+
+        def order():
+            f.go(sub, as_tool=True)
+            settle()
+            a = f._area("controls")
+            first = [c.title for c in a._visual(sub)]
+            sz = [c for c in a._cards_of(sub) if c.title.startswith("Size")]
+            if not sz:
+                rep.expect("Edit shape has 'Size and turn'", False, str(first))
+                return
+            sz[0].moved.emit(sz[0].title, "@Move to top")
+            settle()
+            rep.expect("Edit shape: right-click > Move to top puts 'Size and turn' above the swap-shape grid",
+                       a._visual(sub)[0].title.startswith("Size"), str([c.title[:20] for c in a._visual(sub)][:3]))
+            g = reopen()
+            g.go(sub, as_tool=True)
+            settle()
+            a = g._area("controls")
+            rep.expect("...the window opened again keeps that order", a._visual(sub)[0].title.startswith("Size"))
+            c = a._cards_of(sub)[0]
+            c.moved.emit(c.title, "@Reset order")
+            settle()
+            rep.expect("...Reset order: the tool's own order", [c.title for c in g._area("controls")._visual(sub)]
+                       == first)
+
+        rep.guard("new look: pages", pages)
+        rep.guard("new look: your order", order)
+        rep.add(INFO, "look at the new look", "Edit shape: drag a section by its title onto another; right-click a "
+                "title: Move up / Move down / Move to top / Reset order")
+    finally:
+        utils.save_setting(theme.LOOK_KEY, was)
+        reopen()
+
+
 CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
-          ("new window", new_window), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
+          ("new window", new_window), ("new look", new_look), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 
 
 def run(ask=True):

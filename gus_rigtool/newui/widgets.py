@@ -300,6 +300,7 @@ class Card(QtWidgets.QFrame):
     """A numbered section: title, '?', pin; closed it shows what's inside in one line."""
     toggled = QtCore.Signal(bool)
     pin_clicked = QtCore.Signal()
+    moved = QtCore.Signal(str, str)                   # 5.7.7: (this card's title, the title it goes before / a verb)
 
     def __init__(self, title, number=None, help_text="", closed=False, peek="", parent=None):
         super(Card, self).__init__(parent)
@@ -328,6 +329,10 @@ class Card(QtWidgets.QFrame):
         self.peek = Peek(peek)
         self.peek.setObjectName("gusPeek")
         h.addWidget(self.peek, 2)
+        self.chip = QtWidgets.QLabel("")              # 5.7.7 new look: the step's state (Made / Ready / To do)
+        self.chip.setObjectName("gusChip")
+        self.chip.hide()
+        h.addWidget(self.chip, 0, Qt.AlignVCenter)
         self.pin = QtWidgets.QToolButton()
         self.pin.setIcon(icons.icon("pin", 14, theme.FAINT))
         self.pin.setToolTip("Pin: this card stays on top of every page of this area")
@@ -344,13 +349,29 @@ class Card(QtWidgets.QFrame):
         self.arrow = QtWidgets.QLabel()
         h.addWidget(self.arrow, 0, Qt.AlignTop)
         v.addWidget(head)
+        self.desc = QtWidgets.QLabel("")               # 5.7.7 new look: what the section does, one line
+        self.desc.setObjectName("gusDesc")
+        self.desc.setWordWrap(True)
+        self.desc.hide()
+        v.addWidget(self.desc)
         self.body = QtWidgets.QWidget()
         self.body_layout = QtWidgets.QVBoxLayout(self.body)
         self.body_layout.setContentsMargins(0, 0, 0, 0)
         self.body_layout.setSpacing(7)
         v.addWidget(self.body)
-        head.mousePressEvent = lambda e: self.set_closed(not self.closed)
+        self.head = head
+        head.mousePressEvent = self._head_press
+        head.mouseMoveEvent = self._head_move
+        head.mouseReleaseEvent = self._head_release
+        head.setContextMenuPolicy(Qt.CustomContextMenu)
+        head.customContextMenuRequested.connect(self._head_menu)
+        self.setAcceptDrops(True)
+        self._press = None
         self.closed = False
+        self.pinned_on = False
+        self.hover_pin = theme.new_look()             # 5.7.7 new look: the pin shows when the mouse is over the card
+        if self.hover_pin:
+            self.pin.setVisible(False)
         self.set_closed(closed)
 
     def _show_help(self):
@@ -359,13 +380,70 @@ class Card(QtWidgets.QFrame):
     def set_closed(self, closed):
         self.closed = bool(closed)
         self.body.setVisible(not self.closed)
+        if hasattr(self, "desc"):
+            self.desc.setVisible(bool(self.desc.text()) and not self.closed)
         self.peek.setVisible(self.closed and bool(self.peek.text()))
         self.arrow.setPixmap(icons.pixmap("open" if self.closed else "more", 12, theme.FAINT))
         self.setProperty("closed", "true" if self.closed else "false")
         restyle(self)
         self.toggled.emit(not self.closed)
 
+    # ------------------------------------------------ 5.7.7: your own order - drag by the title, or right-click it
+    def _head_press(self, e):
+        self._press = e.pos() if e.button() == Qt.LeftButton else None
+
+    def _head_move(self, e):
+        if self._press is None or getattr(self, "no_move", False):
+            return
+        if (e.pos() - self._press).manhattanLength() < 10:
+            return
+        self._press = None
+        drag = QtGui.QDrag(self)
+        mime = QtCore.QMimeData()
+        mime.setText("gus-card:" + self.title)
+        drag.setMimeData(mime)
+        drag.setPixmap(self.head.grab())
+        drag.exec_(Qt.MoveAction) if hasattr(drag, "exec_") else drag.exec(Qt.MoveAction)
+
+    def _head_release(self, e):
+        if self._press is not None and e.button() == Qt.LeftButton:
+            self.set_closed(not self.closed)
+        self._press = None
+
+    def _head_menu(self, pos):
+        if getattr(self, "no_move", False):
+            return
+        m = QtWidgets.QMenu(self)
+        for verb in ("Move up", "Move down", "Move to top", "Reset order"):
+            a = m.addAction(verb)
+            a.triggered.connect(lambda _=False, v=verb: self.moved.emit(self.title, "@" + v))
+        m.exec_(self.head.mapToGlobal(pos)) if hasattr(m, "exec_") else m.exec(self.head.mapToGlobal(pos))
+
+    def dragEnterEvent(self, e):
+        text = e.mimeData().text() if e.mimeData() else ""
+        if text.startswith("gus-card:") and text[9:] != self.title:
+            e.acceptProposedAction()
+
+    def dropEvent(self, e):
+        src = e.mimeData().text()[9:]
+        e.acceptProposedAction()
+        self.moved.emit(src, self.title)              # the dragged card goes before this one
+
+    def enterEvent(self, e):
+        if getattr(self, "hover_pin", False) and not getattr(self, "no_pin", False) and \
+                not self.property("inner") == "true":
+            self.pin.setVisible(True)
+        super(Card, self).enterEvent(e)
+
+    def leaveEvent(self, e):
+        if getattr(self, "hover_pin", False) and not self.pinned_on:
+            self.pin.setVisible(False)
+        super(Card, self).leaveEvent(e)
+
     def set_pinned(self, on):
+        self.pinned_on = bool(on)
+        if getattr(self, "hover_pin", False):
+            self.pin.setVisible(bool(on))
         self.setProperty("pinned", "true" if on else "false")
         self.pin.setIcon(icons.icon("pin", 14, "#ffcf5c" if on else theme.FAINT))
         self.pin.setToolTip("Unpin" if on else "Pin: this card stays on top of every page of this area")
@@ -383,6 +461,15 @@ class Card(QtWidgets.QFrame):
     def set_state(self, level):
         self.state = level if level in ("made", "ready") else None
         self._badge()
+        if theme.new_look() and level in theme.CHIP:   # 5.7.7: the state as a tag on the title line
+            bg, fg, word = theme.CHIP[level]
+            self.chip.setText(word)
+            self.chip.setStyleSheet("QLabel#gusChip { background: %s; color: %s; }" % (bg, fg))
+            self.chip.show()
+
+    def set_desc(self, text):
+        self.desc.setText(text)
+        self.desc.setVisible(bool(text) and not self.closed)
 
     def _badge(self):
         if not self.number:
@@ -697,3 +784,58 @@ class StepStrip(QtWidgets.QFrame):
             b.setIcon(QtGui.QIcon(pm))
             b.setText(text + ("  →" if i < len(self.items) - 1 else ""))
             b.setToolTip("%s: %s" % (text, STATE_WORD.get(st, "the step you're on" if st == "on" else "")))
+
+
+class Fold(QtWidgets.QWidget):
+    """5.7.7 new look: 'Options (n) ▾  what's set' - the choices you rarely change, one click away (they stay the
+    tool's own fields: folded, they still answer the tool)."""
+
+    def __init__(self, title="Options", summary=None, parent=None):
+        super(Fold, self).__init__(parent)
+        self.title, self.summary = title, summary
+        v = QtWidgets.QVBoxLayout(self)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(6)
+        head = QtWidgets.QWidget()
+        h = QtWidgets.QHBoxLayout(head)
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(10)
+        self.button = QtWidgets.QPushButton("")
+        _set_role(self.button, "fold")
+        self.button.setCursor(Qt.PointingHandCursor)
+        self.button.clicked.connect(self.toggle)
+        h.addWidget(self.button)
+        self.words = Peek("")                       # what's set: gives way when narrow (ends in ...)
+        self.words.setObjectName("gusPeek")
+        h.addWidget(self.words, 1)
+        v.addWidget(head)
+        self.body = QtWidgets.QWidget()
+        self.body_layout = QtWidgets.QVBoxLayout(self.body)
+        self.body_layout.setContentsMargins(0, 0, 0, 0)
+        self.body_layout.setSpacing(6)
+        v.addWidget(self.body)
+        self.count = 0
+        self.body.hide()
+        self.refresh()
+
+    def add(self, w):
+        self.body_layout.addWidget(w)
+        self.count += 1
+        self.refresh()
+
+    def toggle(self):
+        self.body.setVisible(self.body.isHidden())
+        self.refresh()
+
+    def refresh(self, *_):
+        words = ""
+        if self.summary is not None:
+            try:
+                words = self.summary()
+            except Exception:
+                words = ""
+        arrow = "▾" if self.body.isHidden() else "▴"
+        text = "%s (%d)  %s" % (self.title, self.count, arrow) if self.count and self.title == "Options" else \
+            "%s  %s" % (self.title, arrow)
+        self.button.setText(text.replace("&", "&&"))
+        self.words.setText(words if self.body.isHidden() else "")
