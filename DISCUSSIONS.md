@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: "I want to take the notes of SyncSketch and put them in the app, so I can view the notes
+  directly in the camera, with a control of opacity for the drawings". 0.2.3: Opacity slider in the window (the
+  node's opacity); scripts/review_notes/syncsketch_sample.py - he runs it on his Mac (mayapy), key kept in
+  ~/.review_notes_syncsketch.json (600), saves one video's SyncSketch notes to the Desktop for me to build the
+  import on (tested offline with made-up answers). Planned: SyncSketch notes get their own opacity slider.
+  Still waiting: does his account have API access (Enterprise)?
+
 - 2026-11-21: Gus on 0.2.1: notes stick to their frame now; Enter / Esc / double-click for curves work; the
   eraser "just deletes everything instead of acting like an eraser" -> 0.2.2: the eraser cuts only the part it
   rubs over (a touched curve / circle / arrow becomes plain lines), Size = eraser size, saved notes too (one

@@ -115,6 +115,18 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(self.w.text.toPlainText(), "")
         self.assertEqual(len(self.rows()), 5)
 
+    def test_opacity_slider(self):
+        """0.2.3 (Gus): an opacity control for the drawings - it sets REVIEW_NOTES.opacity."""
+        got = {}
+        window.controller.node = lambda: "REVIEW_NOTESShape"
+        window.cmds.setAttr = lambda plug, v, **k: got.__setitem__(plug, v)
+        try:
+            self.w.opacity.setValue(40)
+        finally:
+            window.controller.node = lambda: None
+        self.assertEqual(got, {"REVIEW_NOTESShape.opacity": 0.4})
+        self.assertEqual(self.w.opacity_value.text(), "40%")
+
     def test_picture(self):
         """A picture of the window with a drawing in progress, for Gus (design/review_notes/window_0.2.0.png)."""
         s = sketch.SKETCH

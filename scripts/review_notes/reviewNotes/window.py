@@ -185,6 +185,19 @@ class ReviewWindow(QtWidgets.QWidget):
         row.addWidget(self.only_open)
         lay.addLayout(row)
 
+        row = QtWidgets.QHBoxLayout()                       # how strong the notes look (Gus, 0.2.3)
+        row.addWidget(QtWidgets.QLabel("Opacity"))
+        self.opacity = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.opacity.setRange(0, 100)
+        self.opacity.setValue(100)
+        self.opacity.setToolTip("How strong the notes look in the view (drawings and labels)")
+        self.opacity_value = QtWidgets.QLabel("100%")
+        self.opacity_value.setMinimumWidth(36)
+        self.opacity.valueChanged.connect(self._set_opacity)
+        row.addWidget(self.opacity, 1)
+        row.addWidget(self.opacity_value)
+        lay.addLayout(row)
+
         self.path = QtWidgets.QLabel("")
         self.path.setObjectName("path")
         self.path.setWordWrap(True)
@@ -203,6 +216,18 @@ class ReviewWindow(QtWidgets.QWidget):
                 box.blockSignals(True)
                 box.setChecked(bool(cmds.getAttr("%s.%s" % (shape, attr))))
                 box.blockSignals(False)
+            value = int(round(float(cmds.getAttr(shape + ".opacity")) * 100))
+            self.opacity.blockSignals(True)
+            self.opacity.setValue(value)
+            self.opacity.blockSignals(False)
+            self.opacity_value.setText("%d%%" % value)
+
+    def _set_opacity(self, value):
+        self.opacity_value.setText("%d%%" % value)
+        shape = controller.node()
+        if shape:
+            with controller.NoUndo():
+                cmds.setAttr(shape + ".opacity", value / 100.0)
 
     # ---------------- drawing ----------------
     def _toggle_draw(self):
