@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus on the Toolbox preview: plan OK, but "I really didn't like the way the tools look - I want it
+  easier to see and retaining at least a bit of the older version so I can understand what's going on"; asked for
+  2 new versions (his reference picture didn't arrive - asked him to resend). Q2 (split Pivots): "I let you
+  decide". Q3: KEEP the old window reachable (Settings > Window) - "great to always have an option to go back".
+  Sent design/screens577/style_*: Version 1 "Classic, clearer" (Maya section bars, label column, round radio
+  buttons, blue main button) and Version 2 "New, easier to read" (cards + one-line 'what it does', label column,
+  choices with a dot, quieter buttons). Script: design/mockups/toolbox_styles.py (draws a tool's real page).
+  Waiting: which version, and for the whole window or the Toolbox only.
+
 - 2026-11-21: Toolbox preview sent (design/screens577: Select 57, Groups 30, Mirror 124, Rename 25, Pivots 44
   controls). Found: Mirror stops while drawn (the recorder doesn't answer a 3-number box), its light shows an error;
   Groups 7 px too wide. Plan 5.7.7 + question: what happens to the old window after this (keep it in Settings /
