@@ -189,6 +189,12 @@ class Recorder(object):
                 return n.kw.get("selectTabIndex", 1)
             if key in ("width", "w", "height", "h"):
                 return n.kw.get(key) or 100
+            if key in ("value", "v") and n.kind in ("floatFieldGrp", "intFieldGrp"):     # 5.7.7: Mirror's centre
+                cnt = int(n.kw.get("numberOfFields") or n.kw.get("nf") or 0) or max(
+                    [i for i in (1, 2, 3, 4) if ("value%d" % i) in n.kw] or [1])
+                return [n.kw.get("value%d" % i, 0) for i in range(1, cnt + 1)]
+            if key in ("value1", "value2", "value3", "value4") and n.kind in ("floatFieldGrp", "intFieldGrp"):
+                return n.kw.get(key, 0)
             if key in ("rgbValue", "rgb"):                     # 5.7.3: a colour picker's colour (Ribbon reads it)
                 return list(n.kw.get("rgbValue") or n.kw.get("rgb") or (1.0, 1.0, 1.0))
             if key in ("allItems", "ai"):

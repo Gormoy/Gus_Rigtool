@@ -28,7 +28,7 @@ either side. Names with no side (centre) are skipped.
   Links         : custom attribute values, follows, space switches, constraints and pivots onto the twins.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.7)
 
 from gus_rigtool.core import colors, naming, sides, ui, utils
 from gus_rigtool.core import mirror_engine as engine

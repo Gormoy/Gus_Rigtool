@@ -18,7 +18,7 @@ Select one or more groups, then click a type. Filters narrow it down:
 
 import fnmatch
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.7)
 
 from gus_rigtool.core import naming, sides, ui, utils
 

@@ -477,8 +477,29 @@ class _Slider(QtWidgets.QWidget):
         self.slider.blockSignals(False)
 
 
+class _Combo(QtWidgets.QComboBox):
+    """5.7.7: wide enough for the choice it shows (its list opens as wide as the longest choice): a long choice
+    you don't use no longer makes the page wider than a narrow window."""
+
+    def _need(self):
+        fm = self.fontMetrics()
+        adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
+        return adv(self.currentText()) + 34
+
+    def minimumSizeHint(self):
+        s = super(_Combo, self).minimumSizeHint()
+        return QtCore.QSize(min(s.width(), max(60, self._need())), s.height())
+
+    def showPopup(self):
+        v = self.view()
+        fm = self.fontMetrics()
+        adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
+        v.setMinimumWidth(max([adv(self.itemText(i)) for i in range(self.count())] + [0]) + 30)
+        super(_Combo, self).showPopup()
+
+
 def _combo(field, items, current):
-    c = QtWidgets.QComboBox()
+    c = _Combo()
     c.addItems([str(i.get("label", "")) for i in items])
     c.setCurrentIndex(max(0, current))
     c.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)     # 5.7.3: as wide as its longest choice
@@ -492,6 +513,7 @@ def _combo(field, items, current):
             _call(it.get("command") or it.get("c"), False)
         _call(cb, it.get("label"))
     c.currentIndexChanged.connect(changed)
+    c.currentIndexChanged.connect(lambda _i: c.updateGeometry())
     return c
 
 

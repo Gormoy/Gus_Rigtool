@@ -25,7 +25,7 @@ Joints are never changed, but a joint works as the Last Selected target.
 
 import math
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.7)
 import maya.api.OpenMaya as om
 
 from gus_rigtool.core import naming, pivots, ui, utils

@@ -169,10 +169,10 @@ check("...unpinned: back in its page", card.property("pinned") == "false" and "c
 f._search_go("Edit shape  —  Controls"); app.processEvents()
 check("search 'Edit shape': the Controls area on Edit shape", f.area == "controls" and
       f.areas["controls"].current == ("controls_tab", 2))
-f._search_go("select"); app.processEvents()
-check("search 'select': the Toolbox on Select (today's page inside the new window until the Toolbox is redone)",
-      f.area == "toolbox" and f.areas["toolbox"].current == ("select", None) and
-      isinstance(f.areas["toolbox"].widgets[("select", None)], window.OldPage))
+f._search_go("settings"); app.processEvents()
+check("search 'settings': Settings, today's page inside the new window (every other area is redone)",
+      f.area == "settings" and f.areas["settings"].current == ("settings", None) and
+      isinstance(f.areas["settings"].widgets[("settings", None)], window.OldPage))
 f.go(("controls", None)); app.processEvents()
 check("an area opens on the sub-page you used last", f.areas["controls"].current == ("controls_tab", 2))
 import gus_rigtool.main as gr

@@ -16,13 +16,13 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls", "skin", "settings", "build", "connect", "check")
+NEW_LOOK = ("controls", "skin", "settings", "build", "connect", "check", "toolbox")
 EXTRA_TOOLS = {"check": ["publish"]}             # 5.7.6: pages only the new window has (Publish moved from Build)
 MOVED_OUT = {"build": "publish"}                 # ...and the tool whose page no longer shows it   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
 #                                                        5.7.3 Build)
 # a tool whose page has its own tabs: each tab a sub-page (5.7.3 Build) - its tabLayout's name, the tabs' labels
 TABBED = {"build": ("Tabs", ["Rig builder", "Animation", "Existing rig", "Advanced"])}
-TWO_ROWS = ("build", "skin", "connect")                     # tools on the top row, the chosen tool's sub-pages under it
+TWO_ROWS = ("build", "skin", "connect", "toolbox")                     # tools on the top row, the chosen tool's sub-pages under it
 # a long tool page shown as several sub-pages: (label, the card titles on it) - 5.7.2 Skin (Gus's picture)
 SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror weights"]),
                    ("Save / load", ["Save / load weights"]), ("Clean", ["Clean"]),
@@ -36,7 +36,10 @@ SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror w
           # 5.7.5 (Gus: "its ok")
           "nodes": [("See & trace", ["Name utility nodes", "Select the setup", "Trace a channel", "Node Editor"]),
                     ("Make a driver", ["Make a driver", "Setups library"]),
-                    ("Find & clean", ["Find problems", "Clean up"])]}
+                    ("Find & clean", ["Find problems", "Clean up"])],
+          # 5.7.7 (Gus left it to me: the only long Toolbox page)
+          "pivots": [("Move", ["Move pivots to", "Bounding box", "From geometry", "Along a chain"]),
+                     ("Remember & reset", ["Remember / mirror", "Reset"])]}
 # 5.7.5: plain names for the tabs (the old window keeps its own)
 TOOL_LABEL = {"connect": "Connections", "sdk": "Driven keys"}
 
@@ -640,11 +643,12 @@ def cut_off(area):
 
 
 def _combo_fits(w):
-    """A drop-down shows its whole choice (5.7.3: 'One per spa...' was cut)."""
+    """A drop-down shows its whole choice (5.7.3: 'One per spa...' was cut) - the one it shows (5.7.7: its list
+    opens as wide as the longest)."""
     fm = w.fontMetrics()
     adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
     room = w.width() - 28                            # the arrow and the padding
-    return all(adv(w.itemText(i)) <= room + 1 for i in range(w.count()))
+    return adv(w.currentText()) <= room + 1
 
 
 def _fits(w, text):

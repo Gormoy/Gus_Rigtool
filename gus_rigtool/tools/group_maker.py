@@ -25,7 +25,7 @@ Mode
   Remove group : the selected groups go; their children stay exactly where they are.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.7)
 
 from gus_rigtool.core import colors, naming, sides, ui, utils
 from gus_rigtool.core import nodes as _nodes

@@ -12,7 +12,7 @@ Rename: many nodes at once, with a preview.
   The steps run in that order. Hierarchy: the children too. Shapes follow: shapes become <name>Shape.
 """
 
-import maya.cmds as cmds
+from gus_rigtool.newui.proxy import cmds   # maya.cmds; the new window's fields by name (5.7.7)
 
 from gus_rigtool.core import renamer, ui, utils
 
