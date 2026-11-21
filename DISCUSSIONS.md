@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: 5.7.7 plan (C6 look behind Settings > Window > Look, default Today; + Toolbox) - YES. Step pages:
+  ALL steps open (not only the current one). Asked "is there anything apart from the visual we needed to do?" -
+  listed the open non-visual items (below in Open plans).
+
 - 2026-11-21: Gus: "C5 is the best, the right direction; I like the way the Face is today - keep good parts like
   these; I want things clearer visually"; the fine borders / quick-button edge / status line STAY; yes to a build
   plan; "give more examples of C5 keeping what is good visually". Sent C6 (design/screens577/c6_*): C5 + today's
@@ -205,9 +209,13 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- Next: Toolbox preview (pictures first); then the old window can go; then 5.8.
-- Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
-  Animtool.
+- 5.7.7 approved (C6 look as a switch, all steps open, + Toolbox) - next to build. Then 5.8 Animtool from Gus's
+  references (design/references) - check its right-click options against the real tools (no new tools) and the
+  pie hotkey (a Maya fact first).
+- Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows
+  (Run checks / Find repairs / Analyze the Outliner).
+- Hare open items (PROJECT_CONTEXT section 3): pupils / tongue Keep the pose; L_IK_Elbow / Wrist 'Not a control';
+  the model file clean-up; low-priority joint flips; the before-delivering checklist.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
 
 ## Ideas parked (not now)
