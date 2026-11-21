@@ -233,7 +233,13 @@ the code; this file has what Gus said, decided and wants next.
   vs 66 s): the new check presses Reset order on ~80 pages and Reset redraws the page. 5.7.8.1 plan sent:
   instant Reset (remember the first order), checks keep his order, a lighter check - waiting for his OK.
 - 2026-11-21: Gus: "1 yes / 2 yes / 3 yes" - 5.7.8.1 approved; dragging a section by its title works in his Maya;
-  Arrange is how he wanted it. 5.7.8.1 built - waiting for his tests and OK to push (5.7.7, 5.7.8, 5.7.8.1). Then 5.8 Animtool from Gus's
+  Arrange is how he wanted it. 5.7.8.1 built - waiting for his tests and OK to push (5.7.7, 5.7.8, 5.7.8.1).
+- 2026-11-21: 5.7.8.1 results: Real Maya 112 ok; Test this release 59 ok, 1 FAIL (the Gus_Animtool shelf: every
+  button missing - "Make the shelf" fixes it; nothing in 5.7.x touched the shelf). "the test was faster" (96 s,
+  was 255 s). Gus: "you can go ahead and push it" - 5.7.7, 5.7.8, 5.7.8.1 pushed, main = 5.7.8.1.
+- 2026-11-21: Gus: "I think we can start to take out the 5.7 version, the only thing to maintain is the old look
+  before that, the one using maya" - next: plan to remove the new window's "Today's look (5.7)" so the new window
+  has one look (C6), and keep the old Maya window (5.6) as the way back. Plan to be shown first. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows
