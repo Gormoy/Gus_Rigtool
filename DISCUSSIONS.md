@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Toolbox preview sent (design/screens577: Select 57, Groups 30, Mirror 124, Rename 25, Pivots 44
+  controls). Found: Mirror stops while drawn (the recorder doesn't answer a 3-number box), its light shows an error;
+  Groups 7 px too wide. Plan 5.7.7 + question: what happens to the old window after this (keep it in Settings /
+  remove it) - waiting.
+
 - 2026-11-21: Gus "yes to all": 576 + all_pages outputs accepted, 5.7.6 pushed to main, Toolbox preview next (the
   last area; then the old window can go).
 
