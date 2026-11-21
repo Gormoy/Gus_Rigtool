@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: 0.1.3 installed (not restarted yet). His log answered "why won't the plugin update": the installer
+  DID unload it (undo cleared, no error) but Maya loaded the old code again from Python's memory (module
+  reviewNotesNode still in sys.modules) -> still 0.1.1. 0.1.4: the installer / load_plugin drop that module
+  first. The real-save check was skipped (test.ma was open, not an empty scene). His log also had Gus_Rigtool
+  5.7.8.1 'Test this release' output (1 FAIL: Animtool shelf buttons; QLabel deleted errors) - not Review
+  Notes, belongs to the other Rigtool session; told him, not touched here.
+
 - 2026-11-21: Gus "the plan is ok, build 0.1.3". Built: REVIEW_NOTES taken out before every save / export and put
   back after with its settings (as Animtool arcs); making / removing it never goes in the undo queue (likely why
   the plugin wouldn't unload); the installer says RESTART MAYA when the plugin running isn't the tool's version;

@@ -46,6 +46,7 @@ def _old_copy_off():
         cmds.flushUndo()            # Maya won't unload a plugin whose node is still in the undo queue (Gus OK'd)
         print("Review Notes installer: undo history cleared to update the plugin.")
         cmds.unloadPlugin(PLUGIN)
+        sys.modules.pop(PLUGIN, None)   # or Maya loads the OLD code again from Python's memory (0.1.3: still 0.1.1)
         return True
     except RuntimeError as e:
         print("Review Notes installer: the old plugin (%s) stays loaded until Maya restarts: %s"

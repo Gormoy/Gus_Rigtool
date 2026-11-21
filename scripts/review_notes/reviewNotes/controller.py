@@ -34,6 +34,8 @@ def _tell(msg, warn=False):
 
 def load_plugin():
     if not cmds.pluginInfo(PLUGIN, query=True, loaded=True):
+        import sys
+        sys.modules.pop(PLUGIN, None)       # a copy left in Python's memory would be loaded instead of the file
         cmds.loadPlugin(PLUGIN_PATH, quiet=True)
     no_requires()
     return cmds.pluginInfo(PLUGIN, query=True, loaded=True)
