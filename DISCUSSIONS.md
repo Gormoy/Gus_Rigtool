@@ -17,6 +17,17 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus sent SyncSketch's Maya plugin installer (installGui.py; it installs github.com/syncsketch/
+  syncsketch-maya) and asked if it brings notes into Maya. Read its code (not run): YES - Download window:
+  "Blue Pencil" tab (Maya 2023+) = Download Sketches (a zip: greasePencil.xml with frame times + one PNG picture
+  per annotated frame) then "Import as Blue Pencil Layer" (opens Maya's Blue Pencil import); "Grease Pencil"
+  for older Maya; or the annotated video as an image plane on a camera. It logs in with a web token
+  (useExpiringToken), so it may work without Enterprise API (not confirmed). Drawings arrive as PICTURES, not
+  lines; comments aren't in the zip. Its installer turns off HTTPS certificate checks while it downloads (told
+  him). Proposed: try their plugin first; if he wants SyncSketch notes inside Review Notes (own opacity, list,
+  status), Review Notes reads that same zip (no API key in our tool) - pictures drawn by the node, needs a
+  try-it. Waiting: his choice + a sample zip.
+
 - 2026-11-21: Gus: "I want to take the notes of SyncSketch and put them in the app, so I can view the notes
   directly in the camera, with a control of opacity for the drawings". 0.2.3: Opacity slider in the window (the
   node's opacity); scripts/review_notes/syncsketch_sample.py - he runs it on his Mac (mayapy), key kept in
