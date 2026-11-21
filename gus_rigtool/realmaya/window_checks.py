@@ -439,7 +439,6 @@ def new_look(rep):
     from gus_rigtool.newui.qt import QtWidgets
     rep.start("The new look (5.7.7)")
     was = utils.load_setting(theme.LOOK_KEY, "today")
-    sub = ("controls_tab", 2)
 
     def settle():
         for _i in range(3):
@@ -482,34 +481,7 @@ def new_look(rep):
             rep.expect("Toolbox > Groups: 'Options (n)' folded, what's set beside it",
                        folds and folds[0].words.text().strip(), folds[0].words.text() if folds else "no fold")
 
-        def order():
-            f.go(sub, as_tool=True)
-            settle()
-            a = f._area("controls")
-            first = [c.title for c in a._visual(sub)]
-            sz = [c for c in a._cards_of(sub) if c.title.startswith("Size")]
-            if not sz:
-                rep.expect("Edit shape has 'Size and turn'", False, str(first))
-                return
-            sz[0].moved.emit(sz[0].title, "@Move to top")
-            settle()
-            rep.expect("Edit shape: right-click > Move to top puts 'Size and turn' above the swap-shape grid",
-                       a._visual(sub)[0].title.startswith("Size"), str([c.title[:20] for c in a._visual(sub)][:3]))
-            g = reopen()
-            g.go(sub, as_tool=True)
-            settle()
-            a = g._area("controls")
-            rep.expect("...the window opened again keeps that order", a._visual(sub)[0].title.startswith("Size"))
-            c = a._cards_of(sub)[0]
-            c.moved.emit(c.title, "@Reset order")
-            settle()
-            rep.expect("...Reset order: the tool's own order", [c.title for c in g._area("controls")._visual(sub)]
-                       == first)
-
         rep.guard("new look: pages", pages)
-        rep.guard("new look: your order", order)
-        rep.add(INFO, "look at the new look", "Edit shape: drag a section by its title onto another; right-click a "
-                "title: Move up / Move down / Move to top / Reset order")
     finally:
         utils.save_setting(theme.LOOK_KEY, was)
         reopen()
@@ -524,6 +496,11 @@ def arrange(rep):
     from gus_rigtool.newui.qt import QtCore, QtGui, QtWidgets
     rep.start("Arrange and your order (5.7.8)")
     was = utils.load_setting(theme.LOOK_KEY, "today")
+    import copy
+    yours = copy.deepcopy(W._state().get("order", {}))     # 5.7.8.1: your own order - put back at the end
+    st = W._state()
+    st.pop("order", None)                                  # (the checks start from the tools' own order)
+    W._save_state(st)
     sub = ("controls_tab", 2)
 
     def settle():
@@ -538,7 +515,7 @@ def arrange(rep):
         return f
 
     try:
-        for look in ("today", "new"):
+        for look in [was] + [x for x in ("today", "new") if x != was]:   # your look first: every page in it
             utils.save_setting(theme.LOOK_KEY, look)
             f = reopen()
             if f is None:
@@ -614,11 +591,14 @@ def arrange(rep):
                             bad.append(x[-1])
                         last.moved.emit(last.title, "@Reset order")
                         settle()
-                rep.expect("%s look: To top works on every page (Build's pages, Settings too)" % look, not bad,
-                           str(bad[:5]))
+                        if a._visual(s)[0] is last:
+                            bad.append(x[-1] + " (Reset)")
+                rep.expect("%s look: To top and Reset order work on every page (Build's pages, Settings too)" %
+                           look, not bad, str(bad[:5]))
 
             rep.guard("%s look: Edit shape" % look, edit_shape)
-            rep.guard("%s look: every page" % look, every_page)
+            if look == was:                                # 5.7.8.1: every page once (5.7.8 did both looks)
+                rep.guard("%s look: every page" % look, every_page)
         f = W.show()
         if f is not None:
             f.go(("settings", None))
@@ -637,6 +617,10 @@ def arrange(rep):
         rep.add(INFO, "try it by hand", "Edit shape: drag 'Size and turn' by its title onto 'Swap the shape' - it "
                 "should go above it (dragging can't be tested by a script). Then Arrange > Reset order.")
     finally:
+        st = W._state()
+        st["order"] = yours
+        W._save_state(st)
+        rep.add(INFO, "your own order", "put back as it was (%d page(s) you arranged)" % len(yours))
         utils.save_setting(theme.LOOK_KEY, was)
         reopen()
 

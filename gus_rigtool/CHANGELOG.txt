@@ -1,3 +1,23 @@
+Gus_Rigtool 5.7.8.1 - Reset order at once; Test this release keeps your order and is faster
+
+Gus's 5.7.8 tests: everything ok but one FAIL, and "it is taking too long in test" (255 s, was 66 s). Plan approved
+("1 yes / 2 yes / 3 yes").
+
+- Reset order puts the sections back at once. 5.7.8 drew the whole page again (a pause, a flicker); now the window
+  remembers each page's own order the first time it draws it.
+- Test this release keeps your own order: it puts back the pages you arranged when it ends (5.7.8 wiped them).
+- The one FAIL was the check's mistake: you had arranged Edit shape, and it took your order for the tool's. The
+  checks now start from the tools' own order (and put yours back after).
+- Faster: every page is checked once, in your look (the other look only on Edit shape), and the 5.7.7 order check
+  is part of "arrange" now (pages aren't opened twice). With the instant Reset it should be back near 1 to 1.5
+  minutes - not measured in Maya yet.
+
+Only tested here off-screen (PySide6) and with the fake Maya.
+
+Decisions I made:
+- "Reset order" goes to the tool's order as the window first drew it in this Maya session (for a page drawn again
+  by its tool - My shapes changed - the same titles, so the same order).
+
 Gus_Rigtool 5.7.8 - Arrange on every page, text never cut, Settings in the new look
 
 Gus's 5.7.7 tests: "the result seems great overall"; text still cut, a button to hide the sidebar, spacing in the

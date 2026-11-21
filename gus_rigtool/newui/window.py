@@ -229,6 +229,7 @@ class Area(QtWidgets.QWidget):
         v.addWidget(self.scroll)
         self._target = None
         self.pinned = None                      # (card, its own layout, its index there)
+        self._orig = {}                         # 5.7.8.1: each sub-page's own order (its first drawing)
 
     # -------------------------------------------------- pages
     def default_sub(self, tool, page=None):
@@ -546,7 +547,10 @@ class Area(QtWidgets.QWidget):
                 not (self.pinned and c is self.pinned[0]) and shown(c)]
 
     def _apply_order(self, sub):
-        want = _state().get("order", {}).get(self._order_key(sub))
+        key = self._order_key(sub)
+        if key not in self._orig:                      # 5.7.8.1: the tool's own order, for an instant Reset
+            self._orig[key] = [c.title for c in self._visual(sub)]
+        want = _state().get("order", {}).get(key)
         for card in self._cards_of(sub):
             if not getattr(card, "order_hooked", False):
                 card.moved.connect(lambda src, to: self.move_card(tuple(self.current[:2]), src, to))
@@ -597,6 +601,9 @@ class Area(QtWidgets.QWidget):
         if to == "@Reset order":
             order.pop(key, None)
             _save_state(s)
+            if key in self._orig:                      # 5.7.8.1: back at once (5.7.8 drew the page again)
+                self._place(sub, self._orig[key])
+                return
             was = self.arranging
             if was:
                 self.arrange(False)

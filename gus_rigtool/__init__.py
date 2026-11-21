@@ -10,7 +10,7 @@ Install / update: drag drag_to_maya.mel into Maya's viewport.
 
 import os
 
-__version__ = "5.7.8"
+__version__ = "5.7.8.1"
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT, "data")

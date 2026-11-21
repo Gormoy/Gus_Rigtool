@@ -14,7 +14,7 @@ Update button or drag_to_maya.mel). This copy's defaults.json (your rig's naming
 import os
 import re
 
-__version__ = "5.7.8"               # always the same as Gus_Rigtool's (a test checks it)
+__version__ = "5.7.8.1"               # always the same as Gus_Rigtool's (a test checks it)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LOCAL_ROOT = ROOT                    # where this copy was installed (its defaults.json)
