@@ -40,6 +40,20 @@ SPLITS = {"skin": [("Bind", ["Bind"]), ("Copy & mirror", ["Copy skin", "Mirror w
           # 5.7.7 (Gus left it to me: the only long Toolbox page)
           "pivots": [("Move", ["Move pivots to", "Bounding box", "From geometry", "Along a chain"]),
                      ("Remember & reset", ["Remember / mirror", "Reset"])]}
+# 5.7.8 (Gus: "ok"): a page that was one section, in a few, so it can be arranged - (tool, the section's title):
+# its new title, then [(a new section's title, what moves into it: a button's words or a name's words)]
+CARD_SPLITS = {
+    ("skin", "Bind"): ("Bind", [("Add joints", ["Add joints to the skin"])]),
+    ("skin", "Save / load weights"): ("Save weights", [("Load weights", ["Old exports by", "Import weights"])]),
+    ("skin", "Clean"): ("Prune", [("Limit influences", ["Influences per vertex", "Limit"]),
+                                  ("Remove unused joints", ["Remove unused"])]),
+    ("publish", "Publish (clean rig for animators)"): ("Publish (clean rig for animators)",
+                                                       [("Deliver to animators", ["Deliver to animators"])]),
+    ("stick", "Stick to skin"): ("Stick", [("Find what's stuck", ["Select stuck", "Show follow joints"])]),
+}
+SPLITS["skin"][0] = ("Bind", ["Bind", "Add joints"])
+SPLITS["skin"][2] = ("Save / load", ["Save weights", "Load weights"])
+SPLITS["skin"][3] = ("Clean", ["Prune", "Limit influences", "Remove unused joints"])
 # 5.7.5: plain names for the tabs (the old window keeps its own)
 TOOL_LABEL = {"connect": "Connections", "sdk": "Driven keys"}
 
@@ -184,6 +198,27 @@ class Area(QtWidgets.QWidget):
         self.pin_slot = QtWidgets.QVBoxLayout()
         self.pin_slot.setContentsMargins(0, 0, 0, 0)
         self.inner.addWidget(self.selbox)
+        self.arranging = False
+        self.arrange_bar = QtWidgets.QFrame()          # 5.7.8: Arrange - put this page's sections in your order
+        self.arrange_bar.setObjectName("gusArrangeBar")
+        ab = QtWidgets.QVBoxLayout(self.arrange_bar)
+        ab.setContentsMargins(10, 8, 10, 8)
+        ab.setSpacing(6)
+        ab.addWidget(widgets.label("Arrange this page: Up / Down / To top on each section (or drag a section by "
+                                   "its title). Your order is kept for this page.", wrap=True))
+        brow = widgets.flow_box(6)
+        reset = QtWidgets.QPushButton("Reset order")
+        reset.setToolTip("Back to the tool's own order")
+        reset.clicked.connect(lambda _=False: self.current and self.move_card(tuple(self.current[:2]), "",
+                                                                             "@Reset order"))
+        done = QtWidgets.QPushButton("Done")
+        widgets._set_role(done, "accent")
+        done.clicked.connect(lambda _=False: self.arrange(False))
+        brow.layout().addWidget(reset)
+        brow.layout().addWidget(done)
+        ab.addWidget(brow)
+        self.arrange_bar.hide()
+        self.inner.addWidget(self.arrange_bar)
         self.inner.addWidget(self.next)
         self.inner.addLayout(self.pin_slot)
         self.body = QtWidgets.QVBoxLayout()
@@ -251,6 +286,7 @@ class Area(QtWidgets.QWidget):
                 fn()
             except Exception:
                 pass
+        _split_cards(page, tool)
         if tool == "face":
             self._face_map(page)
         if tool == "ribbon":
@@ -290,6 +326,9 @@ class Area(QtWidgets.QWidget):
                                 "the selected controls. Hover (Edit shape): you see it on them first.")
             card.pin.hide()
             card.no_pin = True
+            if i == 1:                                   # 5.7.8: Edit shape's 'Select the controls to change',
+                for x in _loose_before_cards(w):         # its button and 'Keep their size and place' belong to
+                    card.add(x)                          # the swap: they move with it
             card.add(grid)
             w.layout().insertWidget(0, card)
             w.layout().setContentsMargins(0, 0, 0, 0)
@@ -406,7 +445,23 @@ class Area(QtWidgets.QWidget):
         for g in getattr(self, "grids", []):
             g.mark(name)
 
+    def arrange(self, on):
+        """5.7.8: Arrange on / off - each section closed to its title, with Up / Down / To top."""
+        if on and self.current and isinstance(self.widgets.get(tuple(self.current[:2])), OldPage):
+            return
+        self.arranging = bool(on)
+        self.arrange_bar.setVisible(self.arranging)
+        if self.current:
+            for c in self._cards_of(self.current):
+                if not getattr(c, "no_move", False):
+                    c.set_arranging(self.arranging)
+        if self.arranging:
+            self.scroll.ensureWidgetVisible(self.arrange_bar)
+        _arrange_label(self.frame)
+
     def show_sub(self, sub):
+        if self.arranging:
+            self.arrange(False)
         sub = tuple(sub[:2])
         target = self.page_widget(sub)
         for key, w in self.widgets.items():
@@ -481,15 +536,20 @@ class Area(QtWidgets.QWidget):
         w = self.widgets.get(tuple(sub)) or self.widgets.get((sub[0], None))
         if w is None:
             return []
+        def shown(c):                                   # not hidden, nor inside a hidden part (another tab's page)
+            while c is not None and c is not w:
+                if c.isHidden():
+                    return False
+                c = c.parentWidget()
+            return True
         return [c for c in w.findChildren(widgets.Card) if c.property("inner") != "true" and
-                not (self.pinned and c is self.pinned[0]) and (c.isVisibleTo(w) or not c.isHidden())
-                and not c.isHidden()]
+                not (self.pinned and c is self.pinned[0]) and shown(c)]
 
     def _apply_order(self, sub):
         want = _state().get("order", {}).get(self._order_key(sub))
         for card in self._cards_of(sub):
             if not getattr(card, "order_hooked", False):
-                card.moved.connect(lambda src, to, s=tuple(sub[:2]): self.move_card(s, src, to))
+                card.moved.connect(lambda src, to: self.move_card(tuple(self.current[:2]), src, to))
                 card.order_hooked = True
         if want:
             self._place(sub, want)
@@ -537,8 +597,13 @@ class Area(QtWidgets.QWidget):
         if to == "@Reset order":
             order.pop(key, None)
             _save_state(s)
-            if self.current and tuple(self.current) == tuple(sub):
+            was = self.arranging
+            if was:
+                self.arrange(False)
+            if self.current and tuple(self.current[:2]) == tuple(sub[:2]):
                 self.frame.rebuild(sub[0])
+            if was:
+                self.arrange(True)
             return
         if src not in titles:
             return
@@ -619,6 +684,102 @@ class Area(QtWidgets.QWidget):
         return None
 
 
+def _split_cards(page, tool):
+    """5.7.8: CARD_SPLITS - a section's buttons / named fields into new sections right after it (nothing is lost:
+    the same widgets move, so the tool reads and fills them as before)."""
+    for card in list(page.cards):
+        spec = CARD_SPLITS.get((tool, card.title))
+        if not spec:
+            continue
+        new_title, parts = spec
+        lay = card.parentWidget().layout() if card.parentWidget() else None
+        if not isinstance(lay, QtWidgets.QBoxLayout):
+            continue
+        at = lay.indexOf(card)
+        made = []
+        for title, marks in parts:
+            units = [u for u in (_unit_for(card, m) for m in marks) if u]
+            if not units:
+                continue
+            new = widgets.Card(title, len(page.cards) + 1, card.help_text)
+            buttons = None
+            for kind, a, b in units:
+                if kind == "row":
+                    box = QtWidgets.QWidget()
+                    form = widgets.FormLayout(box, align=Qt.AlignLeft if theme.new_look() else Qt.AlignRight,
+                                              label_max=render.LABEL_W if theme.new_look() else None)
+                    form.addRow(a, b)
+                    new.add(box)
+                elif kind == "button":
+                    if buttons is None:
+                        buttons = widgets.flow_box(6)
+                        new.add(buttons)
+                    a.setProperty("stretch", True)
+                    buttons.layout().addWidget(a)
+                else:
+                    new.add(a)
+            at += 1
+            lay.insertWidget(at, new)
+            page.cards.insert(page.cards.index(card) + 1 + len(made), new)
+            made.append(new)
+        if made:
+            card.set_title(new_title)
+        page.renumber()
+
+
+def _unit_for(card, mark):
+    """What to move for a mark: ('button', the button), ('row', its name, its field) or ('widget', w); the unit is
+    taken out of where it is."""
+    for w in card.body.findChildren(QtWidgets.QWidget):
+        text = w.text() if hasattr(w, "text") and callable(w.text) else ""
+        if not text or not str(text).replace("&&", "&").startswith(mark):
+            continue
+        parent = w.parentWidget()
+        lay = parent.layout() if parent is not None else None
+        if isinstance(w, QtWidgets.QAbstractButton):
+            if lay is not None:
+                lay.removeWidget(w)
+            return ("button", w, None)
+        if isinstance(w, QtWidgets.QLabel) and isinstance(lay, widgets.FormLayout):
+            for l, f in lay._rows:
+                if l is not None and l.widget() is w and f is not None:
+                    field = f.widget()
+                    lay.takeAt(lay._items.index(f))
+                    lay.takeAt(lay._items.index(l))
+                    if not [x for x in lay._items]:
+                        parent.hide()
+                    return ("row", w, field)
+        if isinstance(w, QtWidgets.QLabel) and lay is not None:      # a label beside its field in a row
+            items = [lay.itemAt(i).widget() for i in range(lay.count()) if lay.itemAt(i).widget() is not None]
+            i = items.index(w) if w in items else -1
+            if 0 <= i < len(items) - 1:
+                field = items[i + 1]
+                lay.removeWidget(w)
+                lay.removeWidget(field)
+                if len(items) == 2:
+                    parent.hide()
+                return ("row", w, field)
+    return None
+
+
+def _loose_before_cards(w):
+    """The widgets before a page's first section, in the layout that holds its sections (taken out of it)."""
+    first = [c for c in w.findChildren(widgets.Card) if c.property("inner") != "true"]
+    if not first:
+        return []
+    lay = first[0].parentWidget().layout() if first[0].parentWidget() else None
+    if lay is None:
+        return []
+    out = []
+    for k in range(lay.indexOf(first[0])):
+        it = lay.itemAt(k)
+        if it is not None and it.widget() is not None and not isinstance(it.widget(), widgets.Card):
+            out.append(it.widget())
+    for x in out:
+        lay.removeWidget(x)
+    return out
+
+
 def selection():
     """(kinds, short names, edges) of what's selected."""
     try:
@@ -648,6 +809,8 @@ def _head_buttons(owner):
               "click again to take it off.", lambda: _star(owner)),
              ("Pop out", "Open this page in its own panel (several can be open side by side).",
               lambda: owner.pop_out()),
+             ("Arrange", "Put this page's sections in your own order: Up / Down / To top on each section "
+              "(or drag a section by its title). Kept for this page.", lambda: _arrange(owner)),
              ("Guide", "A step-by-step guide to rigging with Gus_Rigtool.", lambda: ui._guide()),
              ("Full view" if simple else "Simple view", "Simple: advanced sections folded away. Full: everything "
               "as you left it.", lambda: _toggle_view(owner)),
@@ -662,6 +825,24 @@ def _head_buttons(owner):
         box.layout().addWidget(b)
     box.setMaximumWidth(330)
     return box
+
+
+def _arrange(owner):
+    a = owner.areas.get(owner.area) if hasattr(owner, "areas") else None
+    if a is None or not hasattr(a, "arrange"):
+        return
+    if not a.arranging and a.current and isinstance(a.widgets.get(tuple(a.current[:2])), OldPage):
+        _set_status(owner, "This page can't be arranged yet.", "info")
+        return
+    a.arrange(not a.arranging)
+
+
+def _arrange_label(owner):
+    a = owner.areas.get(owner.area) if hasattr(owner, "areas") else None
+    on = bool(a is not None and getattr(a, "arranging", False))
+    for b in owner.head_buttons.findChildren(QtWidgets.QPushButton):
+        if b.text() in ("Arrange", "Done arranging"):
+            b.setText("Done arranging" if on else "Arrange")
 
 
 def _star(owner):
@@ -796,6 +977,7 @@ class Frame(QtWidgets.QWidget):
         self.areas = {}
         self.area = None
         self.slim = False
+        self.side_hidden = bool(_state().get("side_hidden", False))
         root = QtWidgets.QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
@@ -834,6 +1016,7 @@ class Frame(QtWidgets.QWidget):
         hv.setContentsMargins(14, 10, 14, 0)
         hv.setSpacing(2)
         trow = QtWidgets.QHBoxLayout()
+        trow.setSpacing(12)                              # 5.7.8: a gap between the icon and the area's name
         self.head_icon = QtWidgets.QLabel()
         self.head_icon.setFixedSize(34, 34)
         self.head_icon.setAlignment(Qt.AlignCenter)
@@ -885,6 +1068,12 @@ class Frame(QtWidgets.QWidget):
 
     def _build_side(self):
         lay = self.side_layout
+        self.side_toggle = QtWidgets.QToolButton()      # 5.7.8: hide the sidebar to a thin strip of icons
+        self.side_toggle.setAutoRaise(True)
+        self.side_toggle.setCursor(Qt.PointingHandCursor)
+        self.side_toggle.setStyleSheet("QToolButton { color: %s; font-size: 15px; padding: 0px 6px; }" % theme.DIM)
+        self.side_toggle.clicked.connect(self.toggle_side)
+        lay.addWidget(self.side_toggle, 0, Qt.AlignRight)
         steps = [a for a in theme.AREAS if a[0] not in ("home", "toolbox", "settings")]
         self.sec_labels = []
         b = self._nav_button("home", "Home")
@@ -1002,6 +1191,7 @@ class Frame(QtWidgets.QWidget):
         self.subtitle.setText(_subtitle(sub[0]))
         self._breadcrumb()
         _star_label(self)
+        _arrange_label(self)
         s = _state()
         s["area"] = area
         if sub[0]:
@@ -1135,9 +1325,20 @@ class Frame(QtWidgets.QWidget):
         if a is not None and a.current:
             self._fill_tabs(a, a.current)
 
+    def toggle_side(self):
+        s = _state()
+        self.side_hidden = s["side_hidden"] = not self.side_hidden
+        _save_state(s)
+        self._apply_slim()
+
     def _apply_slim(self):
-        slim = self.width() < SLIM
+        hidden = self.side_hidden
+        slim = self.width() < SLIM or hidden
         self.slim = slim
+        if hasattr(self, "side_toggle"):
+            self.side_toggle.setText("›" if hidden else "‹")
+            self.side_toggle.setToolTip("Show the sidebar" if hidden else "Hide the sidebar (a thin strip of icons)")
+            self.side_toggle.setVisible(hidden or self.width() >= SLIM)
         self.favs.set_slim(slim)
         self.side.setFixedWidth(54 if slim else 196)
         for b in list(self.nav.values()) + [self.mine]:

@@ -143,6 +143,10 @@ QPushButton[role="big"]:disabled { background: #4a4f57; color: %(DIM)s; border-b
 QPushButton[role="help"], QToolButton[role="help"] { background: transparent; border: 1px solid %(LINE)s;
                           border-radius: 9px; color: %(FAINT)s; padding: 0px; min-width: 18px; max-width: 18px;
                           min-height: 18px; max-height: 18px; font-size: 11px; }
+QPushButton[role="arrange"] { background: #2b2f34; border: 1px solid %(accent)s; border-radius: 5px; padding: 3px 10px;
+    color: %(accent)s; font-weight: bold; }
+QPushButton[role="arrange"]:hover { background: %(accent)s; color: #111; }
+QFrame#gusArrangeBar { background: #24272b; border: 1px solid %(accent)s; border-radius: 7px; }
 QPushButton[role="seg"] { background: #2e3237; border-radius: 0px; border: 1px solid %(LINE)s; padding: 4px 10px; }
 QPushButton[role="seg"]:checked { background: %(accent)s; color: #111; font-weight: bold; }
 QPushButton[role="tab"] { background: transparent; color: %(DIM)s; border-radius: 7px; padding: 7px 12px; }

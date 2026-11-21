@@ -443,12 +443,7 @@ def _labelled(text, w):
     """New look: the name in a short, left-aligned column, the control beside it (one left edge for all); when the
     window is too narrow for both, the name goes above its control (nothing is cut off)."""
     box = QtWidgets.QWidget()
-    form = QtWidgets.QFormLayout(box)
-    form.setContentsMargins(0, 0, 0, 0)
-    form.setRowWrapPolicy(QtWidgets.QFormLayout.WrapLongRows)
-    form.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    form.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-    form.setHorizontalSpacing(10)
+    form = widgets.FormLayout(box, label_max=LABEL_W)
     lab = widgets.label(str(text), wrap=True)
     lab.setProperty("role", "lab")
     lab.setMinimumWidth(min(LABEL_W, lab.sizeHint().width()))
@@ -767,13 +762,8 @@ class Page(object):
         if cols != 2:
             return self._rowLayout(n, ctx)
         w = QtWidgets.QWidget()
-        form = QtWidgets.QFormLayout(w)
-        form.setContentsMargins(0, 0, 0, 0)
-        form.setRowWrapPolicy(QtWidgets.QFormLayout.WrapLongRows)    # narrow: the label goes above its field
-        form.setLabelAlignment((Qt.AlignLeft if theme.new_look() else Qt.AlignRight) | Qt.AlignVCenter)
-        form.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        form.setHorizontalSpacing(10)
-        form.setVerticalSpacing(6)
+        form = widgets.FormLayout(w, align=Qt.AlignLeft if theme.new_look() else Qt.AlignRight,
+                                  label_max=LABEL_W if theme.new_look() else None)   # narrow: names above
         kids = list(n.children)
         for i in range(0, len(kids), 2):
             a = self._node(kids[i], ctx)
@@ -1189,11 +1179,11 @@ class Page(object):
         Field(self, n, s, "intSliderGrp" if integer else "floatSliderGrp")
         lab = n.label()
         if lab:
-            box = QtWidgets.QWidget()
-            h = QtWidgets.QHBoxLayout(box)
-            h.setContentsMargins(0, 0, 0, 0)
-            h.addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
-            h.addWidget(s, 1)
+            if theme.new_look():
+                return _labelled(lab, s)
+            box = QtWidgets.QWidget()                # 5.7.8: narrow - the name goes above the slider (not cut)
+            form = widgets.FormLayout(box)
+            form.addRow(_role(widgets.label(str(lab), wrap=False), "dim"), s)
             return box
         return s
 

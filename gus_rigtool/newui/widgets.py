@@ -107,6 +107,143 @@ class FlowLayout(QtWidgets.QLayout):
         return y + line - rect.y() + m.bottom()
 
 
+class FormLayout(QtWidgets.QLayout):
+    """5.7.8: names on the left, controls on the right; when a control wouldn't get the room it needs, every name
+    goes above its control (Qt's own form squeezed the control instead, and cut its text)."""
+
+    def __init__(self, parent=None, hspace=10, vspace=6, align=Qt.AlignLeft, label_max=None):
+        super(FormLayout, self).__init__(parent)
+        self._rows = []                                   # [(label item or None, field item or None)]
+        self._items = []
+        self._h, self._v, self._align, self._lmax = hspace, vspace, align, label_max
+        self.setContentsMargins(0, 0, 0, 0)
+
+    def addRow(self, label, field=None):
+        li = QtWidgets.QWidgetItem(label) if label is not None else None
+        fi = QtWidgets.QWidgetItem(field) if field is not None else None
+        for w in (label, field):
+            if w is not None:
+                self.addChildWidget(w)
+        for it in (li, fi):
+            if it is not None:
+                self._items.append(it)
+        self._rows.append((li, fi))
+        self.invalidate()
+
+    def addItem(self, item):
+        self._items.append(item)
+        self._rows.append((None, item))
+
+    def count(self):
+        return len(self._items)
+
+    def itemAt(self, i):
+        return self._items[i] if 0 <= i < len(self._items) else None
+
+    def takeAt(self, i):
+        if not 0 <= i < len(self._items):
+            return None
+        it = self._items.pop(i)
+        self._rows = [(None if l is it else l, None if f is it else f) for l, f in self._rows]
+        return it
+
+    def expandingDirections(self):
+        return Qt.Orientations(0) if hasattr(Qt, "Orientations") else Qt.Orientation(0)
+
+    def hasHeightForWidth(self):
+        return True
+
+    def heightForWidth(self, width):
+        return self._do(QtCore.QRect(0, 0, width, 0), True)
+
+    def setGeometry(self, rect):
+        super(FormLayout, self).setGeometry(rect)
+        self._do(rect, False)
+
+    @staticmethod
+    def _shown(it):
+        return it is not None and (it.widget() is None or not it.widget().isHidden())
+
+    def _label_w(self):
+        ws = [l.sizeHint().width() for l, f in self._rows if self._shown(l) and f is not None]
+        w = max(ws) if ws else 0
+        return min(w, self._lmax) if self._lmax else w
+
+    def _field_min(self):
+        ws = [f.minimumSize().width() for l, f in self._rows if self._shown(f) and self._shown(l)]
+        return max(ws) if ws else 0
+
+    def sizeHint(self):
+        lw = self._label_w()
+        w, h = 0, 0
+        for l, f in self._rows:
+            rw = (lw + self._h if self._shown(l) and f is not None else 0) + (f.sizeHint().width() if
+                                                                               self._shown(f) else 0)
+            if self._shown(l) and f is None:
+                rw = l.sizeHint().width()
+            w = max(w, rw)
+            h += max(l.sizeHint().height() if self._shown(l) else 0, f.sizeHint().height() if self._shown(f) else 0)
+        return QtCore.QSize(w, h)
+
+    def minimumSize(self):
+        w = 0
+        for l, f in self._rows:
+            for it in (l, f):
+                if self._shown(it):
+                    w = max(w, it.minimumSize().width())
+        m = self.contentsMargins()
+        return QtCore.QSize(w + m.left() + m.right(), 0)
+
+    def stacked(self, width):
+        lw = self._label_w()
+        return lw and lw + self._h + self._field_min() > width
+
+    def _do(self, rect, test):
+        m = self.contentsMargins()
+        r = rect.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
+        lw = self._label_w()
+        stack = self.stacked(r.width())
+        y = r.y()
+        first = True
+        for l, f in self._rows:
+            sl, sf = self._shown(l), self._shown(f)
+            if not sl and not sf:
+                continue
+            if not first:
+                y += self._v
+            first = False
+            if sl and (f is None or not sf):
+                h = l.heightForWidth(r.width()) if l.hasHeightForWidth() else l.sizeHint().height()
+                if not test:
+                    l.setGeometry(QtCore.QRect(r.x(), y, r.width(), h))
+                y += h
+                continue
+            if sf and not sl:
+                h = f.heightForWidth(r.width()) if f.hasHeightForWidth() else f.sizeHint().height()
+                if not test:
+                    f.setGeometry(QtCore.QRect(r.x(), y, r.width(), h))
+                y += h
+                continue
+            if stack:
+                lh = l.heightForWidth(r.width()) if l.hasHeightForWidth() else l.sizeHint().height()
+                fh = f.heightForWidth(r.width()) if f.hasHeightForWidth() else f.sizeHint().height()
+                if not test:
+                    l.setGeometry(QtCore.QRect(r.x(), y, r.width(), lh))
+                    f.setGeometry(QtCore.QRect(r.x(), y + lh + 2, r.width(), fh))
+                y += lh + 2 + fh
+            else:
+                fw = r.width() - lw - self._h
+                fh = f.heightForWidth(fw) if f.hasHeightForWidth() else f.sizeHint().height()
+                lh = l.heightForWidth(lw) if l.hasHeightForWidth() else l.sizeHint().height()
+                h = max(fh, lh)
+                if not test:
+                    f.setGeometry(QtCore.QRect(r.x() + lw + self._h, y, fw, fh))
+                    lx = r.x() if self._align & Qt.AlignLeft else r.x() + lw - min(lw, l.sizeHint().width())
+                    l.setGeometry(QtCore.QRect(lx, y + max(0, (fh - lh) // 2), min(lw, max(lw, 1)), lh))
+                y += h
+        return y - rect.y() + m.bottom()
+
+
 def flow_box(spacing=6):
     w = QtWidgets.QWidget()
     w.setLayout(FlowLayout(spacing=spacing))
@@ -131,6 +268,7 @@ class WrapButton(QtWidgets.QPushButton):
     def __init__(self, text="", parent=None):
         super(WrapButton, self).__init__(parent)
         self._lb = QtWidgets.QLabel(text, self)
+        self._lb.setTextFormat(Qt.PlainText)          # 5.7.8: 'Shapes follow (<name>Shape)' was read as a tag
         self._lb.setWordWrap(True)
         self._lb.setAlignment(Qt.AlignCenter)
         self._lb.setAttribute(Qt.WA_TransparentForMouseEvents)
@@ -182,6 +320,7 @@ class WrapCheckBox(QtWidgets.QCheckBox):
     def __init__(self, text="", parent=None):
         super(WrapCheckBox, self).__init__(parent)
         self._lb = QtWidgets.QLabel(text, self)
+        self._lb.setTextFormat(Qt.PlainText)          # 5.7.8: 'Shapes follow (<name>Shape)' was read as a tag
         self._lb.setWordWrap(True)
         self._lb.setAttribute(Qt.WA_TransparentForMouseEvents)
         lay = QtWidgets.QHBoxLayout(self)
@@ -201,15 +340,21 @@ class WrapCheckBox(QtWidgets.QCheckBox):
     def hitButton(self, pos):
         return self.rect().contains(pos)
 
+    def minimumSizeHint(self):
+        """Never narrower than its longest word (a word can't wrap - 5.7.7 cut '(<name>Shape)')."""
+        self._lb.ensurePolished()
+        fm = self._lb.fontMetrics()
+        adv = fm.horizontalAdvance if hasattr(fm, "horizontalAdvance") else fm.width
+        words = self._lb.text().split() or [""]
+        return QtCore.QSize(max(max(adv(w) for w in words) + 30, min(self.sizeHint().width(), 90)),
+                            max(20, fm.height() + 4))
+
     def sizeHint(self):
         self._lb.ensurePolished()
         fm = self._lb.fontMetrics()
         t = self._lb.text()
         w = fm.horizontalAdvance(t) if hasattr(fm, "horizontalAdvance") else fm.width(t)
         return QtCore.QSize(w + 30, max(20, fm.height() + 4))
-
-    def minimumSizeHint(self):
-        return QtCore.QSize(min(self.sizeHint().width(), 90), self.sizeHint().height())
 
     def hasHeightForWidth(self):
         return True
@@ -235,6 +380,21 @@ def big_button(text, tip=""):
     return b
 
 
+class SegButton(QtWidgets.QPushButton):
+    """A choice button: as wide as its words in bold (the picked one turns bold - 5.7.7 cut 'Above the objec')."""
+
+    def sizeHint(self):
+        hint = super(SegButton, self).sizeHint()
+        f = QtGui.QFont(self.font())
+        f.setBold(True)
+        need = QtGui.QFontMetrics(f).horizontalAdvance(self.text().replace("&&", "&")) if hasattr(
+            QtGui.QFontMetrics, "horizontalAdvance") else QtGui.QFontMetrics(f).width(self.text().replace("&&", "&"))
+        return QtCore.QSize(max(hint.width(), need + 24), hint.height())
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
+
 class Segmented(QtWidgets.QWidget):
     """A few choices side by side, one picked (an optionMenu / radio group). Wraps when narrow."""
     changed = QtCore.Signal(int)
@@ -246,7 +406,9 @@ class Segmented(QtWidgets.QWidget):
         self.group = QtWidgets.QButtonGroup(self)
         self.group.setExclusive(True)
         for i, text in enumerate(labels):
-            b = button(text, "seg")
+            b = SegButton(str(text).replace("&", "&&"))      # '&' shown as '&' (not a shortcut mark)
+            _set_role(b, "seg")
+            b.setCursor(Qt.PointingHandCursor)
             b.setCheckable(True)
             a = theme.axis_of(text) if axis else None
             if a:
@@ -270,7 +432,7 @@ class Segmented(QtWidgets.QWidget):
             self.buttons[i].setChecked(True)
 
     def labels(self):
-        return [b.text() for b in self.buttons]
+        return [b.text().replace("&&", "&") for b in self.buttons]
 
 
 # --------------------------------------------------------------------------- the card
@@ -323,6 +485,7 @@ class Card(QtWidgets.QFrame):
         self.number, self.state = number, None
         h.addWidget(self.num, 0, Qt.AlignTop)
         t = QtWidgets.QLabel(title)
+        self.title_label = t
         t.setObjectName("gusCardTitle")
         t.setWordWrap(True)
         h.addWidget(t, 1)
@@ -349,6 +512,24 @@ class Card(QtWidgets.QFrame):
         self.arrow = QtWidgets.QLabel()
         h.addWidget(self.arrow, 0, Qt.AlignTop)
         v.addWidget(head)
+        self.arr = QtWidgets.QWidget()                 # 5.7.8 Arrange: Up / Down / To top under the title
+        ah = QtWidgets.QHBoxLayout(self.arr)
+        ah.setContentsMargins(0, 0, 0, 0)
+        ah.setSpacing(6)
+        self.arr_buttons = []
+        for text, verb, tip in (("↑  Up", "Move up", "One place up"), ("↓  Down", "Move down", "One place down"),
+                                ("⤒  To top", "Move to top", "First on this page")):
+            b = QtWidgets.QPushButton(text)
+            _set_role(b, "arrange")
+            b.setToolTip(tip)
+            b.setCursor(Qt.PointingHandCursor)
+            b.clicked.connect(lambda _=False, v=verb: self.moved.emit(self.title, "@" + v))
+            ah.addWidget(b)
+            self.arr_buttons.append(b)
+        ah.addStretch(1)
+        self.arr.hide()
+        v.addWidget(self.arr)
+        self.arranging = False
         self.desc = QtWidgets.QLabel("")               # 5.7.7 new look: what the section does, one line
         self.desc.setObjectName("gusDesc")
         self.desc.setWordWrap(True)
@@ -373,6 +554,23 @@ class Card(QtWidgets.QFrame):
         if self.hover_pin:
             self.pin.setVisible(False)
         self.set_closed(closed)
+
+    def set_title(self, title):
+        self.title = title
+        self.title_label.setText(title)
+
+    def set_arranging(self, on):
+        """Arrange (5.7.8): closed to its title, with Up / Down / To top; off: back as it was."""
+        if on == self.arranging:
+            return
+        self.arranging = on
+        if on:
+            self._was_closed = self.closed
+            self.set_closed(True)
+        else:
+            self.set_closed(getattr(self, "_was_closed", self.closed))
+        self.arr.setVisible(on)
+        self.peek.setVisible(self.closed and bool(self.peek.text()) and not on)
 
     def _show_help(self):
         QtWidgets.QMessageBox.information(self, self.title, self.help_text)
@@ -406,7 +604,7 @@ class Card(QtWidgets.QFrame):
         drag.exec_(Qt.MoveAction) if hasattr(drag, "exec_") else drag.exec(Qt.MoveAction)
 
     def _head_release(self, e):
-        if self._press is not None and e.button() == Qt.LeftButton:
+        if self._press is not None and e.button() == Qt.LeftButton and not self.arranging:
             self.set_closed(not self.closed)
         self._press = None
 
