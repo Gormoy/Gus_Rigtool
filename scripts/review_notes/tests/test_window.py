@@ -1,6 +1,6 @@
 """
 The Review Notes window built with real Qt (PySide6, off-screen) on a stand-in for Maya: it opens, saves a
-note, lists, filters and changes notes - and writes a picture of itself to design/review_notes/window_0.2.0.png.
+note, lists, filters and changes notes. REVIEW_NOTES_PICTURE=<path in the repo> also saves a picture of it.
 
     pip install PySide6
     QT_QPA_PLATFORM=offscreen python3 scripts/review_notes/tests/test_window.py
@@ -132,9 +132,9 @@ class WindowTests(unittest.TestCase):
         self.assertTrue(self.w.draw_btn.isChecked())
         self.assertIn("Not saved yet: 1 stroke(s) on shotCam", self.w.state.text())
         self.assertTrue(self.w.end_curve_btn.isEnabled())
-        out = os.path.join(REPO, "design", "review_notes", "window_0.2.0.png")
-        if os.path.isdir(os.path.dirname(out)):
-            self.w.grab().save(out)
+        out = os.environ.get("REVIEW_NOTES_PICTURE")      # e.g. design/review_notes/window_0.2.0.png
+        if out:
+            self.w.grab().save(os.path.join(REPO, out))
 
 
 if __name__ == "__main__":
