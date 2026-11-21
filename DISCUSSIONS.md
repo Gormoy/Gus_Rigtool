@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus on C2: "keep more of this idea, but some tools are not centred or pushed to the right; I want to see
+  it pushed more to the new style, just to have a look". Sent C3a (new-style cards, each field's name ABOVE it -
+  one left edge, full-width controls) and C3b (same cards, names on the LEFT in a short left-aligned column);
+  both: joined choice buttons (the new window's), quick buttons as chips, 'Options (n)' as a small rounded button
+  with the summary, the area colour on numbers / tab / main button. Pictures design/screens577/c3a_*, c3b_*
+  (+ c3a_groups_open: Options opened). Waiting for his pick.
+
 - 2026-11-21: Gus: "I liked C better, but it's still too much information at first look, and I want more of the
   colours and looks of the new version"; "I need them more organized - find the design references (rules, what
   makes a great UI/UX) and bring a based reference, understanding what the design means"; "yes, I need to see
