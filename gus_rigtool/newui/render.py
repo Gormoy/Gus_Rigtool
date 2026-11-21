@@ -223,7 +223,7 @@ class Field(object):
             hx = _hex(v)
             if self.kind == "button" and hx and not self._label():
                 w.setStyleSheet("QPushButton { background: %s; border-radius: 5px; }" % hx)
-        elif key == "_level" and theme.new_look() and self._in_card():
+        elif key == "_level" and self._in_card():
             w.setStyleSheet("QLabel { background: transparent; padding: 0px; color: %s; font-size: 12px; }" %
                             theme.CHIP.get(v, theme.CHIP["idle"])[1])
             self.level = v
@@ -715,10 +715,9 @@ class Page(object):
             for c in kids:
                 self._note(c, "the card's own ?")          # ui.section's help row: the card has its own '?'
             return None
-        if theme.new_look():
-            got = self._row_new(n, ctx)
-            if got is not None:
-                return got
+        got = self._row_new(n, ctx)
+        if got is not None:
+            return got
         box = widgets.flow_box(6)
         self._children(n, box.layout(), ctx)
         Field(self, n, box)
@@ -763,17 +762,15 @@ class Page(object):
         if cols != 2:
             return self._rowLayout(n, ctx)
         w = QtWidgets.QWidget()
-        form = widgets.FormLayout(w, align=Qt.AlignLeft if theme.new_look() else Qt.AlignRight,
-                                  label_max=LABEL_W if theme.new_look() else None)   # narrow: names above
+        form = widgets.FormLayout(w, label_max=LABEL_W)                  # narrow: names above
         kids = list(n.children)
         for i in range(0, len(kids), 2):
             a = self._node(kids[i], ctx)
             b = self._node(kids[i + 1], ctx) if i + 1 < len(kids) else None
             if isinstance(a, QtWidgets.QLabel):
-                a.setWordWrap(theme.new_look())
+                a.setWordWrap(True)
                 _role(a, "dim")
-                if theme.new_look():
-                    a.setFixedWidth(LABEL_W)
+                a.setFixedWidth(LABEL_W)
             if a is not None and b is not None:
                 form.addRow(a, b)
             elif a is not None:
@@ -793,7 +790,7 @@ class Page(object):
         if "(advanced)" in title:
             title, closed = title.replace("(advanced)", "").strip(), True
         inside = ctx.get("card") is not None              # 5.7.3: a section inside a card - a lighter panel
-        if theme.new_look() and not inside and _has_light(n):
+        if not inside and _has_light(n):
             closed = False                                # 5.7.7 (Gus: "all open"): every step open
         card = widgets.Card(title, None if inside else number, str(n.kw.get("annotation") or ""), closed)
         if inside:
@@ -805,7 +802,7 @@ class Page(object):
         else:
             self.cards.append(card)
         inner = {"card": card}
-        if theme.new_look() and not inside:
+        if not inside:
             self._card_new(n, card, inner)
         else:
             for c in n.children:
@@ -1051,13 +1048,8 @@ class Page(object):
         self._note(n, "shown")
         Field(self, n, w)
         lab = n.label()
-        if lab and theme.new_look():
-            return _labelled(lab, w)
         if lab:
-            box = widgets.flow_box(8)
-            box.layout().addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
-            box.layout().addWidget(w)
-            return box
+            return _labelled(lab, w)
         return w
 
     def _radioCollection(self, n, ctx):
@@ -1180,12 +1172,7 @@ class Page(object):
         Field(self, n, s, "intSliderGrp" if integer else "floatSliderGrp")
         lab = n.label()
         if lab:
-            if theme.new_look():
-                return _labelled(lab, s)
-            box = QtWidgets.QWidget()                # 5.7.8: narrow - the name goes above the slider (not cut)
-            form = widgets.FormLayout(box)
-            form.addRow(_role(widgets.label(str(lab), wrap=False), "dim"), s)
-            return box
+            return _labelled(lab, s)
         return s
 
     def _floatSliderGrp(self, n, ctx):
@@ -1256,17 +1243,11 @@ class Page(object):
 
     def _group(self, n, ctx, make):
         lab = n.label()
-        if lab and theme.new_look():
-            w = make()
-            self._note(n, "shown")
-            return _labelled(lab, w), w
-        box = widgets.flow_box(8)
-        if lab:
-            box.layout().addWidget(_role(widgets.label(str(lab), wrap=False), "dim"))
         w = make()
-        box.layout().addWidget(w)
         self._note(n, "shown")
-        return box, w
+        if lab:
+            return _labelled(lab, w), w
+        return w, w
 
     def _textFieldGrp(self, n, ctx):
         box, e = self._group(n, ctx, lambda: QtWidgets.QLineEdit(str(n.kw.get("text") or "")))

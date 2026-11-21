@@ -61,24 +61,9 @@ def axis_of(label):
     return None
 
 
-# 5.7.7: which look the new window has - "today" (5.7) or "new" (C6: Gus's pick after design/UI_PRINCIPLES.md);
-# Settings > Window > Look. Read when a window is made.
-LOOK = {"name": "today"}
-LOOK_KEY = "newWindowLook"
-
-
-def load_look():
-    from gus_rigtool.core import utils
-    LOOK["name"] = "new" if utils.load_setting(LOOK_KEY, "today") == "new" else "today"
-    return LOOK["name"]
-
-
-def new_look():
-    return LOOK["name"] == "new"
-
-
 def stylesheet(accent):
-    return _stylesheet(accent) + (_new_look(accent) if new_look() else "")
+    """The new window's look (5.7.7's C6 - Gus's pick after design/UI_PRINCIPLES.md; 5.7.9: the only one)."""
+    return _stylesheet(accent) + _new_look(accent)
 
 
 def _new_look(accent):

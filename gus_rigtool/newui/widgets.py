@@ -550,7 +550,7 @@ class Card(QtWidgets.QFrame):
         self._press = None
         self.closed = False
         self.pinned_on = False
-        self.hover_pin = theme.new_look()             # 5.7.7 new look: the pin shows when the mouse is over the card
+        self.hover_pin = True                         # 5.7.7: the pin shows when the mouse is over the card
         if self.hover_pin:
             self.pin.setVisible(False)
         self.set_closed(closed)
@@ -659,7 +659,7 @@ class Card(QtWidgets.QFrame):
     def set_state(self, level):
         self.state = level if level in ("made", "ready") else None
         self._badge()
-        if theme.new_look() and level in theme.CHIP:   # 5.7.7: the state as a tag on the title line
+        if level in theme.CHIP:                        # 5.7.7: the state as a tag on the title line
             bg, fg, word = theme.CHIP[level]
             self.chip.setText(word)
             self.chip.setStyleSheet("QLabel#gusChip { background: %s; color: %s; }" % (bg, fg))

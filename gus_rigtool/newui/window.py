@@ -713,8 +713,7 @@ def _split_cards(page, tool):
             for kind, a, b in units:
                 if kind == "row":
                     box = QtWidgets.QWidget()
-                    form = widgets.FormLayout(box, align=Qt.AlignLeft if theme.new_look() else Qt.AlignRight,
-                                              label_max=render.LABEL_W if theme.new_look() else None)
+                    form = widgets.FormLayout(box, label_max=render.LABEL_W)
                     form.addRow(a, b)
                     new.add(box)
                 elif kind == "button":
@@ -976,7 +975,6 @@ def _what(kinds):
 # --------------------------------------------------------------------------- the frame
 class Frame(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        theme.load_look()                       # 5.7.7: today's look or the new one (Settings > Window)
         super(Frame, self).__init__(parent)
         import gus_rigtool
         self.setObjectName("gusFrame")
@@ -1278,7 +1276,7 @@ class Frame(QtWidgets.QWidget):
 
     def _breadcrumb(self):
         """New look: the status line says what's selected and where you are (until a tool says something)."""
-        if not theme.new_look() or not hasattr(self, "status"):
+        if not hasattr(self, "status"):
             return
         text = self.status.text().strip()
         if text and text != "Ready." and not text.startswith("●"):

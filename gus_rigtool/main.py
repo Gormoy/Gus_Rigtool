@@ -36,20 +36,6 @@ def use_window(which):
         _switch(which)
 
 
-def use_look(which):
-    """5.7.7: 'new' (C6) or 'today': the new window's look - it opens again in that look, where you were."""
-    from gus_rigtool.newui import theme, window
-    utils.save_setting(theme.LOOK_KEY, "new" if which == "new" else "today")
-
-    def again():
-        window.close()
-        window.show("settings")
-    try:
-        cmds.evalDeferred(again)
-    except (RuntimeError, AttributeError):
-        again()
-
-
 def _switch(which):
     if which == "old":
         try:

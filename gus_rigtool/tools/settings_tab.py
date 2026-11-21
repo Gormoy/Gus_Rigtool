@@ -229,22 +229,15 @@ def build(prefix="p_settings_"):
     cmds.textField(textChangedCommand=_w(search), annotation="Type part of an option's name, e.g. colour.")
     cmds.setParent("..")
 
-    ui.section("Window", help_text="5.7: the new window (a sidebar, a colour per area, nothing cut off) or the old "
-               "one (5.6, tabs). Your options are the same in both; switch any time.")
+    ui.section("Window", help_text="The new window (a sidebar, a colour per area, your own order of the sections) or "
+               "the legacy look (Maya's own window with tabs, as in 5.6). Your options are the same in both; switch "
+               "any time.")
     import gus_rigtool.main as gr
-    ui.note("Now: the %s window." % ("new" if gr.new_window() else "old (5.6)"))
+    ui.note("Now: %s." % ("the new window" if gr.new_window() else "the legacy look"))
     ui.row(2, 170)
-    cmds.button(label="Use the new window", height=26, command=_w(_guard(lambda *_: gr.use_window("new"))))
-    cmds.button(label="Use the old window (5.6)", height=26, command=_w(_guard(lambda *_: gr.use_window("old"))))
-    cmds.setParent("..")
-    from gus_rigtool.newui import theme as _theme       # 5.7.7: the new window's look, to compare in Maya
-    ui.note("Look of the new window: %s." % ("the new one (5.7.7)" if utils.load_setting(_theme.LOOK_KEY, "today")
-                                             == "new" else "today's (5.7)"))
-    ui.row(2, 170)
-    cmds.button(label="New look (5.7.7)", height=26, command=_w(_guard(lambda *_: gr.use_look("new"))),
-                annotation="Less at first look: the rarely changed choices under Options, each step's state as a "
-                           "tag. Same buttons, same tools.")
-    cmds.button(label="Today's look (5.7)", height=26, command=_w(_guard(lambda *_: gr.use_look("today"))))
+    cmds.button(label="New window", height=26, command=_w(_guard(lambda *_: gr.use_window("new"))))
+    cmds.button(label="Legacy look", height=26, command=_w(_guard(lambda *_: gr.use_window("old"))),
+                annotation="Maya's own window with tabs (5.6) - the same tools and options.")
     cmds.setParent("..")
     _end()
 
