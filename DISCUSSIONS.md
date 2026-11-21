@@ -17,6 +17,14 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: "1 (classic) is still easier to read, but the design of 2 is good - give me more options combining
+  the two"; "we can think of the whole window, but I need to see how it would look overall in more versions - I'll
+  send more references"; he sent NO picture ("take a look at this" = his words before - my misread). Sent 3 mixes
+  (design/screens577 window_groups_mix*, style_*_mix*): all keep Version 1's controls (label column, round radio
+  buttons, square check boxes, solid grey buttons, blue main button) + Version 2's one-line description:
+  A = in cards; B = Maya-like section bars with a colour edge + number; C = no boxes, a thin line between
+  sections. Waiting for his pick and his references before building anything.
+
 - 2026-11-21: Gus on the Toolbox preview: plan OK, but "I really didn't like the way the tools look - I want it
   easier to see and retaining at least a bit of the older version so I can understand what's going on"; asked for
   2 new versions (his reference picture didn't arrive - asked him to resend). Q2 (split Pivots): "I let you
