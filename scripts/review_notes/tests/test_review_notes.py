@@ -393,5 +393,81 @@ class PluginTests(unittest.TestCase):
         self.assertEqual(o.prepareForDraw(obj, cam, self.ctx(), None).items, [])
 
 
+class SaveTests(unittest.TestCase):
+    """0.1.3: REVIEW_NOTES is out of the scene while it saves (Maya wrote 'requires reviewNotesNode' when it was
+    there, even with do-not-write) and comes back after with its settings; none of it goes in the undo queue."""
+
+    def setUp(self):
+        st = self.st = {"nodes": {"REVIEW_NOTESShape": {"onlyOpen": True, "opacity": 0.5, "reviewFile": ""}},
+                        "undo": True, "undo_while_deleting": None, "deferred": [], "made": 0}
+        cmds = types.ModuleType("maya.cmds")
+
+        def ls(*a, **k):
+            return list(st["nodes"]) if k.get("type") == "reviewNotes" else []
+
+        def delete(nodes):
+            st["undo_while_deleting"] = st["undo"]
+            st["nodes"].clear()
+
+        def undoInfo(query=False, stateWithoutFlush=None):
+            if query:
+                return st["undo"]
+            st["undo"] = stateWithoutFlush
+
+        def setAttr(plug, value, type=None):
+            name, attr = plug.split(".")
+            st["nodes"][name][attr] = value
+
+        cmds.ls = ls
+        cmds.delete = delete
+        cmds.undoInfo = undoInfo
+        cmds.pluginInfo = lambda *a, **k: True
+        cmds.listRelatives = lambda n, parent=False: ["REVIEW_NOTES"]
+        cmds.getAttr = lambda plug: st["nodes"][plug.split(".")[0]].get(plug.split(".")[1], False)
+        cmds.setAttr = setAttr
+        cmds.evalDeferred = lambda fn, lowestPriority=False: st["deferred"].append(fn)
+        self.saved = {k: sys.modules.get(k) for k in ("maya", "maya.cmds", "reviewNotes.controller")}
+        sys.modules["maya"] = types.ModuleType("maya")
+        sys.modules["maya.cmds"] = cmds
+        sys.modules.pop("reviewNotes.controller", None)
+        import importlib
+        import reviewNotes
+        if hasattr(reviewNotes, "controller"):
+            del reviewNotes.controller                  # or the copy from the test before comes back
+        controller = importlib.import_module("reviewNotes.controller")
+        self.c = controller
+
+        def ensure():
+            st["made"] += 1
+            st["nodes"]["REVIEW_NOTESShape"] = {}
+            return "REVIEW_NOTESShape"
+        controller.ensure_node = ensure
+
+    def tearDown(self):
+        for k, v in self.saved.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+
+    def test_out_for_the_save_back_after(self):
+        self.c._before_save()
+        self.assertEqual(self.st["nodes"], {})                       # not there while Maya writes the file
+        self.assertFalse(self.st["undo_while_deleting"])             # and not in the undo queue
+        self.assertTrue(self.st["undo"])                             # undo back on after
+        self.c._after_save()
+        self.assertEqual(len(self.st["deferred"]), 1)                # put back once Maya is idle
+        self.st["deferred"][0]()
+        node = self.st["nodes"]["REVIEW_NOTESShape"]
+        self.assertEqual((node["onlyOpen"], node["opacity"]), (True, 0.5))   # its settings kept
+        self.assertTrue(self.st["undo"])
+
+    def test_no_node_no_work(self):
+        self.st["nodes"].clear()
+        self.c._before_save()
+        self.c._after_save()
+        self.assertEqual((self.st["deferred"], self.st["made"]), ([], 0))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

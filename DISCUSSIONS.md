@@ -17,6 +17,12 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus "the plan is ok, build 0.1.3". Built: REVIEW_NOTES taken out before every save / export and put
+  back after with its settings (as Animtool arcs); making / removing it never goes in the undo queue (likely why
+  the plugin wouldn't unload); the installer says RESTART MAYA when the plugin running isn't the tool's version;
+  self test: plugin version must match, save callbacks on, a real save with the node there. 23 tests pass;
+  waiting for his install (restart once: 0.1.1's plugin is still the one running) + self test.
+
 - 2026-11-21: 0.1.2 self test: 1 FAIL - a real save STILL writes 'requires reviewNotesNode' even with
   writeRequires False (so that flag doesn't stop it while the node exists). Also "plugin loads - version 0.1.1":
   the installer didn't manage to unload the old plugin (lines not pasted yet). Gus didn't know about question 2

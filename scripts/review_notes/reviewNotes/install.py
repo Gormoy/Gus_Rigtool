@@ -48,8 +48,16 @@ def _old_copy_off():
         cmds.unloadPlugin(PLUGIN)
         return True
     except RuntimeError as e:
-        print("Review Notes installer: the old plugin stays loaded until Maya restarts (%s)" % e)
+        print("Review Notes installer: the old plugin (%s) stays loaded until Maya restarts: %s"
+              % (_loaded_version(), str(e).strip()))
         return False
+
+
+def _loaded_version():
+    try:
+        return cmds.pluginInfo(PLUGIN, query=True, version=True)
+    except Exception:
+        return "?"
 
 
 def _ensure_user_setup(version_scripts, shared):
@@ -120,7 +128,10 @@ def install(source_dir):
     import reviewNotes.controller as ctl
     ctl.watch()
     ctl.show()
+    loaded = _loaded_version()
+    stale = loaded != reviewNotes.__version__
     msg = "Review Notes %s installed in %s - Review button on the '%s' shelf.%s" % (
-        reviewNotes.__version__, dest, shelf, "" if fresh else " Restart Maya to use the new drawing.")
+        reviewNotes.__version__, dest, shelf,
+        " RESTART MAYA: the plugin running is still %s." % loaded if (stale or not fresh) else "")
     print(msg)
     return dest

@@ -27,7 +27,7 @@ NODE_ID = 0x0007F3A2                      # local-use range (0 - 0x7ffff); a reg
 CLASSIFICATION = "drawdb/geometry/reviewNotes"
 REGISTRANT = "reviewNotesDrawOverride"
 FILTER = "reviewNotes"                    # Show menu > Review notes
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 
 def maya_useNewAPI():

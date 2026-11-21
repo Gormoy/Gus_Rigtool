@@ -58,12 +58,33 @@ def node():
     return found[0] if found else None
 
 
+class NoUndo(object):
+    """Changes that don't go in the undo queue (Ctrl+Z never removes the notes' node, and a node in the undo
+    queue keeps Maya from unloading the plugin on an update)."""
+
+    def __enter__(self):
+        self.was = cmds.undoInfo(query=True, stateWithoutFlush=True)
+        cmds.undoInfo(stateWithoutFlush=False)
+
+    def __exit__(self, *exc):
+        cmds.undoInfo(stateWithoutFlush=self.was)
+        return False
+
+
 def ensure_node():
-    """One REVIEW_NOTES node (made if missing). Neither it nor its transform is saved in the scene."""
+    """One REVIEW_NOTES node (made if missing). It's never in a saved scene: taken out before every save and
+    put back after (0.1.3 - its being there made Maya write 'requires reviewNotesNode', Gus 2026-11-21)."""
     load_plugin()
+    if not _jobs:
+        watch()
     shape = node()
     if shape:
         return shape
+    with NoUndo():
+        return _make_node()
+
+
+def _make_node():
     sel = cmds.ls(selection=True)
     shape = cmds.createNode(NODE_TYPE, name=NODE + "Shape", skipSelect=True)
     xform = cmds.listRelatives(shape, parent=True)[0]
@@ -85,7 +106,8 @@ def ensure_node():
 def off():
     shape = node()
     if shape:
-        cmds.delete(cmds.listRelatives(shape, parent=True))
+        with NoUndo():
+            cmds.delete(cmds.listRelatives(shape, parent=True))
 
 
 def review_path():
@@ -169,14 +191,61 @@ def _after_open(*_):
         print("Review Notes: notes not shown for this scene (%s)" % e)
 
 
+# ---------------- saving: the node goes out, then comes back ----------------
+SETTINGS = ("reviewFile", "showNearby", "nearbyFrames", "onlyOpen", "showText", "opacity", "hideWhilePlaying",
+            "showGate")
+_kept = {}
+
+
+def _before_save(*_):
+    """No REVIEW_NOTES in the saved file - and so no 'requires reviewNotesNode' (do-not-write alone wasn't
+    enough: Maya still wrote the requires line). Its settings are kept and put back after the save."""
+    _kept.clear()
+    try:
+        shape = node()
+        if not shape:
+            return
+        _kept.update({a: cmds.getAttr("%s.%s" % (shape, a)) for a in SETTINGS})
+        _kept["_was_there"] = True
+        with NoUndo():
+            cmds.delete(cmds.listRelatives(shape, parent=True))
+    except Exception as e:
+        print("Review Notes: couldn't take the notes' node out before saving (%s)" % e)
+
+
+def _after_save(*_):
+    if not _kept.pop("_was_there", False):
+        return
+    settings = dict(_kept)
+    _kept.clear()
+    cmds.evalDeferred(lambda: _put_back(settings), lowestPriority=True)
+
+
+def _put_back(settings):
+    try:
+        shape = ensure_node()
+        with NoUndo():
+            for attr, value in settings.items():
+                if attr == "reviewFile":
+                    cmds.setAttr("%s.%s" % (shape, attr), value or "", type="string")
+                else:
+                    cmds.setAttr("%s.%s" % (shape, attr), value)
+    except Exception as e:
+        print("Review Notes: notes not shown again after the save (%s) - click Review" % e)
+
+
 def watch():
-    """Called from userSetup.py at Maya start (the installer adds it)."""
+    """Scene opened -> notes shown; before / after every save or export -> the node out / back.
+    Called at Maya start (userSetup.py), by the installer and when the node is first made."""
     unwatch()
     try:
         import maya.api.OpenMaya as om
-        _jobs.append(om.MSceneMessage.addCallback(om.MSceneMessage.kAfterOpen, _after_open))
+        m = om.MSceneMessage
+        for when, fn in ((m.kAfterOpen, _after_open), (m.kBeforeSave, _before_save), (m.kAfterSave, _after_save),
+                         (m.kBeforeExport, _before_save), (m.kAfterExport, _after_save)):
+            _jobs.append(m.addCallback(when, fn))
     except Exception as e:
-        print("Review Notes: won't show notes when a scene opens (%s)" % e)
+        print("Review Notes: not watching scene opens and saves (%s)" % e)
 
 
 def unwatch():

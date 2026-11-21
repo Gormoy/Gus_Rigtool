@@ -34,7 +34,15 @@ def _check(what, fn):
 
 def _plugin():
     loaded = controller.load_plugin()
-    return loaded, "version %s" % cmds.pluginInfo(controller.PLUGIN, query=True, version=True)
+    version = cmds.pluginInfo(controller.PLUGIN, query=True, version=True)
+    if version != reviewNotes.__version__:
+        return False, "the plugin running is %s, the tool is %s - restart Maya" % (version, reviewNotes.__version__)
+    return loaded, "version %s" % version
+
+
+def _watching():
+    n = len(controller._jobs)
+    return n >= 5, "%d scene callbacks (open, before / after save, before / after export)" % n
 
 
 def _one_node():
@@ -65,6 +73,7 @@ def _not_saved():
     if cmds.file(query=True, sceneName=True) or len(cmds.ls(dag=True)) > 30:
         return None, "skipped: run the self test in a NEW, EMPTY scene (File > New Scene)"
     path = os.path.join(tempfile.mkdtemp(prefix="review_notes_test"), "save_test.ma")
+    controller.ensure_node()                     # the node IS there when the save starts
     cmds.file(rename=path)
     try:
         cmds.file(save=True, type="mayaAscii", force=True)
@@ -101,6 +110,7 @@ def run():
     LINES.append("Review Notes %s self test - Maya %s" % (reviewNotes.__version__, cmds.about(version=True)))
     _check("plugin loads", _plugin)
     _check("one REVIEW_NOTES node", _one_node)
+    _check("watching saves", _watching)
     _check("Show menu > Review notes", _show_menu)
     _check("Review notes shown in each view", _show_menu_in_views)
     _check("review file: save, read again, change", _file_round_trip)
