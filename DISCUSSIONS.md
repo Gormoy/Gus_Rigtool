@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: 0.1.2 self test: 1 FAIL - a real save STILL writes 'requires reviewNotesNode' even with
+  writeRequires False (so that flag doesn't stop it while the node exists). Also "plugin loads - version 0.1.1":
+  the installer didn't manage to unload the old plugin (lines not pasted yet). Gus didn't know about question 2
+  (re-save test.ma) - moot, the line comes back on every save. Plan sent, waiting for OK: take REVIEW_NOTES out
+  before every save and put it back after (like Animtool arcs since 5.6.40), self test checks; find why the
+  plugin didn't unload.
+
 - 2026-11-21: After a Maya restart 0.1.1 DRAWS (Gus's screenshot: arc, arrow, label sized right). Gus: "yes to
   option 1 and 2" -> 0.1.2: the plugin is a thin shell (drawing in reviewNotes/nodedraw.py, looked up on every
   refresh, so updates work without a restart) and the installer clears undo to unload the plugin. Found from his
