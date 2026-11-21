@@ -23,7 +23,7 @@ NODE_ID = 0x0007F3A2                      # local-use range (0 - 0x7ffff); a reg
 CLASSIFICATION = "drawdb/geometry/reviewNotes"
 REGISTRANT = "reviewNotesDrawOverride"
 FILTER = "reviewNotes"                    # Show menu > Review notes
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 
 def maya_useNewAPI():
@@ -109,10 +109,20 @@ def _render_aspect():
     return fn.findPlug("deviceAspectRatio", False).asFloat() or (w / float(max(1, h)))
 
 
+def scene_file():
+    """The open scene's file. MFileIO is only in Maya's OLD Python API (maya.OpenMaya), not in maya.api.OpenMaya
+    (0.1.0 used the new one: nothing was drawn - Gus, 2026-11-21)."""
+    try:
+        import maya.OpenMaya as om1
+        return om1.MFileIO.currentFile()
+    except Exception:
+        return cmds.file(query=True, sceneName=True)
+
+
 def review_file(node):
     """The node's Review File, or the file next to the open scene when it's empty."""
     path = om.MFnDependencyNode(node).findPlug("reviewFile", False).asString()
-    return path or store.path_for_scene(om.MFileIO.currentFile())
+    return path or store.path_for_scene(scene_file())
 
 
 def _options(node, scale):

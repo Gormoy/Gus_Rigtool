@@ -9,6 +9,7 @@ Gus's answer, then build.
 
 | Fact | What Maya does | Found | Version |
 |---|---|---|---|
+| `MFileIO` (the open scene's file) | only in the OLD Python API (`maya.OpenMaya.MFileIO.currentFile()`); `maya.api.OpenMaya` has no MFileIO in Maya 2024 (AttributeError) | Review Notes 0.1.0 drew nothing; Gus's paste | 2026-11-21 |
 | A plugin locator marked do-not-write (`MFnDependencyNode.setDoNotWrite(True)` on shape in postConstructor + on the transform) | NOT written to the scene, and no `requires` line for its plugin: the scene opens clean without the tool (Gus's Mac, export of a scene with REVIEW_NOTES) | Review Notes self test 0.1.0 | 2026-11-21 |
 | `cmds.pluginDisplayFilter(name, register=True, classification='drawdb/geometry/...')` | adds a Show menu entry; it's ON in every model panel by default | Review Notes self test 0.1.0 | 2026-11-21 |
 | Where the resolution gate is in a view (Review Notes) | `MFnCamera.getViewingFrustum(viewW/viewH, True, False, True)` vs `getRenderingFrustum(deviceAspectRatio)`: their ratio puts the gate exactly on Maya's own gate, at overscan 1.0 and 1.3 (Gus's Mac, persp, 960x540) | Review Notes try-it, Gus's screenshot | try-it 2026-11-21 |

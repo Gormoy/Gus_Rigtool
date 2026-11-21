@@ -17,6 +17,11 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Found why 0.1.0 drew nothing (Gus's diagnostic paste: "maya.api.OpenMaya has no attribute
+  'MFileIO'"): the plugin asked the NEW API for the open scene's file; MFileIO is only in the old API
+  (maya.OpenMaya). Every refresh failed before drawing. The tests missed it because their stand-in for Maya
+  wrongly had MFileIO - removed, and a test now checks it isn't there. 0.1.1 sent (old API, cmds as a fallback).
+
 - 2026-11-21: Review Notes 0.1.0 self test: all ok (plugin, one node, Show menu entry, node NOT saved and no
   'requires' line, review file round trip, camera). BUT the sample note did NOT show in persp1 (frames 0-5) -
   the try-it's notes did. Cause unknown: sent a diagnostic paste (same steps as the drawing, printed) + Show Gate

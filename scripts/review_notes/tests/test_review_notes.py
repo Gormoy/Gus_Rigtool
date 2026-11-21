@@ -278,7 +278,6 @@ def fake_maya(state):
     om.MFnCamera = MFnCamera
     om.MSelectionList = MSelectionList
     om.MTime = MTime
-    om.MFileIO = types.SimpleNamespace(currentFile=lambda: state["scene"])
     om.MColor = tuple
     om.MPoint = lambda x, y: (x, y)
     om.MPointArray = list
@@ -298,10 +297,13 @@ def fake_maya(state):
                                               deregisterDrawOverrideCreator=lambda *a: None)
     omui.MPxLocatorNode = Base
     cmds.pluginDisplayFilter = lambda *a, **k: state["registered"].append(a[0])
+    om1 = types.ModuleType("maya.OpenMaya")                    # the OLD API: the only one with MFileIO
+    om1.MFileIO = types.SimpleNamespace(currentFile=lambda: state["scene"])
     maya = types.ModuleType("maya")
     api = types.ModuleType("maya.api")
     mods = {"maya": maya, "maya.api": api, "maya.api.OpenMaya": om, "maya.api.OpenMayaAnim": oma,
-            "maya.api.OpenMayaRender": omr, "maya.api.OpenMayaUI": omui, "maya.cmds": cmds}
+            "maya.api.OpenMayaRender": omr, "maya.api.OpenMayaUI": omui, "maya.cmds": cmds,
+            "maya.OpenMaya": om1}
     return mods, Recorder()
 
 
@@ -335,6 +337,11 @@ class PluginTests(unittest.TestCase):
 
     def ctx(self, w=3268, h=2166):
         return types.SimpleNamespace(getViewportDimensions=lambda: (0, 0, w, h))
+
+    def test_new_api_has_no_mfileio(self):
+        """0.1.0 asked maya.api.OpenMaya for MFileIO (it isn't there) and drew nothing."""
+        self.assertFalse(hasattr(sys.modules["maya.api.OpenMaya"], "MFileIO"))
+        self.assertEqual(self.plugin.scene_file(), self.state["scene"])
 
     def test_registers_node_override_and_show_menu(self):
         self.plugin.initializePlugin(None)
