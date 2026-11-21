@@ -576,13 +576,17 @@ class FavBar(QtWidgets.QWidget):
         root.setContentsMargins(7, 5, 7, 6)
         root.setSpacing(5)
         shape = self.shape()
+        lab = self.labels()                              # a column: one even width for everything (5.7.9, Gus)
+        self.rail = max((max(self.wanted_size() + 6, 52) if lab else self.wanted_size() + 4), 76)
         self.chrome = self._chrome(shape)
         root.addWidget(self.chrome)
         self.tiles = QtWidgets.QWidget()
         self.grid = QtWidgets.QGridLayout(self.tiles)
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setSpacing(2)
-        self.grid.setAlignment(Qt.AlignLeft | Qt.AlignTop)      # the tiles side by side, not spread out
+        self.grid.setAlignment((Qt.AlignHCenter if shape == "col" else Qt.AlignLeft) | Qt.AlignTop)
+        if shape == "col":
+            self.tiles.setFixedWidth(self.rail)
         root.addWidget(self.tiles)
         if not hasattr(self, "strip"):
             self.strip = QtWidgets.QFrame(self, Qt.Tool | Qt.FramelessWindowHint)
@@ -658,16 +662,15 @@ class FavBar(QtWidgets.QWidget):
         lb.setChecked(self.labels())
         ml.addWidget(lb, 2 if col else 0, 0 if col else 5, 1, 2 if col else 1)
         lay.addWidget(modes)
-        if col:                                           # a column stays narrow (the mock-up's ~74 px rail)
+        if col:                                           # a column: everything the rail's width, evenly
             for w in list(self.mode_buttons.values()) + [lb]:
-                w.setStyleSheet("QToolButton { padding: 2px 3px; }")
-            box.setMaximumWidth(max(self.wanted_size() + 30, 78))
+                w.setStyleSheet("QToolButton { padding: 2px 0px; }")
         self.slider = QtWidgets.QSlider(Qt.Horizontal)
         self.slider.setRange(SIZE_MIN, SIZE_MAX)
         self.slider.setSingleStep(2)
         self.slider.setPageStep(4)
         self.slider.setValue(self.wanted_size())
-        self.slider.setFixedWidth(60 if col else 80)
+        self.slider.setFixedWidth(self.rail if col else 80)
         self.slider.setFocusPolicy(Qt.NoFocus)
         self.slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
         self.slider.sliderReleased.connect(lambda: self.set_size(self.slider.value()))
@@ -675,6 +678,15 @@ class FavBar(QtWidgets.QWidget):
         if editable():
             lay.addWidget(self._small("Done" if self.editing else "Edit", "Edit this profile: × takes one off; "
                                       "choose more in the menu", lambda: self.set_editing(not self.editing)))
+        if col:
+            box.setFixedWidth(self.rail)
+            for b in box.findChildren(QtWidgets.QToolButton):
+                if b.parentWidget() is not top:
+                    b.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+                    b.setMinimumWidth(0)
+            th.setSpacing(2)
+            self.readout.setAlignment(Qt.AlignCenter)
+            th.setStretch(1, 1)
         return box
 
     def _small(self, text, tip, fn, checkable=False):

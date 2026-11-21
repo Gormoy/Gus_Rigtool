@@ -247,6 +247,10 @@ the code; this file has what Gus said, decided and wants next.
   tools); shelf keeps Build and Publish (Build rig out). He asked if I understood his Gemini bar (profiles pills,
   Row/2R/Col/Grid, size slider + Ctrl+wheel, labels, right-click settings strip, auto-shrink, NoFocus) - answered;
   updated 5.7.9 plan + lighter list sent, waiting for his OK.
+- 2026-11-21: Gus: "1 yes (plan); 2 rigtool with mockup layout (Rigtool colours, his mock-up's layout); 4 options
+  fold (right-click strip = a tool's main options)". Lighter items not picked: going with my recommendation (1, 2, 4;
+  the Checker rewrite in its own release). Bar + Home built and shown as pictures (design/screens579). Gus on the
+  column: "too much space on the right, it should be even and proportional" - fixed (one width, tiles centred).
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
   Gemini UI/UX ideas, combined. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
