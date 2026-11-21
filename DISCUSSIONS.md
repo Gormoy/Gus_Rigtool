@@ -17,6 +17,12 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Review Notes 0.1.0 in Gus's Maya: installed, Review button works, "save the scene first" message
+  shown on an unsaved scene, rn.sample() wrote test.review.json next to test.ma (n_0001 on persp1, frames 0-5).
+  The self test didn't run: my message had a full stop after the command and he pasted it (syntax error) - the
+  commands in messages go in code blocks from now on. Waiting: self test lines + screenshot of the note.
+  Idea for later (not done, rule 1): rn.sample() prints the whole note as a Result line - could return nothing.
+
 - 2026-11-21: Gus: try-it all good ("everything showed here as well": top camera, onion skin, playblast, label);
   "the plan is ok, go ahead and build step 1"; push of the review-notes-tool branch OK ("3 - yes").
   Step 1 built (Review Notes 0.1.0, scripts/review_notes/): installer + Review shelf button, the REVIEW_NOTES
