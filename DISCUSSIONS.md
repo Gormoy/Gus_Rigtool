@@ -17,6 +17,13 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: try-it all good ("everything showed here as well": top camera, onion skin, playblast, label);
+  "the plan is ok, go ahead and build step 1"; push of the review-notes-tool branch OK ("3 - yes").
+  Step 1 built (Review Notes 0.1.0, scripts/review_notes/): installer + Review shelf button, the REVIEW_NOTES
+  node (Attribute Editor settings, Show menu > Review notes), the review file (store.py), rn.sample() to add a
+  test note, selftest.py. 19 tests outside Maya pass; nothing of step 1 has run in Maya yet. Waiting: his
+  install + self test lines + a screenshot after rn.sample().
+
 - 2026-11-21: Review Notes try-it RESULT (Gus's screenshot, persp, Maya 2024 Mac): the drawing works - arc made
   with the curve tool, arrow, label, the next note faint orange. The gate maths sits exactly on Maya's gate
   (overscan 1.0 and 1.3; facts added to MAYA_FACTS.md). Problem: the label box was cut short on his Retina screen

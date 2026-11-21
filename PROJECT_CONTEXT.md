@@ -231,6 +231,13 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
 - **5.6.40**: Animtool arcs = Maya's editable motion trail styled like the onion skin's arcs (window of 24 frames,
   past blue / future orange, dots, handles on the selected key), follow selection + pin, rotation-only controls shown
   by the onion skin, trails out of saved files, timing beads via "make weighted" (asks). Real-Maya test h.
+- **Review Notes (standalone, branch `review-notes-tool`, `scripts/review_notes/`)**: SyncSketch-style notes in
+  Maya (Gus, 2026-11-21). One `REVIEW_NOTES` locator (plugin `reviewNotesNode`, VP2 draw override, never saved in
+  the scene) draws the notes of `<shot>.review.json` next to the scene in 2D over each note's camera, on its frames
+  (nearby faint, onion skin colours); works with the onion skin and in playblasts (try-it). `draw.py` / `store.py`
+  have no Maya and are tested by `tests/test_review_notes.py`; `selftest.py` = the in-Maya checks. Step 1 done
+  (0.1.0); step 2 = drawing overlay + bar with the bezier curve tool; step 3 = notes window + bookmarks + frame
+  picture; then SyncSketch import.
 - **Onion skin (standalone, branch `onion-skin-tool`, `scripts/onion_skin_renderer/`)**: Gus's first script
   (onionSkinRenderer, MIT) made to run on Maya 2024 without PyMEL, installed by drag_to_maya.mel; ghosts in front
   (Harmony style), per-character pictures and keys, light table (others see-through), arcs on vertices / controls,

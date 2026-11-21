@@ -1,0 +1,16 @@
+// Review Notes installer: drag this file into Maya's viewport.
+// It installs (or updates) Review Notes from the "reviewNotes" folder next to this file and adds the Review
+// shelf button.
+
+global proc reviewNotesInstallerLocator() {}
+
+{
+    string $where = `whatIs "reviewNotesInstallerLocator"`;
+    string $file = `substitute "Mel procedure found in: " $where ""`;
+    string $dir = dirname($file);
+    $dir = substituteAllString($dir, "\\", "/");
+    python("import importlib.util as _rn_u");
+    python("_rn_s = _rn_u.spec_from_file_location('review_notes_install', r'" + $dir + "/reviewNotes/install.py')");
+    python("_rn_m = _rn_u.module_from_spec(_rn_s); _rn_s.loader.exec_module(_rn_m)");
+    python("_rn_m.install(r'" + $dir + "')");
+}
