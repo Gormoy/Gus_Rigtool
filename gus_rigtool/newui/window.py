@@ -16,7 +16,7 @@ Qt = QtCore.Qt
 _QAction = getattr(QtWidgets, "QAction", None) or QtGui.QAction       # PySide2: QtWidgets; PySide6: QtGui
 WS = "gusRigtool57Window"
 STATE_KEY = "newWindow"
-NEW_LOOK = ("controls", "skin", "settings", "build", "connect", "check", "toolbox")
+NEW_LOOK = ("home", "controls", "skin", "settings", "build", "connect", "check", "toolbox")   # 5.7.9: Home too
 EXTRA_TOOLS = {"check": ["publish"]}             # 5.7.6: pages only the new window has (Publish moved from Build)
 MOVED_OUT = {"build": "publish"}                 # ...and the tool whose page no longer shows it   # the areas in the new look (5.7.0 Controls, 5.7.2 Skin,
 #                                                        5.7.3 Build)
@@ -248,7 +248,12 @@ class Area(QtWidgets.QWidget):
             page = None                         # one page, its cards shown a sub-page at a time
         if (tool, page) in self.widgets:
             return self.widgets[(tool, page)]
-        if self.key in NEW_LOOK and tool not in OLD_PAGE:
+        if tool == "home":                      # 5.7.9: Home drawn by the window (newui/homepage.py)
+            from gus_rigtool.newui import homepage
+            w = homepage.HomePage(self)
+            self.widgets[(tool, page)] = w
+            self.body.addWidget(w)
+        elif self.key in NEW_LOOK and tool not in OLD_PAGE:
             self._build_new(tool)
         else:
             w = OldPage(tool)
@@ -469,6 +474,8 @@ class Area(QtWidgets.QWidget):
             w.setVisible(w is target)
         if isinstance(target, OldPage):
             target.fill()
+        if hasattr(target, "refresh") and target.__class__.__name__ == "HomePage":
+            target.refresh()
         self.current = sub
         page = self.pages.get(sub[0])
         if page is not None and sub[0] in SPLITS:
@@ -505,6 +512,9 @@ class Area(QtWidgets.QWidget):
         else:
             self._target = None
             self.next.set("", "", "")
+        home = self.widgets.get(("home", None))
+        if home is not None and (self.current or (None,))[0] == "home":
+            home.refresh_selection()
         page = self.pages.get((self.current or (None,))[0])
         if page is not None:
             for _anchor, fn in page.rec.selection:
@@ -1193,7 +1203,9 @@ class Frame(QtWidgets.QWidget):
         if sub[0]:
             area_obj.show_sub(sub)
         self._fill_tabs(area_obj, sub)
-        self.subtitle.setText(_subtitle(sub[0]))
+        sub_text = _subtitle(sub[0])                      # 5.7.9: not twice (Home's says what its header says)
+        self.subtitle.setText(sub_text if sub_text != WHY.get(area) else "")
+        self.subtitle.setVisible(bool(self.subtitle.text()))
         self._breadcrumb()
         _star_label(self)
         _arrange_label(self)
@@ -1221,6 +1233,7 @@ class Frame(QtWidgets.QWidget):
     def _fill_tabs(self, area_obj, sub):
         _clear(self.tabs2.layout())
         if area_obj.key in TWO_ROWS and len(area_obj.tools) > 1:
+            self.tabs.setVisible(True)
             tools = [(t, None, tool_label(t)) for t in area_obj.tools]
             self._tab_row(self.tabs.layout(), tools, (sub[0], None),
                           lambda t, p: self.go(area_obj.default_sub(t), as_tool=True), "tab")
@@ -1230,6 +1243,7 @@ class Frame(QtWidgets.QWidget):
                 self._tab_row(self.tabs2.layout(), mine, sub, lambda t, p: self.go((t, p), as_tool=True), "tab2")
             return
         self.tabs2.setVisible(False)
+        self.tabs.setVisible(len(area_obj.subs) > 1)      # 5.7.9: one page alone (Home, Settings): no tab row
         self._tab_row(self.tabs.layout(), area_obj.subs, sub, lambda t, p: self.go((t, p), as_tool=True), "tab")
 
     def _tab_row(self, lay, shown, sub, go, role):

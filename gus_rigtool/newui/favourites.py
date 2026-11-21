@@ -489,8 +489,16 @@ def _global(e):
         return e.globalPos()
 
 
+LAYOUTS = (("row", "Row", "One row"), ("2r", "2R", "Two rows"), ("col", "Col", "One column"),
+           ("grid", "Grid", "A square block"))
+SIZE_MIN, SIZE_MAX, SIZE_DEFAULT = 24, 52, 34
+
+
 class FavBar(QtWidgets.QWidget):
-    """Your favourite tools in a small bar that stays in front of Maya (like the Animtool bar)."""
+    """Your favourite tools in a bar that stays in front of Maya (5.7.9: Gus's mock-up layout, the Rigtool's
+    colours): the profiles as pills, Row / 2R / Col / Grid, the size (slider or Ctrl + wheel), labels on / off,
+    the tiles (a corner triangle: right-click has its options); right-click a tile: its options in a strip under
+    the bar. It never takes the keyboard from Maya, and shrinks to stay on the screen."""
 
     def __init__(self, parent=None):
         super(FavBar, self).__init__(parent or _maya_window())
@@ -499,19 +507,22 @@ class FavBar(QtWidgets.QWidget):
         if keep is not None:
             self.setAttribute(keep, True)
         self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setFocusPolicy(Qt.NoFocus)
         self.setWindowTitle("Gus_Rigtool favourites")
-        self.setStyleSheet("QWidget { background: %s; color: %s; } QWidget#gusFavBar { border-radius: 9px; "
-                           "border-top: 3px solid #36b38a; }" % (theme.WIN, theme.TXT))
         self.setObjectName("gusFavBar")
+        self.setStyleSheet(_BAR_QSS % _QSS_VALUES())
         self._drag = None
         self.editing = False
-        self.vertical = False
+        self.strip_key = None
+        self.shrunk = False
+        QtWidgets.QVBoxLayout(self)
         self.build()
         st = self._state()
         if st.get("x", -1) >= 0 and st.get("y", -1) >= 0:
             self.move(int(st["x"]), int(st["y"]))
         _listeners.append(self.build)
 
+    # ---- what's remembered
     def _state(self):
         from gus_rigtool.core import utils
         return utils.load_setting(BAR_KEY, {}) or {}
@@ -522,52 +533,315 @@ class FavBar(QtWidgets.QWidget):
         st.update(k)
         utils.save_setting(BAR_KEY, st)
 
+    def shape(self):
+        """This profile's layout (5.7.2: each profile keeps its own; 5.7.1's 'vertical' read as a column)."""
+        st = self._state()
+        got = (st.get("shapes") or {}).get(current())
+        if got is True:
+            return "col"
+        if got in (None, False):
+            return "col" if (got is None and st.get("vertical")) else "row"
+        return got if got in [x[0] for x in LAYOUTS] else "row"
+
+    @property
+    def vertical(self):
+        return self.shape() == "col"
+
+    def set_shape(self, shape):
+        shapes = dict(self._state().get("shapes", {}))
+        shapes[current()] = shape
+        self._save(shapes=shapes)
+        self.build()
+
+    def flip(self):
+        self.set_shape("row" if self.vertical else "col")
+
+    def wanted_size(self):
+        return max(SIZE_MIN, min(SIZE_MAX, int(self._state().get("size", SIZE_DEFAULT))))
+
+    def set_size(self, px):
+        self._save(size=max(SIZE_MIN, min(SIZE_MAX, int(px))))
+        self.build()
+
+    def labels(self):
+        return bool(self._state().get("labels", False))
+
+    # ---- drawing
     def build(self):
         from gus_rigtool.newui.window import _clear
-        lay = self.layout()
-        if lay is None:
-            lay = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.LeftToRight, self)
-        _clear(lay)
-        st = self._state()                       # 5.7.2: each profile keeps its own shape
-        shapes = st.get("shapes")                # none yet: the bar's one shape from 5.7.1
-        self.vertical = bool(shapes.get(current(), False) if shapes else st.get("vertical", False))
-        lay.setDirection(QtWidgets.QBoxLayout.TopToBottom if self.vertical else QtWidgets.QBoxLayout.LeftToRight)
-        lay.setContentsMargins(6, 5, 6, 5)
-        lay.setSpacing(3)
-        self.handle = QtWidgets.QLabel("⋮⋮" if not self.vertical else "⋯")
+        root = self.layout()
+        _clear(root)
+        self.setMinimumSize(0, 0)
+        self.setMaximumSize(16777215, 16777215)
+        root.setContentsMargins(7, 5, 7, 6)
+        root.setSpacing(5)
+        shape = self.shape()
+        self.chrome = self._chrome(shape)
+        root.addWidget(self.chrome)
+        self.tiles = QtWidgets.QWidget()
+        self.grid = QtWidgets.QGridLayout(self.tiles)
+        self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setSpacing(2)
+        self.grid.setAlignment(Qt.AlignLeft | Qt.AlignTop)      # the tiles side by side, not spread out
+        root.addWidget(self.tiles)
+        if not hasattr(self, "strip"):
+            self.strip = QtWidgets.QFrame(self, Qt.Tool | Qt.FramelessWindowHint)
+            self.strip.setObjectName("gusFavStrip")
+            self.strip.setAttribute(Qt.WA_StyledBackground, True)
+            self.strip.setFocusPolicy(Qt.NoFocus)
+            keep = getattr(Qt, "WA_MacAlwaysShowToolWindow", None)
+            if keep is not None:
+                self.strip.setAttribute(keep, True)
+            QtWidgets.QVBoxLayout(self.strip).setContentsMargins(9, 6, 9, 8)
+            self.strip.hide()
+        self.size_px = self.wanted_size()
+        self._fill_tiles(shape, self.size_px)
+        self._fit(shape)
+        self.adjustSize()
+        self.setFixedSize(self.sizeHint())               # exactly its tiles (a window can keep a wider minimum)
+        if self.strip_key in keys():
+            self.show_strip(self.strip_key)
+        else:
+            self.hide_strip()
+
+    def _chrome(self, shape):
+        box = QtWidgets.QWidget()
+        col = shape == "col"
+        lay = QtWidgets.QVBoxLayout(box) if col else QtWidgets.QHBoxLayout(box)    # a row: one line
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(3 if col else 4)
+        top = QtWidgets.QWidget()
+        th = QtWidgets.QHBoxLayout(top)
+        th.setContentsMargins(0, 0, 0, 0)
+        th.setSpacing(4)
+        self.handle = QtWidgets.QLabel("::")
         self.handle.setToolTip("Drag to move the bar")
-        self.handle.setStyleSheet("QLabel { color: %s; padding: 0 4px; }" % theme.FAINT)
+        self.handle.setObjectName("gusFavGrip")
         self.handle.setCursor(Qt.SizeAllCursor)
-        lay.addWidget(self.handle)
-        self.profile = profile_button()
-        lay.addWidget(self.profile)
+        th.addWidget(self.handle)
+        self.readout = QtWidgets.QLabel("")
+        self.readout.setObjectName("gusFavPx")
+        th.addWidget(self.readout)
+        m = self._small("=", "The bar's menu: open the window, choose favourites, edit, close",
+                        lambda: _exec(self.menu(), QtGui.QCursor.pos()))
+        th.addWidget(m)
+        lay.addWidget(top)
+        self.pills = QtWidgets.QWidget()                  # the profiles: yours and the one picked, the rest in ▾
+        pl = QtWidgets.QVBoxLayout(self.pills) if col else QtWidgets.QHBoxLayout(self.pills)
+        pl.setContentsMargins(0, 0, 0, 0)
+        pl.setSpacing(3)
+        builtins, mine = profiles()
+        shown = [n for n in mine][:4]
+        if current() not in shown:
+            shown.append(current())
+        for name in shown:
+            pill = self._pill(name)
+            if col:
+                pill.setText(name[:7] + "…" if len(name) > 8 else name)
+            pl.addWidget(pill)
+        more = self._small("▾", "Every profile: All tools, one per area, yours - and New / Rename / Delete",
+                           lambda: _exec(profile_menu(self), QtGui.QCursor.pos()))
+        pl.addWidget(more)
+        lay.addWidget(self.pills)
+        modes = QtWidgets.QWidget()
+        ml = QtWidgets.QGridLayout(modes)
+        ml.setContentsMargins(0, 0, 0, 0)
+        ml.setSpacing(1)
+        self.mode_buttons = {}
+        for i, (key, text, tip) in enumerate(LAYOUTS):
+            b = self._small(text, tip, lambda k=key: self.set_shape(k), checkable=True)
+            b.setChecked(key == shape)
+            self.mode_buttons[key] = b
+            ml.addWidget(b, i // 2 if col else 0, i % 2 if col else i)
+        lb = self._small("Lbl", "Names under the tiles", lambda: (self._save(labels=not self.labels()),
+                                                                 self.build()), checkable=True)
+        lb.setChecked(self.labels())
+        ml.addWidget(lb, 2 if col else 0, 0 if col else 5, 1, 2 if col else 1)
+        lay.addWidget(modes)
+        if col:                                           # a column stays narrow (the mock-up's ~74 px rail)
+            for w in list(self.mode_buttons.values()) + [lb]:
+                w.setStyleSheet("QToolButton { padding: 2px 3px; }")
+            box.setMaximumWidth(max(self.wanted_size() + 30, 78))
+        self.slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.slider.setRange(SIZE_MIN, SIZE_MAX)
+        self.slider.setSingleStep(2)
+        self.slider.setPageStep(4)
+        self.slider.setValue(self.wanted_size())
+        self.slider.setFixedWidth(60 if col else 80)
+        self.slider.setFocusPolicy(Qt.NoFocus)
+        self.slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
+        self.slider.sliderReleased.connect(lambda: self.set_size(self.slider.value()))
+        lay.addWidget(self.slider)
+        if editable():
+            lay.addWidget(self._small("Done" if self.editing else "Edit", "Edit this profile: × takes one off; "
+                                      "choose more in the menu", lambda: self.set_editing(not self.editing)))
+        return box
+
+    def _small(self, text, tip, fn, checkable=False):
+        b = QtWidgets.QToolButton()
+        b.setText(text)
+        b.setToolTip(tip)
+        b.setCheckable(checkable)
+        b.setFocusPolicy(Qt.NoFocus)
+        b.setCursor(Qt.PointingHandCursor)
+        b.setObjectName("gusFavSmall")
+        b.clicked.connect(lambda _=False: fn())
+        return b
+
+    def _pill(self, name):
+        n = len(keys_of(name))
+        b = self._small("%s %d" % (name, n), "Show the profile '%s' (%d tools)" % (name, n),
+                        lambda: set_current(name), checkable=True)
+        b.setChecked(name == current())
+        b.setObjectName("gusFavPill")
+        area = [a for a in theme.AREAS if a[1] == name]
+        b.setStyleSheet("QToolButton#gusFavPill { border-left: 3px solid %s; }" %
+                        (area[0][2] if area else theme.colour("toolbox")))
+        return b
+
+    def _columns(self, shape, n):
+        if shape == "col":
+            return 1
+        if shape == "2r":
+            return max(1, (n + 1) // 2)
+        if shape == "grid":
+            import math
+            return max(1, int(math.ceil(math.sqrt(n))))
+        return max(1, n)
+
+    def _fill_tiles(self, shape, px):
+        from gus_rigtool.newui import tiles
+        from gus_rigtool.newui.window import _clear
+        _clear(self.grid)
         self.buttons = {}
-        for k in keys():
-            b = fav_button(k, text=False, size=26)
+        ks = keys()
+        cols = self._columns(shape, len(ks))
+        lab = self.labels()
+        cell = max(px + 6, 52) if lab else px + 4
+        for i, k in enumerate(ks):
+            b = QtWidgets.QToolButton()
+            b.setObjectName("gusFavTile")
+            b.setFocusPolicy(Qt.NoFocus)                    # never takes Space / S / the viewport keys from Maya
+            b.setIcon(QtGui.QIcon(tiles.pixmap(k, px, tiles.has_options(k))))
+            b.setIconSize(QtCore.QSize(px, px))
+            b.setToolButtonStyle(Qt.ToolButtonTextUnderIcon if lab else Qt.ToolButtonIconOnly)
+            b.setText(label(k) if lab else "")
+            b.setFixedWidth(cell)
+            b.setToolTip("%s - click: open it; right-click: its options" % label(k))
+            b.setCursor(Qt.PointingHandCursor)
+            b.setProperty("fav", k)
+            b.clicked.connect(lambda _=False, k=k: go(k))
+            b.setContextMenuPolicy(Qt.CustomContextMenu)
+            b.customContextMenuRequested.connect(lambda _pos, k=k: self.show_strip(k))
             self.buttons[k] = b
+            w = b
             if self.editing:
-                box = QtWidgets.QWidget()
-                g = QtWidgets.QGridLayout(box)
+                w = QtWidgets.QWidget()
+                g = QtWidgets.QGridLayout(w)
                 g.setContentsMargins(0, 0, 0, 0)
                 g.addWidget(b, 0, 0)
                 x = QtWidgets.QToolButton()
                 x.setText("×")
                 x.setProperty("remove", k)
+                x.setFocusPolicy(Qt.NoFocus)
                 x.setToolTip("Take %s off this profile" % label(k))
                 x.setStyleSheet("QToolButton { color: white; background: #e2504a; border-radius: 7px; "
                                 "min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px; padding: 0; }")
                 x.clicked.connect(lambda _=False, k=k: toggle(k))
                 g.addWidget(x, 0, 0, Qt.AlignTop | Qt.AlignRight)
-                lay.addWidget(box)
-            else:
-                lay.addWidget(b)
-        m = QtWidgets.QToolButton()
-        m.setText("≡")
-        m.setAutoRaise(True)
-        m.setToolTip("The bar's menu")
-        m.clicked.connect(lambda _=False: _exec(self.menu(), QtGui.QCursor.pos()))
-        lay.addWidget(m)
-        self.adjustSize()
+            self.grid.addWidget(w, i // cols, i % cols)
+        self.readout.setText(("%d%s" if self.vertical else "%dpx%s") % (px, "*" if px < self.wanted_size() else ""))
+
+    def _fit(self, shape):
+        """Never off the screen: smaller tiles (2 px a step, down to 22) until the bar fits 92% x 85% of it."""
+        scr = QtWidgets.QApplication.primaryScreen() if hasattr(QtWidgets.QApplication, "primaryScreen") else None
+        try:
+            geo = (self.screen() if hasattr(self, "screen") and self.screen() else scr).availableGeometry()
+        except Exception:
+            return
+        px = self.size_px
+        while px > 22 and (self.sizeHint().width() > geo.width() * 0.92 or
+                           self.sizeHint().height() > geo.height() * 0.85):
+            px -= 2
+            self._fill_tiles(shape, px)
+            self.adjustSize()
+        self.size_px = px
+        self.shrunk = px < self.wanted_size()
+
+    # ---- right-click: the tool's options under the bar
+    def show_strip(self, key):
+        from gus_rigtool.newui.window import _clear
+        from gus_rigtool.newui import tiles
+        self.strip_key = key
+        lay = self.strip.layout()
+        _clear(lay)
+        self.strip.setStyleSheet(_BAR_QSS % _QSS_VALUES() + "QFrame#gusFavStrip { border: 1px solid %s; "
+                                 "border-left: 3px solid %s; }" % (theme.LINE, tiles.colour(key)))
+        head = QtWidgets.QHBoxLayout()
+        title = QtWidgets.QLabel("<b>%s</b>  options" % label(key))
+        head.addWidget(title, 1)
+        head.addWidget(self._small("×", "Close the options", self.hide_strip))
+        lay.addLayout(head)
+        rows = option_rows(key)
+        body = QtWidgets.QWidget()
+        bl = QtWidgets.QGridLayout(body)
+        bl.setContentsMargins(0, 0, 0, 0)
+        bl.setHorizontalSpacing(14)
+        bl.setVerticalSpacing(4)
+        cols = 1 if self.vertical else 2
+        for i, w in enumerate(rows[:MAX_STRIP]):
+            bl.addWidget(w, i // cols, i % cols)
+        if not rows:
+            bl.addWidget(widgets.label("No options to set for %s." % label(key), "dim"), 0, 0)
+        lay.addWidget(body)
+        foot = widgets.flow_box(4)
+        foot.layout().addWidget(self._small("Open its page", "Open %s in the window" % label(key),
+                                            lambda: go(key)))
+        if len(rows) > MAX_STRIP:
+            foot.layout().addWidget(self._small("All %d in Settings..." % len(rows), "Every option of %s, in "
+                                                "Settings" % label(key), lambda: open_settings(key)))
+        foot.layout().addWidget(self._small("Pop out", "Its own panel", lambda: pop(key)))
+        if editable():
+            foot.layout().addWidget(self._small("Remove", "Take it off this profile", lambda: toggle(key)))
+        lay.addWidget(foot)
+        self.strip.adjustSize()
+        self.place_strip()
+        self.strip.show()
+
+    def place_strip(self):
+        """Right under the bar (beside it when the bar is a column), kept on the screen."""
+        if not self.strip.isVisible() and self.strip_key is None:
+            return
+        self.strip.adjustSize()
+        g = QtCore.QRect(self.pos(), self.sizeHint().expandedTo(self.size()))
+        if self.vertical:
+            x, y = g.left() + g.width() + 4, g.top()
+        else:
+            x, y = g.left(), g.top() + g.height() + 4
+        try:
+            geo = QtWidgets.QApplication.primaryScreen().availableGeometry()
+            x = max(geo.left(), min(x, geo.right() - self.strip.width()))
+            if y + self.strip.height() > geo.bottom():
+                y = max(geo.top(), g.top() - self.strip.height() - 4) if not self.vertical else \
+                    geo.bottom() - self.strip.height()
+        except Exception:
+            pass
+        self.strip.move(int(x), int(y))
+
+    def hide_strip(self):
+        self.strip_key = None
+        if hasattr(self, "strip"):
+            self.strip.hide()
+
+    def moveEvent(self, e):
+        super(FavBar, self).moveEvent(e)
+        if hasattr(self, "strip") and self.strip.isVisible():
+            self.place_strip()
+
+    def hideEvent(self, e):
+        if hasattr(self, "strip"):
+            self.strip.hide()
+        super(FavBar, self).hideEvent(e)
 
     def menu(self):
         m = QtWidgets.QMenu(self)
@@ -577,7 +851,6 @@ class FavBar(QtWidgets.QWidget):
                 lambda _=False: self.set_editing(not self.editing))
         m.addAction("Choose the favourites...").triggered.connect(
             lambda _=False: choose(self).exec_() if hasattr(QtWidgets.QDialog, "exec_") else choose(self).exec())
-        m.addAction("A column" if not self.vertical else "A row").triggered.connect(lambda _=False: self.flip())
         m.addSeparator()
         m.addAction("Close the bar").triggered.connect(lambda _=False: close_bar())
         return m
@@ -586,15 +859,17 @@ class FavBar(QtWidgets.QWidget):
         self.editing = bool(on) and editable()
         self.build()
 
-    def flip(self):
-        st = self._state()
-        shapes = dict(st.get("shapes", {}))
-        shapes[current()] = not self.vertical
-        self._save(shapes=shapes)
-        self.build()
+    # ---- moving it, Ctrl + wheel
+    def wheelEvent(self, e):
+        if e.modifiers() & Qt.ControlModifier:
+            step = 2 if e.angleDelta().y() > 0 else -2
+            self.set_size(self.wanted_size() + step)
+            e.accept()
+            return
+        super(FavBar, self).wheelEvent(e)
 
     def mousePressEvent(self, e):
-        if self.handle.geometry().contains(e.pos()):
+        if self.handle.isVisible() and self.handle.rect().contains(self.handle.mapFrom(self, e.pos())):
             self._drag = _global(e) - self.frameGeometry().topLeft()
 
     def mouseMoveEvent(self, e):
@@ -606,6 +881,117 @@ class FavBar(QtWidgets.QWidget):
             self._drag = None
             p = self.pos()
             self._save(x=int(p.x()), y=int(p.y()))
+
+
+def _QSS_VALUES():
+    return {"WIN": theme.WIN, "TXT": theme.TXT, "DIM": theme.DIM, "LINE": theme.LINE, "ACC": theme.colour("toolbox"),
+            "FIELD": theme.FIELD}
+
+
+MAX_STRIP = 8                                       # options shown in the strip (the rest: 'All in Settings')
+
+_BAR_QSS = """
+QWidget#gusFavBar { background: %(WIN)s; border: 1px solid %(LINE)s; border-radius: 9px; }
+QWidget#gusFavBar QWidget { color: %(TXT)s; }
+QLabel#gusFavGrip { color: %(DIM)s; padding: 0 3px; font-weight: bold; }
+QLabel#gusFavPx { color: %(DIM)s; font-size: 11px; padding: 0 3px; }
+QToolButton#gusFavSmall, QToolButton#gusFavPill { background: #2b2f35; border: 1px solid %(LINE)s; border-radius: 5px;
+    padding: 2px 7px; font-size: 11px; color: %(TXT)s; }
+QToolButton#gusFavSmall:checked, QToolButton#gusFavPill:checked { background: %(ACC)s; color: #111; font-weight: bold; }
+QToolButton#gusFavSmall:hover, QToolButton#gusFavPill:hover { border-color: %(ACC)s; }
+QToolButton#gusFavTile { background: transparent; border: none; padding: 1px; font-size: 10px; color: %(TXT)s; }
+QToolButton#gusFavTile:hover { background: rgba(255,255,255,0.08); border-radius: 6px; }
+QFrame#gusFavStrip { background: %(WIN)s; border-radius: 7px; }
+QFrame#gusFavStrip QWidget { color: %(TXT)s; }
+QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox { background: %(FIELD)s; color: %(TXT)s; border: 1px solid %(LINE)s;
+    border-radius: 4px; padding: 2px 6px; min-height: 18px; }
+QSlider::groove:horizontal { height: 4px; background: #16191e; border-radius: 2px; }
+QSlider::handle:horizontal { width: 12px; margin: -5px 0; border-radius: 6px; background: %(ACC)s; }
+"""
+
+
+def option_rows(key):
+    """A tool's saved options as small controls (the ones its section in Settings shows); a change is saved at
+    once and the tool's open page picks it up."""
+    from gus_rigtool import registry
+    from gus_rigtool.core import utils
+    try:
+        mod = registry.module(key)
+    except Exception:
+        return []
+    schema = getattr(mod, "SCHEMA", None) or []
+    if not schema:
+        return []
+    values = utils.tool_settings(mod.SETTINGS_KEY, mod.DEFAULTS)
+    out = []
+    for name, text, kind, choices in schema:
+        value = values.get(name, mod.DEFAULTS.get(name))
+
+        def save(v, name=name):
+            utils.update_setting(mod.SETTINGS_KEY, name, v)
+            _applied(key)
+        if kind == "bool":
+            w = QtWidgets.QCheckBox(text)
+            w.setChecked(bool(value))
+            w.toggled.connect(lambda on, save=save: save(bool(on)))
+        else:
+            w = QtWidgets.QWidget()
+            h = QtWidgets.QHBoxLayout(w)
+            h.setContentsMargins(0, 0, 0, 0)
+            h.setSpacing(4)
+            h.addWidget(widgets.label(text, "dim", wrap=False))
+            if kind == "choice":
+                c = QtWidgets.QComboBox()
+                c.addItems([str(x) for x in choices])
+                try:
+                    c.setCurrentIndex(int(value) - 1)
+                except (TypeError, ValueError):
+                    pass
+                c.currentIndexChanged.connect(lambda i, save=save: save(i + 1))
+            elif kind == "float":
+                c = QtWidgets.QDoubleSpinBox()
+                c.setDecimals(3)
+                c.setRange(-1e6, 1e6)
+                c.setValue(float(value or 0))
+                c.editingFinished.connect(lambda c=c, save=save: save(float(c.value())))
+            elif kind == "int":
+                c = QtWidgets.QSpinBox()
+                c.setRange(-100000, 100000)
+                c.setValue(int(value or 0))
+                c.editingFinished.connect(lambda c=c, save=save: save(int(c.value())))
+            else:
+                c = QtWidgets.QLineEdit(str(value or ""))
+                c.editingFinished.connect(lambda c=c, save=save: save(c.text().strip()))
+            h.addWidget(c)
+        w.setFocusPolicy(Qt.NoFocus) if kind == "bool" else None
+        w.setProperty("option", name)
+        out.append(w)
+    return out
+
+
+def _applied(key):
+    """The tool's open page picks up the changed option (drawn again)."""
+    try:
+        from gus_rigtool.newui import window
+        f = window._frame.get("w")
+        if window.alive(f):
+            f.rebuild(key)
+    except Exception:
+        pass
+
+
+def open_settings(key):
+    """Settings, open at this tool's section."""
+    from gus_rigtool.newui import window
+    w = window.show("settings")
+    try:
+        card = w.areas["settings"].find_card(label(key))
+        if card is not None:
+            card.set_closed(False)
+            w.areas["settings"].scroll.ensureWidgetVisible(card)
+    except Exception:
+        pass
+    return w
 
 
 def go_window():
