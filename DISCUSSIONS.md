@@ -212,8 +212,13 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-21: Gus asked to arrange each tab's sections himself ("like in the edit shape I want to put the size and
   turn in front of the swap shape ... organize the way I want each tab"); plan approved: "this is exactly what I
   want" - drag a title, right-click Move up / down / to top / Reset order, remembered per tab and page, both looks.
-- 5.7.7 built (C6 look as a switch, default Today; all steps open; Toolbox in the new window; your own order) -
-  waiting for his Maya tests and OK to push. Then 5.8 Animtool from Gus's
+- 2026-11-21: 5.7.7 results: Real Maya 112 ok; Test this release 47 ok, 1 FAIL (new look cut off at 326 px:
+  Settings, Make a ribbon's drop-down, Rename's tick box). Gus: "the result seems great overall ... feeling better";
+  wants: text never cut ("they should always stay"), a sidebar button to hide the first column, better spacing in
+  titles (Toolbox icon touches its name), and "apply to the rest after you see the results". His Groups shot:
+  "Match _zero" (& eaten), "Above the objec" (choice button squeezed), something peeking at the right edge.
+  5.7.8 plan sent with questions: push 5.7.7 now?; "the rest" = default new look / Settings / Animtool?; hide the
+  sidebar fully or keep icons?; what's at the right edge? - waiting. 5.7.7 not pushed yet. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
   pie hotkey (a Maya fact first).
 - Not checked in Maya yet: Build > Settings of the picked module (needs a scene with guides); Check & publish rows
