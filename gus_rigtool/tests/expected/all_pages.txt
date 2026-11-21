@@ -25,6 +25,7 @@ organize  ok
 checker   ok
 settings  ok
 build_rig ok
+publish   ok
 no errors
 strict rows: a third item in a 2-slot row is refused, like Maya
 broken tool reported: 1 | message on its own page: True

@@ -1,0 +1,18 @@
+PASS nothing lost: Checker, Organize, and Build's Publish options on the Publish page (over 110 controls)
+PASS nothing twice
+PASS Check & publish: Checker · Organize · Publish
+PASS Build > Rig builder: no Publish section (it's on Check & publish now)
+PASS ...the old window's Build still has it, as before
+PASS a search / favourite for Publish: Check & publish > Publish
+  [info] published. Next: Build > Start: template or add a module (Home shows every step).
+PASS Publish: the tool's own Publish, with this page's options (Hide the joints off)
+  [info] 2 checks on the whole scene: 0 fail, 1 warning.
+PASS Run checks: each check's row on the page ('Controls not at zero' WARN 2)
+  [info] 1 repair(s) found.
+PASS Find repairs: each repair a tick box on the page, ticked
+  [info] 0 repair(s) found.
+PASS Apply the ticked repairs: the ticked ones (read from the page)
+PASS Analyze: the plan on the page, a row per item with where it goes
+PASS ...change a row's place: the plan changes
+PASS nothing cut off: Checker, Organize, Publish (with their rows), 300 / 420 / 700 px, normal and wider font
+13/13 passed

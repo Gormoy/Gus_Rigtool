@@ -17,6 +17,9 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus "yes to all": 576 + all_pages outputs accepted, 5.7.6 pushed to main, Toolbox preview next (the
+  last area; then the old window can go).
+
 - 2026-11-20: 5.7.6 results all clean: Real Maya 112 ok; Test this release 42 ok, 0 FAIL (the new window 25 ok
   incl. Check & publish + Publish gone from Build; his shelf is back - he remade it). Waiting: OK on the 576 /
   all_pages outputs, the 5.7.6 push, and Toolbox preview next.
@@ -127,7 +130,7 @@ the code; this file has what Gus said, decided and wants next.
 
 - The Animtool design, more options (Gus wants more variants of the design and of the tools before building) -
   possibly in a separate design chat. Pitch slides and sources: design/mockups/ (pitch.py, anim_mock.py, v2*.py).
-- 5.7.6 Check & publish sent; then Toolbox (preview first); then the old window can go; then 5.8.
+- Next: Toolbox preview (pictures first); then the old window can go; then 5.8.
 - Next: 5.7.4 Face and Ribbon as steps + two curves (plan approved); then Connect, Check, Toolbox areas; then 5.8
   Animtool.
 - Still unknown: 'Cannot move keys' in his shot (the tool names refused curves; Copy the last problem).
