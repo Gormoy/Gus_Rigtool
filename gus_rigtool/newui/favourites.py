@@ -601,16 +601,31 @@ class FavBar(QtWidgets.QWidget):
         self.size_px = self.wanted_size()
         self._fill_tiles(shape, self.size_px)
         self._fit(shape)
+        if shape != "col" and self.chrome.sizeHint().width() > self.tiles.sizeHint().width() + 12:
+            short = self._chrome(shape, short=True)        # 5.7.9 (Gus): the row stays tight, no empty space
+            root.replaceWidget(self.chrome, short)
+            self.chrome.deleteLater()
+            self.chrome = short
+            self._fill_tiles(shape, self.size_px)          # (the readout lives in the new controls)
+            if self.chrome.sizeHint().width() > self.tiles.sizeHint().width() + 12:
+                tight = self._chrome(shape, short=True, tight=True)    # still wider: only the essentials
+                root.replaceWidget(self.chrome, tight)
+                self.chrome.deleteLater()
+                self.chrome = tight
+                self._fill_tiles(shape, self.size_px)
         self.adjustSize()
         self.setFixedSize(self.sizeHint())               # exactly its tiles (a window can keep a wider minimum)
-        if self.strip_key in keys():
+        if self.strip_key == BAR_SETTINGS:
+            self.show_bar_settings()
+        elif self.strip_key in keys():
             self.show_strip(self.strip_key)
         else:
             self.hide_strip()
 
-    def _chrome(self, shape):
+    def _chrome(self, shape, short=False, tight=False):
         box = QtWidgets.QWidget()
         col = shape == "col"
+        short = short or col                              # the short forms (a column; a row with few tiles)
         lay = QtWidgets.QVBoxLayout(box) if col else QtWidgets.QHBoxLayout(box)    # a row: one line
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(3 if col else 4)
@@ -626,8 +641,12 @@ class FavBar(QtWidgets.QWidget):
         self.readout = QtWidgets.QLabel("")
         self.readout.setObjectName("gusFavPx")
         th.addWidget(self.readout)
-        m = self._small("=", "The bar's menu: open the window, choose favourites, edit, close",
-                        lambda: _exec(self.menu(), QtGui.QCursor.pos()))
+        if tight:                                         # a short row: the bar's settings open under it
+            m = self._small("=", "The bar: Row / 2R / Col / Grid, names, size, Edit, open the window, close",
+                            self.toggle_bar_settings)
+        else:
+            m = self._small("=", "The bar's menu: open the window, choose favourites, edit, close",
+                            lambda: _exec(self.menu(), QtGui.QCursor.pos()))
         th.addWidget(m)
         lay.addWidget(top)
         self.pills = QtWidgets.QWidget()                  # the profiles: yours and the one picked, the rest in ▾
@@ -640,7 +659,7 @@ class FavBar(QtWidgets.QWidget):
             shown.append(current())
         for name in shown:
             pill = self._pill(name)
-            if col:                                       # the mock-up's short pills (BLK, POL...)
+            if short:                                     # the mock-up's short pills (BLK, POL...)
                 words = [w for w in name.replace("&", " ").split() if w]
                 pill.setText("".join(w[0] for w in words).upper()[:3] if len(words) > 1 else name[:3].upper())
             pl.addWidget(pill)
@@ -648,18 +667,22 @@ class FavBar(QtWidgets.QWidget):
                            lambda: _exec(profile_menu(self), QtGui.QCursor.pos()))
         pl.addWidget(more)
         lay.addWidget(self.pills)
+        if tight:
+            self.mode_buttons = {}
+            lay.addStretch(1)                              # the few controls together, on the left
+            return box
         modes = QtWidgets.QWidget()
         ml = QtWidgets.QGridLayout(modes)
         ml.setContentsMargins(0, 0, 0, 0)
         ml.setSpacing(1)
         self.mode_buttons = {}
         for i, (key, text, tip) in enumerate(LAYOUTS):
-            b = self._small({"row": "R", "2r": "2", "col": "C", "grid": "G"}[key] if col else text, tip,
+            b = self._small({"row": "R", "2r": "2", "col": "C", "grid": "G"}[key] if short else text, tip,
                             lambda k=key: self.set_shape(k), checkable=True)
             b.setChecked(key == shape)
             self.mode_buttons[key] = b
             ml.addWidget(b, i // 2 if col else 0, i % 2 if col else i)
-        lb = self._small("Aa" if col else "Lbl", "Names under the tiles", lambda: (self._save(labels=not self.labels()),
+        lb = self._small("Aa" if short else "Lbl", "Names under the tiles", lambda: (self._save(labels=not self.labels()),
                                                                  self.build()), checkable=True)
         lb.setChecked(self.labels())
         ml.addWidget(lb, 2 if col else 0, 0 if col else 5, 1, 2 if col else 1)
@@ -672,13 +695,13 @@ class FavBar(QtWidgets.QWidget):
         self.slider.setSingleStep(2)
         self.slider.setPageStep(4)
         self.slider.setValue(self.wanted_size())
-        self.slider.setFixedWidth(self.rail if col else 80)
+        self.slider.setFixedWidth(self.rail if col else (56 if short else 80))
         self.slider.setFocusPolicy(Qt.NoFocus)
         self.slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
         self.slider.sliderReleased.connect(lambda: self.set_size(self.slider.value()))
         lay.addWidget(self.slider)
         if editable():
-            lay.addWidget(self._small(("✓" if col else "Done") if self.editing else ("✎" if col else "Edit"),
+            lay.addWidget(self._small(("✓" if short else "Done") if self.editing else ("✎" if short else "Edit"),
                                       "Edit this profile: × takes one off; "
                                       "choose more in the menu", lambda: self.set_editing(not self.editing)))
         if col:
@@ -735,6 +758,14 @@ class FavBar(QtWidgets.QWidget):
         cols = self._columns(shape, len(ks))
         lab = self.labels()
         cell = max(px + 6, 52) if lab else px + 4
+        lines = 1                                          # two lines only when a name needs them (5.7.9)
+        if lab:
+            f = QtGui.QFont(QtWidgets.QApplication.font())
+            f.setPixelSize(10)                             # the names' size (gusFavName)
+            fm = QtGui.QFontMetrics(f)
+            if any(fm.horizontalAdvance(label(k)) > cell if hasattr(fm, "horizontalAdvance") else
+                   fm.width(label(k)) > cell for k in keys()):
+                lines = 2
         for i, k in enumerate(ks):
             b = QtWidgets.QToolButton()
             b.setObjectName("gusFavTile")
@@ -762,7 +793,7 @@ class FavBar(QtWidgets.QWidget):
                 name.setWordWrap(True)
                 name.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
                 name.setFixedWidth(cell)
-                name.setFixedHeight(name.fontMetrics().lineSpacing() * 2 + 2)
+                name.setFixedHeight(name.fontMetrics().lineSpacing() * lines + 2)
                 tv.addWidget(name)
             if self.editing:
                 inner = w
@@ -855,6 +886,68 @@ class FavBar(QtWidgets.QWidget):
         self.place_strip()
         self.strip.show()
 
+    def toggle_bar_settings(self):
+        if self.strip_key == BAR_SETTINGS and self.strip.isVisible():
+            self.hide_strip()
+        else:
+            self.show_bar_settings()
+
+    def show_bar_settings(self):
+        """A short row's settings, under it: the layout, names, size, Edit, and the bar's menu."""
+        from gus_rigtool.newui.window import _clear
+        self.strip_key = BAR_SETTINGS
+        lay = self.strip.layout()
+        _clear(lay)
+        self.strip.setStyleSheet(_BAR_QSS % _QSS_VALUES() + "QFrame#gusFavStrip { border: 1px solid %s; "
+                                 "border-left: 3px solid %s; }" % (theme.LINE, theme.colour("toolbox")))
+        head = QtWidgets.QHBoxLayout()
+        head.addWidget(QtWidgets.QLabel("<b>The bar</b>"), 1)
+        head.addWidget(self._small("×", "Close", self.hide_strip))
+        lay.addLayout(head)
+        shape = self.shape()
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(0)
+        self.mode_buttons = {}
+        for key, text, tip in LAYOUTS:
+            b = self._small(text, tip, lambda k=key: self.set_shape(k), checkable=True)
+            b.setChecked(key == shape)
+            self.mode_buttons[key] = b
+            row.addWidget(b)
+        row.addSpacing(6)
+        lb = self._small("Lbl", "Names under the tiles", lambda: (self._save(labels=not self.labels()),
+                                                                 self.build()), checkable=True)
+        lb.setChecked(self.labels())
+        row.addWidget(lb)
+        row.addStretch(1)
+        lay.addLayout(row)
+        size = QtWidgets.QHBoxLayout()
+        size.addWidget(widgets.label("Size", "dim", wrap=False))
+        self.slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.slider.setRange(SIZE_MIN, SIZE_MAX)
+        self.slider.setSingleStep(2)
+        self.slider.setValue(self.wanted_size())
+        self.slider.setFocusPolicy(Qt.NoFocus)
+        self.slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
+        self.slider.sliderReleased.connect(lambda: self.set_size(self.slider.value()))
+        size.addWidget(self.slider, 1)
+        lay.addLayout(size)
+        foot = widgets.flow_box(4)
+        if editable():
+            foot.layout().addWidget(self._small("Done editing" if self.editing else "Edit",
+                                                "Edit this profile: × takes one off",
+                                                lambda: self.set_editing(not self.editing)))
+        foot.layout().addWidget(self._small("Choose...", "Tick the tools you want", lambda: choose(self).exec_()
+                                            if hasattr(QtWidgets.QDialog, "exec_") else choose(self).exec()))
+        foot.layout().addWidget(self._small("Open the window", "The Gus_Rigtool window", go_window))
+        foot.layout().addWidget(self._small("Close the bar", "Close it (the window's Bar opens it again)",
+                                            close_bar))
+        lay.addWidget(foot)
+        self.strip.setMinimumWidth(0)
+        self.strip.setMaximumWidth(16777215)
+        self.strip.adjustSize()
+        self.place_strip()
+        self.strip.show()
+
     def place_strip(self):
         """Right under the bar (beside it when the bar is a column), kept on the screen."""
         if not self.strip.isVisible() and self.strip_key is None:
@@ -935,7 +1028,8 @@ def _QSS_VALUES():
             "FIELD": theme.FIELD}
 
 
-STACKED_BESIDE = {"on": False}                      # beside a column: names above their boxes (narrower)
+BAR_SETTINGS = "__bar__"                             # the strip shows the bar's own settings
+STACKED_BESIDE = {"on": True}                       # beside a column: names above their boxes (narrower)
 MAX_STRIP = 8                                       # options shown in the strip (the rest: 'All in Settings')
 
 _BAR_QSS = """

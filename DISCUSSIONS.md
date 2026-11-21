@@ -251,6 +251,10 @@ the code; this file has what Gus said, decided and wants next.
   fold (right-click strip = a tool's main options)". Lighter items not picked: going with my recommendation (1, 2, 4;
   the Checker rewrite in its own release). Bar + Home built and shown as pictures (design/screens579). Gus on the
   column: "too much space on the right, it should be even and proportional" - fixed (one width, tiles centred).
+- 2026-11-21: Gus: column "too wide" -> 64 px (short controls: initials, R 2 C G, Aa, pencil); Home "yes"; names
+  under tiles on two lines "yes"; beside a column: "B" (names above the boxes, narrow); "be sure that the row
+  stays tight like other designs and don't let a lot of negative space" -> a row keeps only grip, profile, ▾, =
+  when its controls are wider than its tiles; = opens the bar's settings under it.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
   Gemini UI/UX ideas, combined. Then 5.8 Animtool from Gus's
   references (design/references) - check its right-click options against the real tools (no new tools) and the
