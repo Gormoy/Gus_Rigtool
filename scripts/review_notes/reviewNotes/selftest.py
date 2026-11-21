@@ -105,6 +105,31 @@ def _camera():
     return cam is not None, "the view you clicked looks through %s" % cam
 
 
+def _draw_tool():
+    from reviewNotes import drawtool
+    drawtool._make_context()
+    ok = cmds.draggerContext(drawtool.CONTEXT, exists=True)
+    return ok, "the drawing tool %s" % ("is there" if ok else "could not be made")
+
+
+def _mouse():
+    import maya.api.OpenMayaUI as omui
+    from reviewNotes import drawtool, nodedraw
+    view = omui.M3dView.active3dView()
+    gate = nodedraw.view_gate(view)
+    p = drawtool._mouse_on_gate(view)
+    return None, "view %dx%d px, gate x %d-%d y %d-%d, the mouse now at %.2f, %.2f of the gate" % (
+        view.portWidth(), view.portHeight(), gate[0], gate[2], gate[1], gate[3], p[0], p[1])
+
+
+def _window():
+    from reviewNotes import window
+    w = window.show()
+    rows = w.list.topLevelItemCount()
+    window.close()
+    return True, "opened and closed (%d note(s) listed)" % rows
+
+
 def run():
     del LINES[:]
     LINES.append("Review Notes %s self test - Maya %s" % (reviewNotes.__version__, cmds.about(version=True)))
@@ -115,6 +140,9 @@ def run():
     _check("Review notes shown in each view", _show_menu_in_views)
     _check("review file: save, read again, change", _file_round_trip)
     _check("camera of the view", _camera)
+    _check("drawing tool", _draw_tool)
+    _check("mouse -> gate (where the mouse is)", _mouse)
+    _check("the window", _window)
     _check("node not saved in the scene (a real save; ends with a new scene)", _not_saved)
     text = "\n".join(LINES)
     print(text)

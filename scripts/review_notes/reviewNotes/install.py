@@ -32,12 +32,13 @@ def _norm(p):
 
 def _old_copy_off():
     """The running copy off before it's replaced: callbacks, the node, the plugin. False = Maya must restart."""
-    mod = sys.modules.get(PACKAGE + ".controller")
-    try:
-        if mod is not None:
-            mod.unwatch()
-    except Exception:
-        pass
+    for name, fn in (("window", "close"), ("drawtool", "off"), ("controller", "unwatch")):
+        mod = sys.modules.get(PACKAGE + "." + name)
+        try:
+            if mod is not None:
+                getattr(mod, fn)()
+        except Exception:
+            pass
     if not cmds.pluginInfo(PLUGIN, query=True, loaded=True):
         return True
     try:
@@ -94,13 +95,34 @@ def _shelf_button():
             except RuntimeError:
                 pass
     current = cmds.tabLayout(top, query=True, selectTab=True)
-    cmds.shelfButton(BUTTON, parent=current, label="Review", annotation="Review Notes: show the notes of this scene",
+    cmds.shelfButton(BUTTON, parent=current, label="Review", annotation="Review Notes: draw and write notes on the camera, see the scene's notes",
                      image="pythonFamily.png", imageOverlayLabel="Rev", sourceType="python", command=BUTTON_COMMAND)
     try:
         mel.eval("saveAllShelves $gShelfTopLevel")
     except RuntimeError:
         pass
     return current
+
+
+HOTKEYS = (("ReviewNotes_ToggleDraw", "Review Notes: draw on the view on / off", "hk_toggle"),
+           ("ReviewNotes_SaveNote", "Review Notes: save the drawing as a note (with the window's text)", "hk_save"),
+           ("ReviewNotes_EndCurve", "Review Notes: end the curve you're drawing", "hk_end_curve"))
+
+
+def _hotkey_commands():
+    """Commands to put on keys (Hotkey Editor > Custom Scripts > Review Notes). Made again on every install."""
+    made = []
+    for name, note, fn in HOTKEYS:
+        code = "import reviewNotes.drawtool as _rn_d\n_rn_d.%s()" % fn
+        try:
+            if cmds.runTimeCommand(name, exists=True):
+                cmds.runTimeCommand(name, edit=True, delete=True)
+            cmds.runTimeCommand(name, annotation=note, category="Custom Scripts.Review Notes",
+                                commandLanguage="python", command=code)
+            made.append(name)
+        except RuntimeError:
+            pass
+    return made
 
 
 def install(source_dir):
@@ -125,14 +147,15 @@ def install(source_dir):
         del sys.modules[name]
 
     shelf = _shelf_button()
+    keys = _hotkey_commands()
     import reviewNotes
     import reviewNotes.controller as ctl
     ctl.watch()
     ctl.show()
     loaded = _loaded_version()
     stale = loaded != reviewNotes.__version__
-    msg = "Review Notes %s installed in %s - Review button on the '%s' shelf.%s" % (
-        reviewNotes.__version__, dest, shelf,
+    msg = "Review Notes %s installed in %s - Review button on the '%s' shelf; %d hotkey command(s).%s" % (
+        reviewNotes.__version__, dest, shelf, len(keys),
         " RESTART MAYA: the plugin running is still %s." % loaded if (stale or not fresh) else "")
     print(msg)
     return dest

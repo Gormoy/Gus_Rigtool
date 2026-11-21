@@ -1,8 +1,5 @@
-Review Notes 0.1.4 (step 1) - notes drawn and written on a camera and frames, like SyncSketch, inside Maya.
+Review Notes 0.2.0 - notes drawn and written on a camera and frames, like SyncSketch, inside Maya.
 A separate tool, next to the onion skin; both show at the same time.
-
-STEP 1 = THE NOTES SHOW. There are no drawing tools yet (step 2) and no notes window yet (step 3): to try it,
-add a sample note from the Script Editor (below).
 
 INSTALL OR UPDATE (every new version the same way)
 1. Get the scripts/review_notes folder (with drag_to_maya.mel and the reviewNotes folder inside).
@@ -18,16 +15,22 @@ WHERE THE NOTES ARE KEPT
 - If the installer ends with "RESTART MAYA", do: the plugin running is an older one until Maya restarts.
 - A scene that was never saved has no notes: save it first.
 
-TRY IT (step 1)
-1. Open a scene, save it once, click in your shot camera's view.
-2. Click Review. The message says how many notes the scene has.
-3. Add a sample note (red arc + arrow) on this camera, from this frame for 6 frames - Script Editor, Python:
-       import reviewNotes.controller as rn; rn.sample()
-   Run it again on another frame or camera for more notes.
-4. Scrub: the note shows on its frames, faint orange before them, faint blue after, only through its camera.
-5. Settings: select REVIEW_NOTES (Outliner) > Attribute Editor: Show Nearby, Nearby Frames, Only Open,
-   Show Text, Opacity, Hide While Playing, Show Gate (the try-it's green box).
-6. Show menu > Review notes hides / shows them in one view.
+DRAW A NOTE
+1. Save your scene once (the notes go in a file next to it). Click Review on the shelf: the window opens.
+2. Click "Draw on the view" (or Pen / Curve / ... ), then draw in the view you want the note on. Alt still
+   moves the camera. The drawing belongs to the camera and frame where you start it.
+   - Pen: drag. Arrow: drag from tail to head. Circle: drag across its box. Eraser: click a stroke.
+   - Curve (like Illustrator): click = corner, click-drag = smooth point; click the first point to close;
+     drag points or handles to adjust, Ctrl-drag breaks a handle; End curve when done.
+3. Write what should change, pick the type (change / fix / add / idea) and for how many frames it shows.
+4. Save note (or Ctrl+Enter in the window). Clear throws the drawing away.
+
+THE NOTES
+- The list shows every note of the scene: double-click (or Go to) = its frame, through its camera.
+  Status: open > in progress > done. Delete removes it from the file. Filter: All / Open / This camera.
+- Nearby: notes a few frames before / after show faint (orange coming, blue passed). Only open: done notes hidden.
+- More settings on REVIEW_NOTES (Outliner) > Attribute Editor. Show > Review notes hides them in one view.
+- Hotkeys: Hotkey Editor > Custom Scripts > Review Notes (draw on / off, save, end curve) - give them keys.
 
 SELF TEST (in a NEW, EMPTY scene - paste the lines it prints)
        import reviewNotes.selftest as t; t.run()

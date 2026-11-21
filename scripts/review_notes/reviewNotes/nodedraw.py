@@ -12,7 +12,7 @@ import maya.api.OpenMayaAnim as oma
 import maya.api.OpenMayaRender as omr
 import maya.cmds as cmds
 
-from reviewNotes import draw, store
+from reviewNotes import draw, sketch, store
 
 _said = {}
 
@@ -80,7 +80,8 @@ def prepare(objPath, cameraPath, frameContext):
         return [], scale
     notes, problem = store.notes_for_drawing(review_file(node))
     say("file", problem)
-    if not notes and not opts.debug_gate:
+    drawing = sketch.SKETCH
+    if not notes and not opts.debug_gate and drawing.empty():
         return [], scale
     cam_path = om.MDagPath(cameraPath)
     shape = cam_path.partialPathName()
@@ -92,7 +93,20 @@ def prepare(objPath, cameraPath, frameContext):
     view = cam.getViewingFrustum(w / float(max(1, h)), True, False, True)
     render = cam.getRenderingFrustum(render_aspect())
     gate = draw.gate_rect(view, render, w, h)
-    return draw.build_items(notes, names, frame, gate, opts), scale
+    items = draw.build_items(notes, names, frame, gate, opts)
+    if not drawing.empty() and (drawing.camera is None or draw.camera_matches(drawing.camera, names)):
+        items += draw.sketch_items(drawing.all_strokes(), drawing.handles(), gate, scale)
+    return items, scale
+
+
+def view_gate(view):
+    """The gate in an M3dView's own pixels (the same pixels as view.worldToView), y up."""
+    cam_path = view.getCamera()
+    w, h = view.portWidth(), view.portHeight()
+    cam = om.MFnCamera(cam_path)
+    v = cam.getViewingFrustum(w / float(max(1, h)), True, False, True)
+    r = cam.getRenderingFrustum(render_aspect())
+    return draw.gate_rect(v, r, w, h)
 
 
 def paint(dm, items, scale):

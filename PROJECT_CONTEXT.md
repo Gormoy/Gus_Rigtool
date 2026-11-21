@@ -235,9 +235,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   Maya (Gus, 2026-11-21). One `REVIEW_NOTES` locator (plugin `reviewNotesNode`, VP2 draw override, never saved in
   the scene) draws the notes of `<shot>.review.json` next to the scene in 2D over each note's camera, on its frames
   (nearby faint, onion skin colours); works with the onion skin and in playblasts (try-it). `draw.py` / `store.py`
-  have no Maya and are tested by `tests/test_review_notes.py`; `selftest.py` = the in-Maya checks. Step 1 done
-  (0.1.0); step 2 = drawing overlay + bar with the bezier curve tool; step 3 = notes window + bookmarks + frame
-  picture; then SyncSketch import.
+  have no Maya and are tested by `tests/test_review_notes.py`; `selftest.py` = the in-Maya checks. 0.1.4: notes
+  show, node out of every save. 0.2.0: drawing (draggerContext `drawtool.py`, `sketch.py` = the tools' logic)
+  and the Review window (`window.py`, tested off-screen by `tests/test_window.py`). Next: time slider bookmarks,
+  frame picture per note, replies; then SyncSketch import.
 - **Onion skin (standalone, branch `onion-skin-tool`, `scripts/onion_skin_renderer/`)**: Gus's first script
   (onionSkinRenderer, MIT) made to run on Maya 2024 without PyMEL, installed by drag_to_maya.mel; ghosts in front
   (Harmony style), per-character pictures and keys, light table (others see-through), arcs on vertices / controls,

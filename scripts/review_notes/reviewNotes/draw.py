@@ -101,6 +101,12 @@ def to_screen(p, gate):
     return (x0 + p[0] * (x1 - x0), y1 - p[1] * (y1 - y0))
 
 
+def from_screen(x, y, gate):
+    """A point of the view (pixels, y up) in gate space (0-1, y down) - where the mouse is on the gate."""
+    x0, y0, x1, y1 = gate
+    return ((x - x0) / float(x1 - x0), (y1 - y) / float(y1 - y0))
+
+
 # ---------------- which notes show ----------------
 def camera_names(*names):
     """The names a camera answers to: transform and shape, with and without namespace."""
@@ -172,4 +178,29 @@ def build_items(notes, names, frame, gate, options=None):
             items.append(("text", colour + ((DONE_ALPHA if done else 1.0) * o.opacity,),
                           (x0 + 10 * o.scale, y1 - (24 + row * 24) * o.scale), label_text(note)))
             row += 1
+    return items
+
+
+def sketch_items(strokes, handles, gate, scale=1.0):
+    """The drawing in progress (not saved yet), full strength, and the curve tool's points and handles."""
+    x0, y0, x1, y1 = gate
+    aspect = (x1 - x0) / float(y1 - y0) if y1 != y0 else 16 / 9.0
+    items = []
+    for stroke in strokes:
+        rgb = tuple(float(c) for c in (list(stroke.get("color") or (1.0, 0.3, 0.26)) + [1, 1, 1])[:3])
+        for line in polylines(stroke, aspect):
+            items.append(("line", rgb + (1.0,), max(1.0, float(stroke.get("width", 3))),
+                          [to_screen(p, gate) for p in line]))
+    white = (1.0, 1.0, 1.0, 0.95)
+    box = 4 * scale
+    for point, hin, hout in handles:
+        px, py = to_screen(point, gate)
+        for h in (hin, hout):
+            if h is not None:
+                hx, hy = to_screen(h, gate)
+                items.append(("line", white, 1.0, [(px, py), (hx, hy)]))
+                items.append(("line", white, 1.0, [(hx - box / 2, hy), (hx, hy + box / 2), (hx + box / 2, hy),
+                                                    (hx, hy - box / 2), (hx - box / 2, hy)]))
+        items.append(("line", white, 1.5, [(px - box, py - box), (px + box, py - box), (px + box, py + box),
+                                            (px - box, py + box), (px - box, py - box)]))
     return items

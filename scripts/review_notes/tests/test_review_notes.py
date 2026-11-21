@@ -469,5 +469,120 @@ class SaveTests(unittest.TestCase):
         self.assertEqual((self.st["deferred"], self.st["made"]), ([], 0))
 
 
+class SketchTests(unittest.TestCase):
+    """Drawing a note: what each tool does with the mouse (sketch.py) and the mouse -> gate maths."""
+
+    def setUp(self):
+        from reviewNotes import sketch
+        self.s = sketch.Sketch()
+        self.s.start("shotCam", 1012)
+
+    def test_from_screen_is_to_screen_backwards(self):
+        for p in ((0.0, 0.0), (0.25, 0.8), (1.0, 1.0)):
+            x, y = draw.to_screen(p, GATE)
+            back = draw.from_screen(x, y, GATE)
+            self.assertAlmostEqual(back[0], p[0])
+            self.assertAlmostEqual(back[1], p[1])
+
+    def test_pen(self):
+        s = self.s
+        s.press((0.1, 0.1))
+        for i in range(1, 6):
+            s.move((0.1 + i * 0.02, 0.1))
+        s.release((0.2, 0.1))
+        self.assertEqual(len(s.strokes), 1)
+        self.assertEqual(s.strokes[0]["tool"], "pen")
+        self.assertGreaterEqual(len(s.strokes[0]["points"]), 5)
+        s.press((0.5, 0.5))
+        s.release((0.5, 0.5))                                   # a click is not a stroke
+        self.assertEqual(len(s.strokes), 1)
+
+    def test_arrow_and_circle_two_points(self):
+        s = self.s
+        s.set_tool("arrow")
+        s.press((0.7, 0.6))
+        s.move((0.6, 0.7))
+        s.release((0.53, 0.78))
+        s.set_tool("circle")
+        s.press((0.4, 0.72))
+        s.release((0.52, 0.9))
+        self.assertEqual([(x["tool"], x["points"]) for x in s.strokes],
+                         [("arrow", [[0.7, 0.6], [0.53, 0.78]]), ("circle", [[0.4, 0.72], [0.52, 0.9]])])
+
+    def test_curve_like_illustrator(self):
+        s = self.s
+        s.set_tool("curve")
+        s.press((0.3, 0.7))
+        s.release((0.3, 0.7))                                   # click = corner (no handles)
+        s.press((0.45, 0.2))
+        s.move((0.52, 0.2))
+        s.release((0.53, 0.2))                                  # click-drag = smooth point
+        s.press((0.6, 0.7))
+        s.release((0.6, 0.7))
+        a = s.curve["anchors"]
+        self.assertEqual(a[0], [[0.3, 0.7], [0.3, 0.7], [0.3, 0.7]])
+        self.assertEqual(a[1][2], [0.53, 0.2])                   # handle out where the mouse let go
+        self.assertAlmostEqual(a[1][1][0], 0.37)                 # handle in mirrored
+        self.assertEqual(len(s.handles()), 3)
+        # drag the out handle: the in handle stays opposite (same length it had)
+        s.press((0.53, 0.2))
+        s.release((0.45, 0.12))
+        out, inn = a[1][2], a[1][1]
+        self.assertAlmostEqual(out[0] - 0.45, -(inn[0] - 0.45))
+        self.assertAlmostEqual(out[1] - 0.2, -(inn[1] - 0.2))
+        # Ctrl-drag breaks it: only that handle moves
+        before = list(a[1][1])
+        s.press(tuple(a[1][2]), ctrl=True)
+        s.release((0.6, 0.3), ctrl=True)
+        self.assertEqual(a[1][1], before)
+        # drag a point: it moves with its handles
+        s.press((0.6, 0.7))
+        s.release((0.62, 0.72))
+        self.assertEqual(a[2][0], [0.62, 0.72])
+        # click the first point: closed and finished
+        s.press((0.3, 0.7))
+        self.assertIsNone(s.curve)
+        self.assertTrue(s.strokes[-1]["closed"])
+        self.assertEqual(s.strokes[-1]["tool"], "bezier")
+        self.assertEqual(draw.polylines(s.strokes[-1])[0][0], draw.polylines(s.strokes[-1])[0][-1])
+
+    def test_curve_ended_by_another_tool_or_save(self):
+        s = self.s
+        s.set_tool("curve")
+        for p in ((0.1, 0.1), (0.2, 0.2)):
+            s.press(p)
+            s.release(p)
+        s.set_tool("pen")
+        self.assertEqual(len(s.strokes), 1)
+        s.set_tool("curve")
+        s.press((0.5, 0.5))
+        s.release((0.5, 0.5))
+        self.assertEqual(len(s.finish()), 1)                    # a 1-point curve is dropped
+        self.assertIsNone(s.curve)
+
+    def test_eraser_and_clear(self):
+        s = self.s
+        s.press((0.1, 0.1))
+        s.move((0.3, 0.1))
+        s.release((0.3, 0.1))
+        s.set_tool("eraser")
+        s.press((0.5, 0.9))
+        self.assertEqual(len(s.strokes), 1)                      # far away: nothing
+        s.press((0.2, 0.105))
+        self.assertEqual(s.strokes, [])
+        s.clear()
+        self.assertIsNone(s.camera)
+
+    def test_drawing_shown_live_with_handles(self):
+        s = self.s
+        s.set_tool("curve")
+        s.press((0.3, 0.7))
+        s.move((0.35, 0.6))
+        s.release((0.35, 0.6))
+        items = draw.sketch_items(s.all_strokes(), s.handles(), GATE, 2.0)
+        lines = [i for i in items if i[0] == "line"]
+        self.assertEqual(len(lines), 5)                          # 2 handle lines + 2 handle dots + the point
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

@@ -17,6 +17,15 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: "I prefer to go ahead and have a real try it out tool first. If we go step by step I don't
+  feel we are going forward" -> for Review Notes, skip the separate try-it (rule 12) and ship a working tool;
+  bigger steps. Built 0.2.0: draw on the view with a Maya drawing tool (draggerContext: Alt still moves the camera;
+  the mouse read from the view's widget in its own pixels), Pen / Curve (Illustrator-style) / Arrow / Circle /
+  Eraser, colours, size; the drawing shows live (the node draws it); the Review window: write, type, hold, Save
+  note, Clear, the notes list (Go to, Status, Delete, filters, Nearby, Only open); 3 hotkey commands. Chose a Maya
+  tool over a see-through Qt layer (on the Mac it can show as a black box). Tests: 30 without Maya + the window
+  built with real Qt off-screen (picture design/review_notes/window_0.2.0.png). Not run in Maya yet.
+
 - 2026-11-21: Review Notes 0.1.4 self test ALL OK after a restart (plugin 0.1.4, save callbacks, a real save
   has no node and no 'requires'). Step 1 done. Not answered yet: test.ma reopened clean? (he made test2.ma).
   Next: step 2 plan sent (try-it first, rule 12), waiting for OK.

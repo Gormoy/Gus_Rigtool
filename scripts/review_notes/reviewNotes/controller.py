@@ -2,11 +2,9 @@
 Review Notes in Maya: loads the plugin, keeps one REVIEW_NOTES node in the scene, and finds the review file.
 
     import reviewNotes.controller as rn
-    rn.show()          # the shelf button: notes on, and what's in the review file
-    rn.sample()        # adds a sample note on the camera you look through, on this frame (step 1 test)
+    rn.show()          # the shelf button: the window (draw, write, save, the list of notes)
+    rn.sample()        # adds a sample note on the camera you look through, on this frame
     rn.off()           # removes the node (the notes stay in the file)
-
-Step 1 has no drawing tools yet (step 2) and no notes window (step 3).
 """
 
 import os
@@ -122,13 +120,19 @@ def review_path():
     return store.path_for_scene(cmds.file(query=True, sceneName=True))
 
 
-def current_camera():
-    """The camera of the view you last clicked (or the first view on screen)."""
+def current_panel():
+    """The view you last clicked (or the first view on screen)."""
     panel = cmds.getPanel(withFocus=True)
     if not panel or cmds.getPanel(typeOf=panel) != "modelPanel":
         panels = cmds.getPanel(type="modelPanel") or []
         visible = set(cmds.getPanel(visiblePanels=True) or [])
         panel = next((p for p in panels if p in visible), None)
+    return panel
+
+
+def current_camera():
+    """The camera of the view you last clicked (or the first view on screen)."""
+    panel = current_panel()
     if not panel:
         return None
     cam = cmds.modelPanel(panel, query=True, camera=True)
@@ -152,9 +156,13 @@ def summary(path):
 
 
 def show():
-    """The shelf button (step 1): notes on in every view, and what's in the review file."""
-    ensure_node()
-    _tell(summary(review_path()))
+    """The shelf button: the Review Notes window, and the notes on in every view."""
+    path = review_path()
+    if path:
+        ensure_node()
+    print("Review Notes: %s" % summary(path))
+    from reviewNotes import window
+    return window.show()
 
 
 def sample(text="Sample note: arc too flat here, push the peak higher.", hold=6):
