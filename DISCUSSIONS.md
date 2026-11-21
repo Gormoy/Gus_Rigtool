@@ -17,6 +17,10 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Review Notes 0.1.4 self test ALL OK after a restart (plugin 0.1.4, save callbacks, a real save
+  has no node and no 'requires'). Step 1 done. Not answered yet: test.ma reopened clean? (he made test2.ma).
+  Next: step 2 plan sent (try-it first, rule 12), waiting for OK.
+
 - 2026-11-21: 0.1.3 installed (not restarted yet). His log answered "why won't the plugin update": the installer
   DID unload it (undo cleared, no error) but Maya loaded the old code again from Python's memory (module
   reviewNotesNode still in sys.modules) -> still 0.1.1. 0.1.4: the installer / load_plugin drop that module

@@ -9,6 +9,8 @@ Gus's answer, then build.
 
 | Fact | What Maya does | Found | Version |
 |---|---|---|---|
+| `pluginInfo -edit -writeRequires false` | does NOT stop the `requires` line while a node of the plugin is in the scene (even a do-not-write one). What works: delete the node in a kBeforeSave / kBeforeExport callback and make it again in kAfterSave (Review Notes 0.1.3+): a real save then has no node and no requires | Review Notes self test 0.1.2 FAIL, 0.1.4 all ok | 2026-11-21 |
+| Updating a Python plugin (.py) while Maya runs | `unloadPlugin` works (once its node is out of the undo queue: `flushUndo`), but `loadPlugin` then runs the OLD code if the plugin's module is still in `sys.modules` - pop it first | Review Notes 0.1.3 (stayed 0.1.1), 0.1.4 ok | 2026-11-21 |
 | `MFileIO` (the open scene's file) | only in the OLD Python API (`maya.OpenMaya.MFileIO.currentFile()`); `maya.api.OpenMaya` has no MFileIO in Maya 2024 (AttributeError) | Review Notes 0.1.0 drew nothing; Gus's paste | 2026-11-21 |
 | A plugin locator marked do-not-write (`MFnDependencyNode.setDoNotWrite(True)` on shape in postConstructor + on the transform) | the node is NOT written. BUT a normal SAVE still wrote `requires "reviewNotesNode.py"` (an EXPORT did not - the 0.1.0 self test only exported), so opening the scene said "Plug-in reviewNotesNode.py was not found on MAYA_PLUG_IN_PATH". 0.1.2 sets `pluginInfo -edit -writeRequires false`; its self test does a real save | Review Notes self test 0.1.0 + Gus's test.ma | 2026-11-21 |
 | `cmds.pluginDisplayFilter(name, register=True, classification='drawdb/geometry/...')` | adds a Show menu entry; it's ON in every model panel by default | Review Notes self test 0.1.0 | 2026-11-21 |
