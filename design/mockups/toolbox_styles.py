@@ -130,7 +130,36 @@ QLabel#flatTitle { font-weight: bold; font-size: 16px; color: #ffffff; }
 QLabel#num { background: transparent; color: #8fb3df; font-weight: bold; font-size: 16px; }
 QFrame#rule { background: #4a4f57; }
 """ + _V1_CONTROLS
-OPT = {"classic": dict(section="bar", desc=False, choice="radio", quick=False, light="#5a4a22", badge=False),
+# C2 (2026-11-21, after design/UI_PRINCIPLES.md): Mix C + the new window's colours + less at first look
+STYLES["c2"] = """
+QWidget { background: transparent; color: #e9ebee; font-size: 13px; }
+QWidget#page { background: #33373d; }
+QLabel[role="lab"] { color: #c9cdd2; }
+QLabel[role="dim"] { color: #a2a7ae; font-size: 12px; }
+QLabel#flatTitle { font-weight: bold; font-size: 16px; color: #ffffff; }
+QLabel#num { background: ACCENT; color: #111; border-radius: 10px; font-weight: bold; font-size: 11px;
+             min-width: 20px; max-width: 20px; min-height: 20px; max-height: 20px; }
+QFrame#rule { background: #464b53; }
+QPushButton { background: #474c54; border: 1px solid #575d66; border-radius: 6px; padding: 5px 10px; }
+QPushButton:hover { background: #535962; }
+QPushButton[role="main"] { background: ACCENT; color: #111; border: none; font-weight: bold; font-size: 14px;
+                           padding: 9px; border-radius: 7px; }
+QPushButton[role="danger"] { background: #5a2f2d; border: 1px solid #b4544f; }
+QPushButton[role="fold"] { background: transparent; border: none; text-align: left; padding: 3px 0px;
+                           color: #a2a7ae; }
+QRadioButton, QCheckBox { spacing: 7px; }
+QRadioButton::indicator { width: 12px; height: 12px; border-radius: 7px; border: 1.5px solid #8a9098;
+                          background: #202326; }
+QRadioButton::indicator:checked { background: ACCENT; border: 1.5px solid #e9ebee; }
+QCheckBox::indicator { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #8a9098; background: #202326; }
+QCheckBox::indicator:checked { background: ACCENT; border: 1.5px solid ACCENT; }
+QLineEdit, QComboBox, QListWidget, QPlainTextEdit { background: #202326; border: 1px solid #4a4f57;
+                           border-radius: 5px; padding: 4px 6px; }
+QLabel#light { border-radius: 6px; padding: 7px 9px; }
+"""
+OPT = {"c2": dict(section="flat", desc=True, choice="radio", quick=True, light="#4f4420", badge=True, fold=True,
+                  closed_desc=False),
+       "classic": dict(section="bar", desc=False, choice="radio", quick=False, light="#5a4a22", badge=False),
        "new": dict(section="card", desc=True, choice="pill", quick=True, light="#4f4420", badge=True),
        "mixA": dict(section="card", desc=True, choice="radio", quick=True, light="#57491f", badge=True),
        "mixB": dict(section="bar", desc=True, choice="radio", quick=True, light="#57491f", badge=True),
@@ -138,6 +167,7 @@ OPT = {"classic": dict(section="bar", desc=False, choice="radio", quick=False, l
 NAMES = {"mixA": "Mix A - cards, classic controls", "mixB": "Mix B - section bars, new touches",
          "mixC": "Mix C - clean list, no boxes"}
 LIGHT = dict((k, v["light"]) for k, v in OPT.items())
+OPTION_KINDS = ("radioButtonGrp", "checkBox", "checkBoxGrp")
 LABEL_W = 96
 
 
@@ -151,10 +181,11 @@ def first_sentence(text):
 
 
 class Page(object):
-    def __init__(self, style):
+    def __init__(self, style, only=None):
         self.style = style
         self.opt = OPT[style]
         self.n = 0
+        self.only = only                                   # a sub-page: only these sections
 
     def build(self, root, title, subtitle, head=True):
         w = QtWidgets.QWidget()
@@ -208,7 +239,8 @@ class Page(object):
         h.setSpacing(8)
         lab = QtWidgets.QLabel(text)
         lab.setProperty("role", "lab")
-        lab.setFixedWidth(LABEL_W)
+        lab.setFixedWidth(LABEL_W + 14)
+        lab.setWordWrap(True)
         lab.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         h.addWidget(lab)
         h.addWidget(widget, 1)
@@ -216,6 +248,16 @@ class Page(object):
 
     def _rowLayout(self, n):
         kids = [c for c in n.children]
+        if self.opt.get("fold") and kids and kids[0].kind == "optionMenu" and any(
+                str(i.get("label")) == "(presets)" for i in kids[0].items):
+            row = QtWidgets.QWidget()                      # C2: presets folded into one small button
+            h = QtWidgets.QHBoxLayout(row)
+            h.setContentsMargins(0, 0, 0, 0)
+            h.addStretch(1)
+            b = QtWidgets.QPushButton("Presets  ▾")
+            b.setToolTip("Save / Load / Delete your settings for this tool")
+            h.addWidget(b)
+            return row
         if kids and kids[0].kind == "text" and str(kids[0].label()).strip() and len(kids) > 1:
             rest = QtWidgets.QWidget()
             h = QtWidgets.QHBoxLayout(rest)
@@ -246,14 +288,30 @@ class Page(object):
             got = self.node(c)
             if got is not None:
                 g.addWidget(got, i // cols, i % cols)
-        if self.opt["quick"]:
+        if self.opt["quick"] and n.kind == "gridLayout" and all(c.kind == "button" for c in n.children):
             return self.labelled("Quick", w)
         return w
 
-    _rowColumnLayout = _gridLayout
+    def _rowColumnLayout(self, n):
+        kids = list(n.children)
+        cols = int(n.kw.get("numberOfColumns") or n.kw.get("nc") or 2)
+        if cols == 2 and kids and all(k.kind == "text" for k in kids[0::2]):     # label / value pairs
+            w = QtWidgets.QWidget()
+            v = QtWidgets.QVBoxLayout(w)
+            v.setContentsMargins(0, 0, 0, 0)
+            v.setSpacing(6)
+            for lab, ctl in zip(kids[0::2], kids[1::2]):
+                got = self.node(ctl)
+                if got is not None:
+                    v.addWidget(self.labelled(str(lab.label()), got))
+            return w
+        return self._gridLayout(n)
 
     def _frameLayout(self, n):
         title = re.sub(r"^\s*\d+\.\s+", "", str(n.label())).replace("(advanced)", "").strip()
+        if self.only is not None and n.parent is not None and n.parent.kind not in ("frameLayout",) and \
+                not self._inside_frame(n) and title not in self.only:
+            return None
         closed = bool(n.kw.get("collapse") or n.kw.get("cl"))
         help_text = str(n.kw.get("annotation") or "")
         inner = n.parent is not None and n.parent.kind != "columnLayout" or (
@@ -263,6 +321,20 @@ class Page(object):
         if self.opt["section"] == "flat":
             return self._flat(n, title, closed, help_text)
         return self._card(n, title, closed, help_text, inner)
+
+    def _walk(self, n):
+        for c in n.children:
+            yield c
+            for g in self._walk(c):
+                yield g
+
+    def _inside_frame(self, n):
+        p = n.parent
+        while p is not None:
+            if p.kind == "frameLayout":
+                return True
+            p = p.parent
+        return False
 
     def _desc(self, help_text, lay, indent=0):
         if help_text and self.opt["desc"]:                 # what this section does, in one line
@@ -285,6 +357,7 @@ class Page(object):
         self.n += 1
         num = QtWidgets.QLabel("%d" % self.n)
         num.setObjectName("num")
+        num.setAlignment(Qt.AlignCenter)
         h.addWidget(num)
         t = QtWidgets.QLabel(title)
         t.setObjectName("flatTitle")
@@ -293,10 +366,69 @@ class Page(object):
         arrow.setProperty("role", "dim")
         h.addWidget(arrow)
         v.addLayout(h)
-        self._desc(help_text, v)
+        has_light = self.opt.get("fold") and any(c.kw.get("_light") for c in self._walk(n))
+        if (not closed or self.opt.get("closed_desc", True)) and not has_light:
+            self._desc(help_text, v)            # (C2: a step whose light says what to select needs no second line)
         if not closed:
-            self.kids(n, v)
+            if self.opt.get("fold"):
+                self._folded(n, v)
+            else:
+                self.kids(n, v)
         return w
+
+    # ------------------------------------------------------------------ less at first look (C2)
+    def _items(self, n):
+        out = []
+        for c in n.children:
+            if self._is_help_row(c):
+                continue
+            if c.kind == "columnLayout" and c.parent is n:
+                out += self._items(c)
+            else:
+                out.append(c)
+        return out
+
+    def _is_option(self, c):
+        if c.kind in OPTION_KINDS or c.kind == "frameLayout":
+            return True
+        if c.kind == "rowLayout":
+            kinds = set(k.kind for k in c.children)
+            return bool(kinds) and kinds <= set(OPTION_KINDS + ("text", "optionMenu")) and "optionMenu" not in kinds \
+                and kinds != {"text"}
+        return False
+
+    def _summary(self, c):
+        if c.kind == "radioButtonGrp":
+            labels = [l for k in ("labelArray2", "labelArray3", "labelArray4") for l in (c.kw.get(k) or [])]
+            sel = int(c.kw.get("select") or 1)
+            return labels[sel - 1] if 0 < sel <= len(labels) else ""
+        if c.kind == "checkBox" and (c.kw.get("value") or c.kw.get("v")):
+            return " ".join(str(c.label()).split()[:3])
+        return ""
+
+    def _folded(self, n, v):
+        opts = []
+        for c in self._items(n):
+            if c.kw.get("manage") is False:
+                continue
+            if self._is_option(c):
+                opts.append(c)
+                continue
+            got = self.node(c)
+            if got is not None:
+                v.addWidget(got)
+        if opts:
+            words = [x for x in (self._summary(c) for c in opts) if x]
+            b = QtWidgets.QPushButton(("Options  ▸     " + "  ·  ".join(words)).replace("&", "&&"))
+            b.setProperty("role", "fold")
+            b.setToolTip("Click to show the %d option(s)" % len(opts))
+            # the main button stays last: put the fold just before it
+            lay_items = [v.itemAt(i).widget() for i in range(v.count()) if v.itemAt(i).widget() is not None]
+            mains = [w for w in lay_items if isinstance(w, QtWidgets.QPushButton) and w.property("role") == "main"]
+            if mains:
+                v.insertWidget(v.indexOf(mains[0]), b)
+            else:
+                v.addWidget(b)
 
     def _bar(self, n, title, closed, help_text, inner):
         w = QtWidgets.QWidget()
@@ -371,6 +503,8 @@ class Page(object):
     def _text(self, n):
         text = str(n.label())
         if n.kw.get("_light"):
+            if not text.strip() and self.opt.get("fold"):
+                return None                                  # (the tool says nothing yet: no empty box)
             w = QtWidgets.QLabel(text.strip() or "Select the objects to work on.")
             w.setObjectName("light")
             w.setWordWrap(True)
@@ -503,14 +637,18 @@ QPushButton[role="nav"] { background: transparent; border: none; text-align: lef
 QPushButton[role="nav"]:checked { background: rgba(255,255,255,0.09); color: white; font-weight: bold; }
 QPushButton[role="tab"] { background: transparent; border: none; border-radius: 0px; padding: 7px 12px;
                           color: #aab0b8; font-size: 13px; border-bottom: 2px solid transparent; }
-QPushButton[role="tab"]:checked { color: white; font-weight: bold; border-bottom: 3px solid #6f93bd; }
+QPushButton[role="tab"]:checked { color: white; font-weight: bold; border-bottom: 3px solid %(accent)s; }
+QPushButton[role="tab2"] { background: transparent; border: 1px solid transparent; border-radius: 11px;
+                           padding: 3px 10px; color: #a2a7ae; font-size: 12px; }
+QPushButton[role="tab2"]:checked { border: 1px solid %(accent)s; color: white; font-weight: bold; }
 QFrame#sel { background: rgba(0,0,0,0.18); border-radius: 6px; }
 """
 PAGE_BG = {"classic": "#3d3d3d", "new": "#2f3237", "mixA": "#2f3237", "mixB": "#393c41", "mixC": "#33363b"}
 SIDE_BG = {"classic": "#333333", "new": "#26292d", "mixA": "#26292d", "mixB": "#2f3236", "mixC": "#2a2d31"}
 
 
-def window(style, key, page):
+def window(style, key, page, area="toolbox", tabs=("Select", "Groups", "Mirror", "Rename", "Pivots"),
+           current=None, tabs2=None, current2=None):
     """The whole window around a page: the sidebar (areas), the header, the tool tabs, the Selected box."""
     from gus_rigtool.newui import theme
     win = QtWidgets.QWidget()
@@ -537,10 +675,14 @@ def window(style, key, page):
     head2.setObjectName("sideHead")
     sv.addSpacing(8)
     sv.addWidget(head2)
+    for b in side.findChildren(QtWidgets.QPushButton):
+        if b.text().split("   ")[-1].replace("&&", "&") == theme.area(area)[1]:
+            b.setCheckable(True)
+            b.setChecked(True)
     tb = QtWidgets.QPushButton("Toolbox")
     tb.setProperty("role", "nav")
     tb.setCheckable(True)
-    tb.setChecked(True)
+    tb.setChecked(area == "toolbox")
     tb.setStyleSheet("QPushButton { border-left: 3px solid %s; }" % theme.colour("toolbox"))
     sv.addWidget(tb)
     for t in ("My tools", ):
@@ -556,19 +698,24 @@ def window(style, key, page):
     mv = QtWidgets.QVBoxLayout(main)
     mv.setContentsMargins(14, 12, 14, 0)
     mv.setSpacing(6)
-    title = QtWidgets.QLabel("<b style='font-size:21px'>Toolbox</b>&nbsp;&nbsp;<span style='color:#9aa0a8'>"
-                             "Small tools for any moment.</span>")
+    from gus_rigtool.newui import window as W
+    title = QtWidgets.QLabel("<b style='font-size:21px'>%s</b>&nbsp;&nbsp;<span style='color:#9aa0a8'>%s</span>" % (
+        theme.area(area)[1].replace("&", "&amp;"), W.WHY.get(area, "")))
+    title.setWordWrap(True)
     mv.addWidget(title)
-    tabs = QtWidgets.QHBoxLayout()
-    tabs.setSpacing(0)
-    for t in ("Select", "Groups", "Mirror", "Rename", "Pivots"):
-        b = QtWidgets.QPushButton(t)
-        b.setProperty("role", "tab")
-        b.setCheckable(True)
-        b.setChecked(t.lower() == key)
-        tabs.addWidget(b)
-    tabs.addStretch(1)
-    mv.addLayout(tabs)
+    for row, cur, role in ((tabs, current or key.title(), "tab"), (tabs2, current2, "tab2")):
+        if not row:
+            continue
+        lay = QtWidgets.QHBoxLayout()
+        lay.setSpacing(4 if role == "tab2" else 0)
+        for t in row:
+            b = QtWidgets.QPushButton(t.replace("&", "&&"))
+            b.setProperty("role", role)
+            b.setCheckable(True)
+            b.setChecked(t == cur)
+            lay.addWidget(b)
+        lay.addStretch(1)
+        mv.addLayout(lay)
     sel = QtWidgets.QFrame()
     sel.setObjectName("sel")
     sl = QtWidgets.QHBoxLayout(sel)
@@ -577,7 +724,10 @@ def window(style, key, page):
     mv.addWidget(sel)
     mv.addWidget(page, 1)
     h.addWidget(main, 1)
-    win.setStyleSheet(STYLES[style] + WINDOW_CSS % {"page": PAGE_BG[style], "side": SIDE_BG[style]})
+    accent = theme.colour(area)
+    css = STYLES[style].replace("ACCENT", accent)
+    win.setStyleSheet(css + WINDOW_CSS % {"page": PAGE_BG.get(style, "#33373d"), "side": SIDE_BG.get(style, "#26292d"),
+                                          "accent": accent})
     return win
 
 
@@ -604,7 +754,47 @@ def shoot(key, styles=("classic", "new"), width=520, height=None, whole=False):
     return pics
 
 
+PAGES = [  # (file name, tool, area, top tabs, current, second-row tabs, current, the sections on that page)
+    ("groups", "groups", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Groups", None, None, None),
+    ("mirror", "mirror", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Mirror", None, None, None),
+    ("pivots_move", "pivots", "toolbox", ("Select", "Groups", "Mirror", "Rename", "Pivots"), "Pivots",
+     ("Move", "Remember & reset"), "Move", ["Move pivots to", "Bounding box", "From geometry", "Along a chain"]),
+    ("face", "face", "build", ("Build", "Face", "Ribbon", "Joints"), "Face",
+     ("Build the face", "Ribbons & groups", "Squash & expressions"), "Build the face",
+     ["Setup", "Eyes", "Eyelids", "Mouth", "Brows", "Facial strips"]),
+    ("skin_bind", "skin", "skin", ("Skin", "Fixes"), "Skin",
+     ("Bind", "Copy & mirror", "Save / load", "Clean", "Weights", "Cloth & jiggle"), "Bind", ["Bind"]),
+    ("behaviour", "behaviour", "controls", ("Make", "Edit shape", "Behaviour", "Attributes", "Channels", "Spaces",
+                                            "Follow", "Stick"), "Behaviour", None, None, None),
+]
+
+
+def shoot_c2(names=None, width=760):
+    out = []
+    for name, key, area, tabs, cur, tabs2, cur2, only in PAGES:
+        if names and name not in names:
+            continue
+        rec = record.record(registry.builder(key), "c2_%s_" % name)
+        p = Page("c2", only)
+        w = p.build(rec.root, "", "", head=False)
+        w.layout().setContentsMargins(0, 4, 0, 12)
+        win = window("c2", key, w, area, tabs, cur, tabs2, cur2)
+        win.resize(width, 500)
+        win.show()
+        app.processEvents()
+        win.resize(width, max(win.sizeHint().height(), 560))
+        app.processEvents()
+        path = os.path.join(OUT, "c2_%s.png" % name)
+        win.grab().save(path)
+        out.append(path)
+        print(path, win.height())
+    return out
+
+
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["c2"]:
+        shoot_c2(sys.argv[2:])
+        sys.exit(0)
     mixes = ("mixA", "mixB", "mixC")
     for key in sys.argv[1:] or ("groups", "mirror", "pivots"):
         shoot(key, mixes)

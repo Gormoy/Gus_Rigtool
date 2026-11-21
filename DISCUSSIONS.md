@@ -17,6 +17,17 @@ the code; this file has what Gus said, decided and wants next.
 
 ## Decisions (newest first)
 
+- 2026-11-21: Gus: "I liked C better, but it's still too much information at first look, and I want more of the
+  colours and looks of the new version"; "I need them more organized - find the design references (rules, what
+  makes a great UI/UX) and bring a based reference, understanding what the design means"; "yes, I need to see
+  more (pages)". Did: design/UI_PRINCIPLES.md (10 rules with sources: progressive disclosure, Hick, Fitts,
+  Gestalt proximity, hierarchy, recognition over recall, Nielsen heuristics, Blender HIG, Material dark theme,
+  WCAG contrast, Apple HIG) + version C2 (Mix C + the new window's colours, each area's colour on numbers / tab /
+  main button; the job first and the rarely changed choices folded in one 'Options >' line that says what's set;
+  presets folded into one button; closed sections one line; a step with a light shows no second description).
+  Pictures design/screens577/c2_*: Groups, Mirror, Pivots > Move, Face > Build the face, Skin > Bind, Controls >
+  Behaviour. Waiting for his opinion / references.
+
 - 2026-11-21: Gus: "1 (classic) is still easier to read, but the design of 2 is good - give me more options combining
   the two"; "we can think of the whole window, but I need to see how it would look overall in more versions - I'll
   send more references"; he sent NO picture ("take a look at this" = his words before - my misread). Sent 3 mixes
