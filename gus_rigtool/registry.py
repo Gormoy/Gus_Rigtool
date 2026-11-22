@@ -111,8 +111,9 @@ PANELS = [
      "build_rig_panel"),
     # 5.7.6 (Gus: "move"): Publish on its own page - the new window's Check & publish > Publish (the old window
     # keeps it in Build)
-    ("publish", "Publish", "gus_rigtool.tools.build_tab", "Publish a clean rig for animators, unpublish, deliver.",
-     "build_publish_panel"),
+    # 5.7.10: its own file (lighter - opening Publish doesn't load Build)
+    ("publish", "Publish", "gus_rigtool.tools.publish_tab", "Publish a clean rig for animators, unpublish, deliver.",
+     "build"),
 ]
 
 

@@ -267,6 +267,11 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-22: 5.7.9.1 results: Real Maya 112 ok; Test this release 57 ok, 0 FAIL (101 s). Gus: "yes to all" -
   the strip opens one tool at a time and closes on a second right-click; the shelf shows the new icons; push OK.
   5.7.9 and 5.7.9.1 pushed, main = 5.7.9.1.
+- 2026-11-22: 5.7.10 plan OK ("1 yes"); Checker checks: "keep them as they are unless you think there is something
+  good to add that will help you find more problems". Publish moved to tools/publish_tab.py (done). Finding: the
+  Checker is ALREADY one table (CHECKS) - my lighter list was wrong; proposed instead: its checks in their own file
+  (Publish, Check this scene, self-tests stop loading the page), Face's step lights read the selection once, and
+  4 candidate checks for Gus to pick - waiting.
 - Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
   "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
