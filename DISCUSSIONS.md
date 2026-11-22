@@ -274,6 +274,8 @@ the code; this file has what Gus said, decided and wants next.
   4 candidate checks for Gus to pick - waiting.
 - 2026-11-22: Gus: "1 yes / 2 all of them" (the 4 new checks). 5.7.10 built: checks in core/rig_checks.py (16 parts
   load only them), Face reads once, 4 new checks - waiting for his tests and OK to push.
+- 2026-11-22: Gus: "yes to all" - push 5.7.10 (pushed, main = 5.7.10); can't test on Hare right now (the 4 new checks
+  on Hare: later); "we can go forward the plan for the animtool" -> 5.8 plan next.
 - Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
   "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
