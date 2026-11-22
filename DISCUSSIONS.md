@@ -292,3 +292,6 @@ the code; this file has what Gus said, decided and wants next.
 
 - Edit FK arc (bake to IK, edit, bake back) - "not a priority".
 - Pictures in every page (lock grid, 'in front' drawing) - page by page as areas are redone.
+- 2026-11-22: 5.8 Animtool plan sent (5.8.0 one action list + the look ... 5.8.5 dock/search), with questions:
+  the animator's copy has no Gus_Rigtool, so the shared new-look parts must travel inside gus_animtool.
+  Waiting for Gus's answers; no code yet.
