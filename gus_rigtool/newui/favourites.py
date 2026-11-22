@@ -607,12 +607,7 @@ class FavBar(QtWidgets.QWidget):
             self.chrome.deleteLater()
             self.chrome = short
             self._fill_tiles(shape, self.size_px)          # (the readout lives in the new controls)
-            if self.chrome.sizeHint().width() > self.tiles.sizeHint().width() + 12:
-                tight = self._chrome(shape, short=True, tight=True)    # still wider: only the essentials
-                root.replaceWidget(self.chrome, tight)
-                self.chrome.deleteLater()
-                self.chrome = tight
-                self._fill_tiles(shape, self.size_px)
+            # (5.7.9.1, Gus: "always show the settings on top" - the short forms, never hidden)
         for i in range(root.count()):                    # drawn again: its new parts shown before it's measured
             w = root.itemAt(i).widget()                   # (5.7.9: a change of layout shrank it to 14 x 11 px)
             if w is not None:
@@ -787,7 +782,7 @@ class FavBar(QtWidgets.QWidget):
             b.setProperty("fav", k)
             b.clicked.connect(lambda _=False, k=k: go(k))
             b.setContextMenuPolicy(Qt.CustomContextMenu)
-            b.customContextMenuRequested.connect(lambda _pos, k=k: self.show_strip(k))
+            b.customContextMenuRequested.connect(lambda _pos, k=k: self.right_click(k))
             self.buttons[k] = b
             w = b
             if lab:                                         # the name under it, on up to two lines (5.7.9, Gus)
@@ -839,11 +834,9 @@ class FavBar(QtWidgets.QWidget):
 
     # ---- right-click: the tool's options under the bar
     def show_strip(self, key):
-        from gus_rigtool.newui.window import _clear
         from gus_rigtool.newui import tiles
         self.strip_key = key
-        lay = self.strip.layout()
-        _clear(lay)
+        lay = self._fresh_strip()
         self.strip.setStyleSheet(_BAR_QSS % _QSS_VALUES() + "QFrame#gusFavStrip { border: 1px solid %s; "
                                  "border-left: 3px solid %s; }" % (theme.LINE, tiles.colour(key)))
         head = QtWidgets.QHBoxLayout()
@@ -894,6 +887,27 @@ class FavBar(QtWidgets.QWidget):
         self.place_strip()
         self.strip.show()
 
+    def _fresh_strip(self):
+        """The strip's contents made anew (5.7.9.1: the old title and size rows stayed and stacked up)."""
+        outer = self.strip.layout()
+        old = getattr(self, "_strip_body", None)
+        if old is not None:
+            outer.removeWidget(old)
+            old.hide()
+            old.deleteLater()
+        self._strip_body = QtWidgets.QWidget()
+        outer.addWidget(self._strip_body)
+        lay = QtWidgets.QVBoxLayout(self._strip_body)
+        lay.setContentsMargins(0, 0, 0, 0)
+        return lay
+
+    def right_click(self, key):
+        """Right-click a tile: its options; the same tile again: closed; another tile: its options instead."""
+        if self.strip_key == key and self.strip.isVisible():
+            self.hide_strip()
+        else:
+            self.show_strip(key)
+
     def toggle_bar_settings(self):
         if self.strip_key == BAR_SETTINGS and self.strip.isVisible():
             self.hide_strip()
@@ -902,10 +916,8 @@ class FavBar(QtWidgets.QWidget):
 
     def show_bar_settings(self):
         """A short row's settings, under it: the layout, names, size, Edit, and the bar's menu."""
-        from gus_rigtool.newui.window import _clear
         self.strip_key = BAR_SETTINGS
-        lay = self.strip.layout()
-        _clear(lay)
+        lay = self._fresh_strip()
         self.strip.setStyleSheet(_BAR_QSS % _QSS_VALUES() + "QFrame#gusFavStrip { border: 1px solid %s; "
                                  "border-left: 3px solid %s; }" % (theme.LINE, theme.colour("toolbox")))
         head = QtWidgets.QHBoxLayout()
@@ -915,11 +927,11 @@ class FavBar(QtWidgets.QWidget):
         shape = self.shape()
         row = QtWidgets.QHBoxLayout()
         row.setSpacing(0)
-        self.mode_buttons = {}
+        modes = {}
         for key, text, tip in LAYOUTS:
             b = self._small(text, tip, lambda k=key: self.set_shape(k), checkable=True)
             b.setChecked(key == shape)
-            self.mode_buttons[key] = b
+            modes[key] = b
             row.addWidget(b)
         row.addSpacing(6)
         lb = self._small("Lbl", "Names under the tiles", lambda: (self._save(labels=not self.labels()),
@@ -930,14 +942,14 @@ class FavBar(QtWidgets.QWidget):
         lay.addLayout(row)
         size = QtWidgets.QHBoxLayout()
         size.addWidget(widgets.label("Size", "dim", wrap=False))
-        self.slider = QtWidgets.QSlider(Qt.Horizontal)
-        self.slider.setRange(SIZE_MIN, SIZE_MAX)
-        self.slider.setSingleStep(2)
-        self.slider.setValue(self.wanted_size())
-        self.slider.setFocusPolicy(Qt.NoFocus)
-        self.slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
-        self.slider.sliderReleased.connect(lambda: self.set_size(self.slider.value()))
-        size.addWidget(self.slider, 1)
+        slider = QtWidgets.QSlider(Qt.Horizontal)
+        slider.setRange(SIZE_MIN, SIZE_MAX)
+        slider.setSingleStep(2)
+        slider.setValue(self.wanted_size())
+        slider.setFocusPolicy(Qt.NoFocus)
+        slider.setToolTip("The tiles' size (or Ctrl + mouse wheel over the bar)")
+        slider.sliderReleased.connect(lambda: self.set_size(slider.value()))
+        size.addWidget(slider, 1)
         lay.addLayout(size)
         foot = widgets.flow_box(4)
         if editable():

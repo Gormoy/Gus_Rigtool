@@ -1,3 +1,26 @@
+Gus_Rigtool 5.7.9.1 - the bar's options one at a time, its settings always on top; the shelf's new icons at once
+
+Gus's 5.7.9 tests: no problems (Real Maya 112 ok, Test this release 57 ok); but the bar's options "don't close
+when I open another one or when I right-click again" (they stacked up, unreadable), the row "doesn't show the
+settings like the one you showed me", and the shelf "looks the same". Plan approved ("1 yes / 2 always show the
+settings on top").
+
+- The bar's options strip: one tool at a time. Right-click another tile: its options take the place of the open
+  ones; right-click the same tile again: closed (× too). 5.7.9 kept the old title and size rows and stacked them.
+- A row always shows its settings on top (Row / 2R / Col / Grid, names, size, Edit) - in their short forms
+  (R 2 C G, Aa, the pencil) when its tiles are fewer than the controls (Gus: "always show the settings on top").
+- The shelf's new icons have their own file names (gr2_...): Maya keeps a shelf's pictures in memory by file name,
+  so 5.7.9's new pictures under the old names showed only after a restart. Settings > Make Gus_Rigtool shelf shows
+  them at once now. The legacy look keeps its letter icons.
+- Maya facts: a shelf tab you haven't opened is NOT empty to a script (Gus_Rigtool 43 / 43, Gus_Animtool 57 / 57);
+  why 5.7.8.1's shelf check found it empty is still unknown.
+
+Only tested here off-screen (PySide6) and with the fake Maya.
+
+Decisions I made:
+- The bar's own settings panel (5.7.9's =) stays for the menu's sake but isn't needed in a row any more.
+- New icon names rather than asking for a restart (it works on every Mac / PC without thinking about it).
+
 Gus_Rigtool 5.7.9 - one look, Home redone, the favourites bar from Gus's mock-up, the shelf in the new look
 
 Gus: "take out the 5.7 version" (today's look), the 5.6 window "we can call it legacy look"; the shelf "everything"

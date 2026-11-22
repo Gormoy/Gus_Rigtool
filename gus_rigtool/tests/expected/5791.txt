@@ -1,0 +1,9 @@
+PASS right-click Groups, then Select: only Select's options (5.7.9: both, on top of each other)
+PASS ...one size slider at most, one close button
+PASS right-click Select again: the strip closes
+PASS the bar's settings after a tool's options: only the bar's
+PASS ...= again: closed
+PASS a row: its settings always on top (Gus) - Row / 2R / Col / Grid, names, size
+PASS the shelf's icons: the new ones under new names (gr2_...) - no restart needed to see them
+PASS ...the legacy look's letter icons kept under their own names
+8/8 passed

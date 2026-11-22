@@ -40,9 +40,9 @@ grp = [k for k in tools if k["label"] == "Groups"][0]
 check("...a gap between the areas", len(seps) >= 7)
 check("...right-click on a tool: 'Settings of Groups...', favourites, Pop out", grp.get("menuItem") and
       grp["menuItem"][0][0] == "Settings of Groups..." and len(grp["menuItem"]) == 3)
-check("...the new icons (every tool, the shortcuts)", all(os.path.isfile(os.path.join(ROOT, "icons", "gr_%s.png" %
+check("...the new icons (every tool, the shortcuts)", all(os.path.isfile(os.path.join(ROOT, "icons", "gr2_%s.png" %
                                                                                        k)) for k in flat))
-img = QtGui.QImage(os.path.join(ROOT, "icons", "gr_skin.png"))
+img = QtGui.QImage(os.path.join(ROOT, "icons", "gr2_skin.png"))
 bar = QtGui.QColor(img.pixel(16, 28))
 check("...the bar along the bottom in the area's colour (Skin: pink)", img.width() == 32 and bar.red() > 150 and
       bar.green() < 140)
@@ -53,11 +53,8 @@ utils.save_setting(FV.BAR_KEY, {"size": 34})
 b = FV.FavBar(); b.show(); settle()
 check("the bar: your favourites as the new tiles", list(b.buttons) == FV.keys() and
       all(bt.focusPolicy() == QtCore.Qt.NoFocus for bt in b.buttons.values()))
-check("...a short row stays tight: only the essentials (the rest under =), as wide as its tiles",
-      b.width() <= b.tiles.sizeHint().width() + 60 and not b.mode_buttons)
-b.toggle_bar_settings(); settle()
-check("...= opens the bar's settings under it: Row / 2R / Col / Grid, names, size, Edit",
-      b.strip.isVisible() and set(b.mode_buttons) == {"row", "2r", "col", "grid"})
+check("...a short row: its settings on top, in their short forms (R 2 C G, Aa) (Gus: always on top)",
+      set(b.mode_buttons) == {"row", "2r", "col", "grid"} and b.mode_buttons["row"].text() == "R")
 b.mode_buttons["2r"].click(); settle()
 check("...2 rows: the tiles in two rows", b.shape() == "2r" and b.grid.rowCount() == 2)
 b.set_shape("col"); settle()

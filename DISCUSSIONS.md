@@ -262,6 +262,8 @@ the code; this file has what Gus said, decided and wants next.
   still unknown). Gus: the bar's options strip stacks ("doesn't close when I open another or when I right-click
   again") - my bug (old title / size rows not cleared); the row "doesn't show the settings like you showed me";
   the shelf "looks the same, do I have to restart Maya?". 5.7.9.1 plan sent - waiting.
+- 2026-11-22: Gus: "1 yes / 2 always show the settings on top" (a row always shows Row / 2R / Col / Grid, names,
+  size - short forms when short; never hidden). 5.7.9.1 built - waiting for his tests and OK to push.
 - Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
   "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his

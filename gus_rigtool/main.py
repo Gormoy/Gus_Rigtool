@@ -75,8 +75,13 @@ def show_tool(key):
 
 
 def _icon(key):
-    path = os.path.join(gus_rigtool.ROOT, "icons", "gr_%s.png" % key)
-    return path.replace("\\", "/") if os.path.isfile(path) else "pythonFamily.png"
+    """5.7.9.1: the new look's icons have their own file names (gr2_): Maya keeps a shelf's pictures in memory by
+    file name, so new pictures under the old names showed only after a restart."""
+    for name in ("gr2_%s.png", "gr_%s.png"):
+        path = os.path.join(gus_rigtool.ROOT, "icons", name % key)
+        if os.path.isfile(path):
+            return path.replace("\\", "/")
+    return "pythonFamily.png"
 
 
 # 5.7.9: the shelf in the sidebar's order, a gap between areas (Build rig is Build's: not twice)
