@@ -8,6 +8,7 @@ def check(label, cond):
     ok.append(bool(cond)); print(("PASS " if cond else "FAIL ") + label)
 ROOT = os.path.join(os.getcwd(), "..")
 mods = {k: m for k, _l, m, _s in registry.TOOLS}
+mods.update({k: m for k, _l, m, _s, _f in registry.PANELS})      # (5.7.10: Publish's own page)
 bad = []
 for key, title, _intro, steps, _tip in guide.PAGES:
     for text, tool, section in steps:

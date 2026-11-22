@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.getcwd(), "..", "anim"))
 from gus_rigtool.core import zero_pose, head_squash as HS, safe, report as R
 from gus_rigtool import scene_check
 from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def reset():
     S.__init__()
@@ -65,28 +66,28 @@ warned = []
 with mock.patch.object(safe, "run", lambda fn, label="", states=(): (False, "undone - it moved")), \
         mock.patch.object(cmds, "referenceQuery", lambda *a, **k: False, create=True), \
         mock.patch.object(checker.utils, "warn", lambda tool, msg: warned.append(msg)):
-    n = checker.fix_mesh_history([ls("L_Eye_geo", long=True)[0]])
+    n = RC.fix_mesh_history([ls("L_Eye_geo", long=True)[0]])
 check("the left eye moved when its history went: put back, and said (keep that history)",
       n == 0 and warned and "moved when their history went, so it was put back: L_Eye_geo" in warned[0])
 with mock.patch.object(safe, "run", lambda fn, label="", states=(): (True, fn())), \
         mock.patch.object(cmds, "referenceQuery", lambda *a, **k: False, create=True), \
         mock.patch.object(cmds, "bakePartialHistory", lambda *a, **k: None, create=True):
-    n = checker.fix_mesh_history([ls("L_Eye_geo", long=True)[0]])
+    n = RC.fix_mesh_history([ls("L_Eye_geo", long=True)[0]])
 check("a mesh that doesn't move loses its history as before", n == 1)
 
 # --- 3. Check this scene: what the history is and where to clean it
-with mock.patch.object(checker, "_shapes", lambda n: ["shape"]), \
-        mock.patch.object(checker, "_non_deformer_history", lambda s: ["transformGeometry1"]), \
+with mock.patch.object(RC, "_shapes", lambda n: ["shape"]), \
+        mock.patch.object(RC, "_non_deformer_history", lambda s: ["transformGeometry1"]), \
         mock.patch.object(cmds, "nodeType", lambda n: "transformGeometry"), \
         mock.patch.object(cmds, "referenceQuery", lambda *a, **k: True, create=True):
-    hist, ref = checker.history_detail("|Geo:Bandage_L")
+    hist, ref = RC.history_detail("|Geo:Bandage_L")
 check("the history named with its type, and referenced = the model file", hist == ["transformGeometry1 "
                                                                               "(transformGeometry)"] and ref)
 rep = R.Report("x")
 detail = {"|L_Eye_geo": (["transformGeometry1 (transformGeometry)"], False),
           "|Geo:Bandage_L": (["polySmoothFace1 (polySmoothFace)"], True)}
-with mock.patch.object(checker, "run_checks", lambda o, s: {"mesh_history": ("WARN", list(detail))}), \
-        mock.patch.object(checker, "history_detail", lambda m: detail[m]):
+with mock.patch.object(RC, "run_checks", lambda o, s: {"mesh_history": ("WARN", list(detail))}), \
+        mock.patch.object(RC, "history_detail", lambda m: detail[m]):
     scene_check.check_checker(rep)
 text = rep.text()
 check("the report: each mesh's history and where to clean it (this file / the model file), and a warning",

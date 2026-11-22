@@ -776,6 +776,8 @@ def go_to_tool(key, section_label=None):
     from gus_rigtool import registry
     if _to_new_window(key, section_label):            # 5.7: the new window is the one in use
         return True
+    if key == "publish":                               # 5.7.10: the legacy look keeps Publish on Build's page
+        key = "build"
     key = _follow_alias(key)
     if not cmds.formLayout(_form_name(MAIN_KEY), exists=True):
         open_panel(MAIN_KEY)

@@ -483,7 +483,7 @@ def head_and_jaw(head=None, jaw=None):
     """The control the group controls go under (the head) and the lower lip's (the jaw): the ones given, else the
     rig's Head_ctrl / Jaw control by name."""
     from gus_rigtool.core import space_check
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     h = _long(head) if head else None
     h = h or space_check.head_control()
     j = _long(jaw) if jaw else None

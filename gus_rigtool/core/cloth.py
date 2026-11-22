@@ -399,7 +399,7 @@ SKIP = r"ik|pv|pole|settings|world|main|_fol_|mouth|brow|eye|lid|finger|thumb|in
 
 def rom_controls():
     """{part: [controls]} - the body's (FK) controls by name, both sides."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     ctrls = [c for c in checker.transforms(None) if checker.is_control(c)]
     out = {}
     taken = set()

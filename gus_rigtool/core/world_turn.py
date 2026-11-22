@@ -110,7 +110,7 @@ def _settle():
 
 def run(world=None, nodes=None, angle=ANGLE):
     """Turn the world control by angle, compare every joint / control with where it should be, put it back."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     ctrls = [n for n in checker.transforms(None) if checker.is_control(n)]
     world = world or world_control(ctrls)
     result = {"world": world, "axis": None, "angle": angle, "off": [], "spring": spring_handles()}

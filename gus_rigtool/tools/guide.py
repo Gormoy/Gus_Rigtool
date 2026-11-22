@@ -71,9 +71,9 @@ PAGES = [
      "Find problems before the animators do, then hand over a clean rig.",
      [("Run the Checker: it finds common problems and fixes the safe ones.", "checker", "Check"),
       ("Tidy the Outliner (optional).", "organize", "Analyze"),
-      ("Publish: a clean rig for animators (guides out, everything locked).", "build",
+      ("Publish: a clean rig for animators (guides out, everything locked).", "publish",
        "Publish (clean rig for animators)"),
-      ("Deliver to animators: the rig, their tools and a README in one folder (same section).", "build",
+      ("Deliver to animators: the rig, their tools and a README in one folder (same section).", "publish",
        "Publish (clean rig for animators)"),
       ("Something odd on your character? 'Check this scene' (Checker) writes a diagnosis to send.", "checker",
        "Check"),
@@ -98,9 +98,9 @@ PAGES = [
      "Gus Animtool (in the delivery) gives animators a picker, a pose library, IK/FK switching, mirror, tween "
      "and more - on any rig, even hand-made ones: it finds the controls by itself.",
      [("Make the picker yours: in the rig's own file, open the picker, Edit, Save - it's kept IN the rig, so "
-       "every animator gets it. Publish and deliver as usual.", "build", "Publish (clean rig for animators)"),
+       "every animator gets it. Publish and deliver as usual.", "publish", "Publish (clean rig for animators)"),
       ("Animators can edit and Save their own picker (it stays on their computer), Export / Import it to take "
-       "it home, or go back to the rig's.", "build", "Publish (clean rig for animators)"),
+       "it home, or go back to the rig's.", "publish", "Publish (clean rig for animators)"),
       ("Check the rig the way animators use it: the speed report and the Maya check.", "settings",
        "Self-test (check the rig builder in this Maya)")],
      "Re-deliver after a Gus_Rigtool update so the animators get the newest tools (their window title shows "

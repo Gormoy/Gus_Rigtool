@@ -64,7 +64,7 @@ def _height():
 def check_scene(rep):
     from gus_rigtool.builder import build as bld
     from gus_rigtool.builder import guides
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     rep.start("Scene")
     path = cmds.file(query=True, sceneName=True) or "(not saved)"
     rep.add(INFO, "file", "%s%s" % (path, "  (unsaved changes)" if cmds.file(query=True, modified=True) else ""))
@@ -121,7 +121,7 @@ def check_guides(rep):
 
 
 def check_checker(rep):
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     rep.start("Checker (every rig check, the whole scene)")
     results = checker.run_checks(dict(checker.DEFAULTS), [])
     labels = {c[0]: (c[1], c[2]) for c in checker.CHECKS}
@@ -607,7 +607,7 @@ def check_connections(rep):
                     "Cached Playback off (its icon at the right of the time slider) to see it")
     try:
         from gus_rigtool.core import networks
-        from gus_rigtool.tools import checker as _chk
+        from gus_rigtool.core import rig_checks as _chk
         ctrls = [n for n in _chk.transforms(None) if _chk.is_control(n)]
         moved = [r for r in networks.at_rest(ctrls) if r[2] is not None]
     except Exception:
@@ -812,7 +812,7 @@ def check_limits(rep):
     """5.3.5: controls with transform limits, and limits on one side only (the twin has none)."""
     from gus_rigtool.core import limits
     from gus_rigtool.core import mirror_setup as MS
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     ctrls = [c for c in checker.transforms(None) if checker.is_control(c)]
     have = [(c, limits.limited(c)) for c in ctrls]
     have = [(c, l) for c, l in have if l]

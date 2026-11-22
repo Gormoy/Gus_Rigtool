@@ -9,4 +9,4 @@ quadruped constrained controls: []
 quadruped locked shown: 0
 quadruped guides shown: [] after fix: 0 []
 shown by hand: ['guides_grp'] after fix: 1 []
-all checks: 37 help for each: True
+all checks: 41 help for each: True

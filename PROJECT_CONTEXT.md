@@ -332,6 +332,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   SCHEMA, tight / short controls, BAR_SETTINGS); main._shelf_buttons groups + _shelf_menu; window: no OldPage,
   NEW_LOOK + home, _SelectionWait (80 ms, playback), count_components, Frame._sel read once; maya_facts.shelf_tabs;
   window_checks.rig_shelf.
+- **5.7.10**: tools/publish_tab.py (Publish; build_tab keeps forwarding names NP / publish_rig / build_publish_panel);
+  core/rig_checks.py (the checks: CHECKS, HELP, DEFAULTS, run_checks, report_text, SETTINGS_KEY; tools/checker.py is
+  the page, `from rig_checks import *` then the proxy cmds); new checks jnt_keys, ctrl_rotate_order_twin,
+  skin_normalize (+fix), jnt_ssc_scaled; face_kit_tool._snapshot (selection + made parts once per change).
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

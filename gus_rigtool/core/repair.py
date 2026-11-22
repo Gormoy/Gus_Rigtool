@@ -548,7 +548,7 @@ def unused_joint_roots():
     """5.3.4: hand-made joint hierarchies outside skeleton_grp that skin nothing and drive / are driven by
     nothing (only their own parent-child links and old bind poses) - the Hare's joint1-5 and its old L_Clavicule
     arm. Returns their top joints."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     skel = checker._group("skeleton")
     made = checker._tool_made_joints()
     roots = []
@@ -639,7 +639,7 @@ def _util_names():
 
 def _skin_limits():
     """5.3.3: skins with vertices over their joints-per-vertex limit -> cut to the limit, every vertex to 1."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     try:
         verts = checker.find_skin_influences(None)
     except Exception:

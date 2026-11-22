@@ -25,7 +25,7 @@ def is_face(node):
 
 def controls():
     """Every control of the scene (curves with a transform), long names."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     return [c for c in checker.transforms(None) if checker.is_control(c)]
 
 

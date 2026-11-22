@@ -109,7 +109,7 @@ def pupils(rep):
 # --- b -----------------------------------------------------------------------------------------------------------
 def history(rep):
     """The bandages: the Clothes switch reaches the mesh through its skin's on / off - not model history."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     rep.start("b. Non-deformer history (the bandages)")
     for t in ("condition", "plusMinusAverage", "reverse"):
         rep.add(INFO, "Maya's classification of %s" % t, str(cmds.getClassification(t)))
@@ -996,7 +996,7 @@ def controllers(rep):
     """l. The one control maker (5.6.45), on the biped e built: every control a Maya controller, pick-walk up goes
     to the control above; a plain curve made by hand tagged by Checker > Tag all controls."""
     from gus_rigtool.core import control_maker as CM
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     rep.start("l. Every control a Maya controller, pick-walk (the biped)")
     ctrls = [c for c in cmds.ls(type="transform", long=True) or [] if checker.is_control(c)]
     untagged = [c for c in ctrls if not CM.is_tagged(c)]

@@ -1,0 +1,14 @@
+PASS Publish: its own file (tools/publish_tab.py)
+PASS ...opening it doesn't load Build
+PASS ...Build's page still has Publish (legacy look) and its names still answer
+PASS Publish, Check this scene, Repair, Spaces load the checks, not the Checker page
+PASS ...the page has every check under the same names
+PASS the 37 checks kept as they are (Gus: 'keep them as they are')
+PASS ...and the 4 new ones (Gus: 'all of them'), on by default, warnings or notes - never FAIL
+PASS ...each with its help text, and in Settings (a tick each)
+PASS Keys on joints: the keyed joint
+PASS Segment scale compensate under a scaled joint: the hand (its arm is scaled by the rig)
+PASS Left / right controls with different rotate orders: L_foot_ctrl (yzx vs xyz)
+PASS Skins that don't keep weights adding up to 1: found; Fix sets Interactive (nothing moves)
+PASS Face: the 4 step lights read the selection once (5.7.9.1: once each)
+13/13 passed

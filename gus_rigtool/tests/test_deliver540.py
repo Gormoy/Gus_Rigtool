@@ -20,7 +20,7 @@ def file_(*a, **k):
         calls.append(("remove", a[0])); REFS.remove(a[0])
 def namespace(**k):
     calls.append(("merge", k["removeNamespace"])); NS.remove(k["removeNamespace"])
-from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as checker   # (5.7.10: Deliver uses the checks' own file)
 with mock.patch.object(cmds, "file", side_effect=file_, create=True), \
         mock.patch.object(cmds, "referenceQuery", side_effect=lambda r, **k: True, create=True), \
         mock.patch.object(cmds, "namespaceInfo", side_effect=lambda *a, **k: list(NS) + ["UI", "shared"],

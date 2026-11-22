@@ -7,6 +7,7 @@ from unittest import mock
 sys.path.insert(0, os.path.join(os.getcwd(), "..", "anim"))
 from gus_rigtool.core import head_squash as HS
 from gus_rigtool.tools import checker, behaviour_tool
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def reset():
     S.__init__()
@@ -34,11 +35,11 @@ for t, n in (("plusMinusAverage", "Clothes_Bandages_pma"), ("condition", "Clothe
     createNode(t, name=n)
 hist = ["skin1", "Clothes_Bandages_hidden", "Clothes_Bandages_pma", "Clothes_key"]
 with mock.patch.object(cmds, "listHistory", lambda *a, **k: list(hist)):
-    got = checker._non_deformer_history("|Bandage_L|Bandage_LShape")
+    got = RC._non_deformer_history("|Bandage_L|Bandage_LShape")
     check("the bandages: the switch's nodes (condition, plusMinusAverage) and a key on it aren't history - "
           "5.6.31 said 'in the model file'", got == [])
     hist.append("polySmoothFace1")
-    got = checker._non_deformer_history("|Bandage_L|Bandage_LShape")
+    got = RC._non_deformer_history("|Bandage_L|Bandage_LShape")
 check("real model history is still found", got == ["polySmoothFace1"])
 
 # --- 2. a squash removed half-way: the leftovers

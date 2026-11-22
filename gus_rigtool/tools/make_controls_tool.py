@@ -151,7 +151,7 @@ def _light():
 
 def _stop_pick():
     from gus_rigtool.core import body_stop
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     sel = utils.selected_transforms()
     meshes = [n for n in sel if cmds.listRelatives(n, shapes=True, type="mesh")]
     ctrls = [n for n in sel if checker.is_control(n)]

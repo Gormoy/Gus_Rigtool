@@ -42,14 +42,15 @@ cmds.connectAttr(sk + ".message", data + ".sc")
 plain = cmds.createNode("skinCluster", name="skinCluster7")
 check("skins with ngSkinTools layers found (not the others)", repair.ng_skins() == {"skinCluster10"})
 from gus_rigtool.tools import checker
-with mock.patch.object(checker, "find_skin_influences",
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
+with mock.patch.object(RC, "find_skin_influences",
                        return_value=["Hare_Body.vtx[1]", "Eyes.vtx[2]"]), \
         mock.patch.object(repair, "_skin_of_mesh", side_effect=lambda m: {"Hare_Body": "skinCluster10",
                                                                           "Eyes": "skinCluster7"}[m]):
     item = repair._skin_limits()
 check("influence limit: only the mesh without layers is offered (the body's weights are ngSkinTools')",
       item and item.detail.startswith("Eyes"))
-src = open("../tools/checker.py").read()
+src = open("../core/rig_checks.py").read()
 check("the checker doesn't count vertices over the limit on ngSkinTools skins",
       "ng = repair.ng_skins()" in src and "if skin in ng:" in src)
 

@@ -94,7 +94,7 @@ def model_inside(log=None):
     """In the OPEN scene (the delivery copy): every referenced file imported (nested ones too; unloaded ones
     removed), the namespaces merged away (Geo_Hare_07:Belt -> Belt), then the duplicate names that leaves renamed.
     Returns lines."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     lines = []
     for _round in range(10):                               # nested references come in on the next round
         refs = _referenced_files()

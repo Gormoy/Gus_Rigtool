@@ -1,3 +1,39 @@
+Gus_Rigtool 5.7.10 - lighter: Publish and the Checker's checks in their own files, Face reads once; 4 new checks
+
+Plan approved ("1 yes"); the checks: "keep them as they are unless you think there is something good to add" - the
+four new ones below: "all of them".
+
+Lighter (nothing you see changes):
+- Publish (Publish, Unpublish, Deliver and their options) has its own file. Opening Check & publish > Publish no
+  longer loads Build's builder. The legacy look still shows Publish on Build's page.
+- The Checker's 37 checks have their own file. Publish, Check this scene, Repair, Spaces, Cloth, Deliver, Batch and
+  the self-tests (16 parts) load only the checks, not the Checker's page. Compared on a built biped: the same 37
+  results, the same table, the same report as 5.7.9.1.
+- Face (Build the face): its 4 step lights read the selection, and what's made, once per selection change - they
+  each read it again (slow with many vertices or edges selected on the face).
+
+4 new checks in the Checker (on by default; untick them in Settings > Checker if you like):
+- Keys on joints (warning): stray keys on the skeleton fight the rig at playback. Report only.
+- Left / right controls with different rotate orders (warning): mirroring a pose comes out wrong. Report only
+  (changing a rotate order changes the poses).
+- Skins that don't keep weights adding up to 1 (warning): Normalize Weights is None - the mesh shrinks or swells.
+  Fix sets it back to Interactive (nothing moves: the weights stay as they are).
+- Segment scale compensate under a scaled joint (note): the child doesn't follow its parent's scale. Report only.
+
+Fixed on the way:
+- The Guide's 'Publish' and 'Deliver to animators' steps opened Build (Publish left Build for Check & publish in
+  5.7.6). They open Publish now; in the legacy look, Build's page (where Publish still is there).
+
+Only tested here with the fake Maya.
+
+Decisions I made:
+- The Checker was already one table of checks (my lighter list said otherwise - wrong); so it's the checks' own file
+  instead, which is what makes the other tools lighter.
+- Only the skin check has a Fix: the other three would change poses or how things deform, which the Checker's
+  fixes never do.
+- The new checks are warnings or notes, never FAIL (they don't break a rig on their own).
+- Face's shared reading lasts a fraction of a second and is read again when a part is made.
+
 Gus_Rigtool 5.7.9.1 - the bar's options one at a time, its settings always on top; the shelf's new icons at once
 
 Gus's 5.7.9 tests: no problems (Real Maya 112 ok, Test this release 57 ok); but the bar's options "don't close

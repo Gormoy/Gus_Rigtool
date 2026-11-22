@@ -585,7 +585,7 @@ def _put_up(targets, height):
         utils.warn(TOOL, "controllers not linked up the hierarchy: %s" % e)
     if settings().get("controls_on_top", True):         # body controls in front of the mesh (face ones not)
         from gus_rigtool.core import on_top
-        from gus_rigtool.tools import checker
+        from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
         ctrls = [c for c in cmds.listRelatives(groups["controls"], allDescendents=True, type="transform",
                                                fullPath=True) or [] if checker.is_control(c)]
         on_top.apply(ctrls, on=True, skip_face=True)

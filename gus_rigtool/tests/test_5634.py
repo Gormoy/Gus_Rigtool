@@ -6,6 +6,7 @@ from unittest import mock
 sys.path.insert(0, os.path.join(os.getcwd(), "..", "anim"))
 from gus_rigtool.core import zero_pose, safe
 from gus_rigtool.tools import checker, behaviour_tool
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def reset():
     S.__init__()
@@ -40,12 +41,12 @@ check("Keep the pose leaves it and says why (5.6.33 zeroed it and the eyes turne
       not done and skipped and "drive something" in skipped[0][1] and "orientConstraint" in skipped[0][1])
 check("nothing changed on it", getAttr(c + ".rotateY") == -37.6547 and getAttr(c + ".translateZ") == 9.7461 and
       getAttr(c + ".rotateX", lock=True))
-with mock.patch.object(checker, "transforms", lambda scope: [c]):
+with mock.patch.object(RC, "transforms", lambda scope: [c]):
     check("Checker: locked channels aren't the animator's - the pupils aren't 'not at zero'",
-          checker.find_ctrl_zero(None) == [])
+          RC.find_ctrl_zero(None) == [])
 setAttr(c + ".scaleX", 1.5)
-with mock.patch.object(checker, "transforms", lambda scope: [c]):
-    check("a free channel off rest still counts (scale X 1.5)", checker.find_ctrl_zero(None) == [c])
+with mock.patch.object(RC, "transforms", lambda scope: [c]):
+    check("a free channel off rest still counts (scale X 1.5)", RC.find_ctrl_zero(None) == [c])
 
 # --- 2. a plain control still zeroes as before
 reset()

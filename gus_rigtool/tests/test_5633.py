@@ -7,6 +7,7 @@ from unittest import mock
 sys.path.insert(0, os.path.join(os.getcwd(), "..", "anim"))
 from gus_rigtool.core import zero_pose
 from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def reset():
     S.__init__()
@@ -24,13 +25,13 @@ for t, n in (("condition", "Clothes_Bandages_hidden"), ("plusMinusAverage", "Clo
     createNode(t, name=n)
 with mock.patch.object(cmds, "getClassification", lambda t, **k: MAYA.get(t, [""])):
     check("Maya 2024's 'drawdb/...:utility/general' and 'math/operation': both seen as settings",
-          checker._drives_a_setting("Clothes_Bandages_hidden") and checker._drives_a_setting("Clothes_Bandages_pma"))
+          RC._drives_a_setting("Clothes_Bandages_hidden") and RC._drives_a_setting("Clothes_Bandages_pma"))
 with mock.patch.object(cmds, "getClassification", lambda t, **k: [""]):
-    check("and by name, whatever Maya answers", checker._drives_a_setting("Clothes_Bandages_pma"))
+    check("and by name, whatever Maya answers", RC._drives_a_setting("Clothes_Bandages_pma"))
 with mock.patch.object(cmds, "listHistory", lambda *a, **k: ["Clothes_Bandages_hidden", "Clothes_Bandages_pma",
                                                                "polySmoothFace1"]), \
         mock.patch.object(cmds, "getClassification", lambda t, **k: MAYA.get(t, [""])):
-    check("the bandages: only real model history is listed", checker._non_deformer_history("x") == ["polySmoothFace1"])
+    check("the bandages: only real model history is listed", RC._non_deformer_history("x") == ["polySmoothFace1"])
 
 # --- 2. the pupils: locked channels off rest (Gus's numbers)
 def pupil():
@@ -49,7 +50,7 @@ def pupil():
 warned = []
 c = pupil()
 with mock.patch.object(checker.utils, "warn", lambda tool, msg: warned.append(msg)):
-    fixed = checker.fix_ctrl_zero([c])
+    fixed = RC.fix_ctrl_zero([c])
 check("Checker > Controls not at zero > Fix: 0 fixed, not '2' (all locked), and it says which and where to go",
       fixed == 0 and warned and "L_Pupil_ctrl.translateZ 9.746 (locked)" in warned[0] and "Keep the pose" in warned[0])
 before = cmds.xform(c, query=True, worldSpace=True, matrix=True)
@@ -63,8 +64,8 @@ check("they're locked again, as you left them", all(getAttr("%s.%s%s" % (c, a, x
       getAttr(c + ".scaleZ", lock=True) and not getAttr(c + ".scaleX", lock=True))
 check("the pupil stays where it was (its group took the pose)",
       all(abs(a - b) < 1e-4 for a, b in zip(cmds.xform(c, query=True, worldSpace=True, matrix=True), before)))
-with mock.patch.object(checker, "transforms", lambda scope: [c]):
-    check("the Checker has nothing left to say", checker.find_ctrl_zero(None) == [])
+with mock.patch.object(RC, "transforms", lambda scope: [c]):
+    check("the Checker has nothing left to say", RC.find_ctrl_zero(None) == [])
 
 # --- 3. a channel something drives stays, and Keep the pose says so
 reset()

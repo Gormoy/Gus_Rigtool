@@ -210,7 +210,7 @@ def remove(ctrls):
 
 def chain_controls(first):
     """The control and the controls nested under it (an FK chain), top first."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     out = [first]
     for d in sorted(cmds.listRelatives(first, allDescendents=True, type="transform", fullPath=True) or [],
                     key=lambda x: x.count("|")):

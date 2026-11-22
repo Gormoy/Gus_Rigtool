@@ -1710,7 +1710,7 @@ def check_nodes_find(rep, height):
     hand-made chain back to its control with the values."""
     from gus_rigtool.builder import build as bld
     from gus_rigtool.core import networks as NW
-    from gus_rigtool.tools import checker as chk
+    from gus_rigtool.core import rig_checks as chk
     rep.start("Nodes: trace, at rest, loops, world turn, make a driver")
     _new_scene()
     rep.step("biped template", bld.biped, height)
@@ -1884,7 +1884,7 @@ def check_fix533(rep):
     """5.3.3: a cape-like chain stops at a body (rotation limits measured against the mesh); duplicate names are
     renamed; jiggle / wave pause."""
     from gus_rigtool.core import body_stop
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     rep.start("Stop at the body, duplicate names")
     _new_scene()
     body = cmds.polyCube(name="chkBody", width=20, height=30, depth=10)[0]
@@ -2526,7 +2526,7 @@ def check_poses5612(rep, height):
         rep.expect("the board within the face's height (%.1f .. %.1f, the face %.1f .. %.1f)" % (
             bx[1], bx[4], fc[1] - fs[1] / 2.0, fc[1] + fs[1] / 2.0),
             bx[1] >= fc[1] - fs[1] / 2.0 - 1e-3 and bx[4] <= fc[1] + fs[1] / 2.0 + 1e-3)
-        from gus_rigtool.tools import checker
+        from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
         frames = [n for n in cmds.listRelatives(FS.find(), allDescendents=True, type="transform", fullPath=True)
                   if "_frame" in n or "_label" in n]
         rep.expect("frames and labels aren't controls for the checker (%d)" % len(frames),

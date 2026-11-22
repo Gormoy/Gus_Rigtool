@@ -77,6 +77,25 @@ def _made_parts():
     return out
 
 
+_SNAP = {"key": None, "at": 0.0, "sel": None, "made": None}
+
+
+def _snapshot():
+    """(the selection, one item per vertex / edge; the parts made) - read once for the step lights of one selection
+    change (5.7.10: each of the 4 lights read them again - slow with many components selected)."""
+    import time
+    try:                                                          # a part made since: read again
+        parts = len(cmds.ls("*." + face_kit.PART_ATTR, objectsOnly=True) or [])
+    except (RuntimeError, TypeError):
+        parts = 0
+    key = (tuple(cmds.ls(selection=True, long=True) or []), parts)   # Maya's compact form: cheap
+    now = time.time()
+    if _SNAP["key"] != key or now - _SNAP["at"] > 0.3:
+        _SNAP.update(key=key, at=now, sel=cmds.ls(selection=True, long=True, flatten=True) or [],
+                     made=_made_parts())
+    return _SNAP["sel"], _SNAP["made"]
+
+
 def _eyes_made():
     from gus_rigtool.builder import names
     return bool(cmds.ls(names.make("L", "Eye", "ctrl")))
@@ -85,7 +104,7 @@ def _eyes_made():
 def part_states():
     """{'setup' | 'eyes' | 'eyelids' | 'mouth' | 'brows' | 'strip': 'made' | 'ready' | 'todo'}."""
     s = _s()
-    made = _made_parts()
+    made = _snapshot()[1]
     out = {"setup": "made" if s.get("head") and cmds.objExists(s["head"]) else "todo",
            "eyes": "made" if _eyes_made() else "todo"}
     for part in PARTS:
@@ -99,10 +118,10 @@ def _part_light(part):
     s = _s()
     how = s.get("from_" + part, "curves")
     need = NEED[part][0 if how == "curves" else 1]
-    made = _made_parts().get(part, [])
+    sel, made_all = _snapshot()
+    made = made_all.get(part, [])
     if part == "eyelids" and not _eyes_made():
         return "idle", "Make the eyes first (step 2) - the lids close on the eye control's Blink."
-    sel = cmds.ls(selection=True, long=True, flatten=True) or []
     again = "  (made already: %s - Redo it in Ribbons & groups)" % ", ".join(made) if made else ""
     if how == "curves":
         crvs = face_kit.selected_curves([x for x in sel if "." not in x])

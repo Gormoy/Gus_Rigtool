@@ -443,7 +443,7 @@ def clear_mirror_table(ctrls=None):
 
 def check(options=None):
     """Run the Checker on the rig (its own saved options). Returns (fails, warnings, report text)."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     o = utils.tool_settings(checker.SETTINGS_KEY, checker.DEFAULTS)
     o.update(options or {})
     rig = rig_group()

@@ -67,7 +67,7 @@ def _control_notes(c, follows, driven_by):
 
 def _above(c, driven_by, levels=4):
     """Drivers of the groups above a control (its _sdk / offset groups), up to the next control."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     out = set()
     p = c
     for _i in range(levels):

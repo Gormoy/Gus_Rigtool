@@ -118,6 +118,7 @@ check("the chain's joints added once each (the root already in, picked twice: sk
 
 # a control group hidden by hand (the Hare's Neck_ctrl_GRP): found, shown again; a driven one left alone
 from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ng = cmds.createNode("transform", name="Neck_ctrl_GRP")
 nc = cmds.createNode("transform", name="Neck_ctrl", parent=ng)
 cmds.createNode("nurbsCurve", name="Neck_ctrlShape", parent=nc)
@@ -128,9 +129,9 @@ cmds.createNode("nurbsCurve", name="L_Arm_FK_ctrlShape", parent=fc)
 sw = cmds.createNode("transform", name="L_Arm_settings")
 cmds.addAttr(sw, longName="fkVis", attributeType="bool")
 cmds.connectAttr(sw + ".fkVis", fk + ".visibility")
-hid = [h.split("|")[-1] for h in checker.find_ctrl_hidden(None)]
+hid = [h.split("|")[-1] for h in RC.find_ctrl_hidden(None)]
 check("the hand-hidden group is found, the switched one isn't", hid == ["Neck_ctrl_GRP"])
-checker.fix_ctrl_hidden(checker.find_ctrl_hidden(None))
-check("Fix shows it again", cmds.getAttr(ng + ".visibility") and not checker.find_ctrl_hidden(None))
+RC.fix_ctrl_hidden(RC.find_ctrl_hidden(None))
+check("Fix shows it again", cmds.getAttr(ng + ".visibility") and not RC.find_ctrl_hidden(None))
 print("%d/%d passed" % (sum(ok), len(ok)))
 sys.exit(0 if all(ok) else 1)

@@ -33,7 +33,7 @@ def _dist(a, b):
 def switches():
     """[(control, attribute, [labels])]: controls with a space / follow menu (made by the builder, the Spaces page
     or by hand)."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     out = []
     for c in checker.transforms(None):
         if not checker.is_control(c):
@@ -94,7 +94,7 @@ def run(factor=2.0):
 
 def head_control():
     from gus_rigtool.builder import names
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     want = [x.lower() for x in ("Head_ctrl", names.make("C", "head", "ctrl"), "C_head_ctrl", "Head_CTRL")]
     found = [c for c in checker.transforms(None) if checker.is_control(c) and _short(c).lower() in want]
     found.sort(key=lambda c: want.index(_short(c).lower()))
@@ -135,7 +135,7 @@ def turn_test(ctrl=None, angle=30.0):
     if not axis:
         return out
     out["axis"] = axis
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     nodes = (cmds.ls(type="joint", long=True) or []) + [c for c in checker.transforms(None) if checker.is_control(c)]
     nodes = [n for n in nodes if n != ctrl]
     before = dict((n, WT._wm(n)) for n in nodes)

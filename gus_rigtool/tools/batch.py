@@ -23,7 +23,7 @@ def publish_path(path):
 
 def check_file(path, options, publish=False):
     """Open path, run the Checker (whole scene). Returns (summary line, report text, published file or None)."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     cmds.file(path, open=True, force=True, prompt=False)
     results = checker.run_checks(options, [])
     fails = sum(1 for s, _n in results.values() if s == "FAIL")
@@ -50,7 +50,7 @@ def check_file(path, options, publish=False):
 
 def run(paths, publish=False, options=None):
     """Every file in turn. Returns the whole report (text)."""
-    from gus_rigtool.tools import checker
+    from gus_rigtool.core import rig_checks as checker   # (5.7.10: the checks, not the page)
     o = dict(checker.DEFAULTS)
     o.update(options or utils.tool_settings(checker.SETTINGS_KEY, checker.DEFAULTS))
     summary, details = [], []

@@ -24,7 +24,8 @@ print("expression: memory in a MEL global, no setAttr:", "global float $gusJiggl
       "| drives each group:", sum(code.count("%s.rotate" % g.split("|")[-1]) for g in jg),
       "| reads the head through a decomposeMatrix:", "outputRotateX" in code and bool(cmds.ls(type="decomposeMatrix")))
 # batch
-from gus_rigtool.tools import batch, checker
+from gus_rigtool.tools import batch
+from gus_rigtool.core import rig_checks as checker   # (5.7.10: Batch uses the checks' own file)
 d = tempfile.mkdtemp()
 files = [os.path.join(d, n) for n in ("hare_rig.ma", "fox_rig.ma")]
 OPENED, SAVED = [], []

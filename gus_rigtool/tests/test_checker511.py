@@ -5,6 +5,7 @@ import sys
 exec(open("fakemaya.py").read())
 from unittest import mock
 from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def check(label, cond):
     ok.append(bool(cond)); print(("PASS " if cond else "FAIL ") + label)
@@ -18,8 +19,8 @@ hips = cmds.createNode("joint", name="Hips_jnt")
 cmds.parentConstraint(hips, belt_grp, maintainOffset=True)
 pieces = [mesh(n, belt_grp) for n in ("Belt", "Belt_Ring", "Belt_piece")]
 loose = mesh("Hat", geo)
-with mock.patch.object(checker, "_group", lambda k: geo), mock.patch.object(checker, "_deformed", lambda s: False):
-    got = [n.split("|")[-1] for n in checker.find_geo_no_skin(None)]
+with mock.patch.object(RC, "_group", lambda k: geo), mock.patch.object(RC, "_deformed", lambda s: False):
+    got = [n.split("|")[-1] for n in RC.find_geo_no_skin(None)]
 check("belt pieces in a constrained group follow the rig", not any(p.split("|")[-1] in got for p in pieces))
 check("a loose mesh is still listed", got == ["Hat"])
 
@@ -35,8 +36,8 @@ def ctrl(name, x, y):
     return cmds.ls(t, long=True)[0]
 things = [ctrl("Root_ctrl", 0, 0), ctrl("Head_ctrl", 0, 100), ctrl("Tongue_end_IK_ctrl", 0.6, 80),
           ctrl("Tail_01_ctrl", -1.2, 45), ctrl("arm_ctrl", 15, 70)]
-with mock.patch.object(checker, "_named_things", lambda scope: things):
-    side = [n.split("|")[-1] for n in checker.find_naming_side(None)]
+with mock.patch.object(RC, "_named_things", lambda scope: things):
+    side = [n.split("|")[-1] for n in RC.find_naming_side(None)]
 check("tongue (0.6) and tail (1.2) on a 100 tall rig: centre, not listed", "Tongue_end_IK_ctrl" not in side and
       "Tail_01_ctrl" not in side)
 check("a control clearly on one side is still listed", side == ["arm_ctrl"])
@@ -51,15 +52,15 @@ check("fix_all runs the others, not the renaming", ran == ["other"])
 # 5.1.1: a centred settings control drawn off to one side stays centre; the Fix asks first
 sett = ctrl("Tongue_settings_ctrl", 0, 80)
 cmds.exactWorldBoundingBox = lambda nodes: [7, 79, 0, 9, 81, 0]          # its shape sits at x 8
-with mock.patch.object(checker, "_named_things", lambda scope: things + [sett]):
-    side = [n.split("|")[-1] for n in checker.find_naming_side(None)]
+with mock.patch.object(RC, "_named_things", lambda scope: things + [sett]):
+    side = [n.split("|")[-1] for n in RC.find_naming_side(None)]
 check("a centred control drawn to the side: not listed", "Tongue_settings_ctrl" not in side)
 arm = [t for t in things if t.endswith("arm_ctrl")]
 with mock.patch.object(cmds, "confirmDialog", lambda **k: "Cancel", create=True):
-    n0 = checker.fix_naming_side(arm)
+    n0 = RC.fix_naming_side(arm)
 check("Fix: cancelled in the list, nothing renamed", n0 == 0 and cmds.objExists("arm_ctrl"))
 with mock.patch.object(cmds, "confirmDialog", lambda **k: "Rename", create=True):
-    n1 = checker.fix_naming_side(arm)
+    n1 = RC.fix_naming_side(arm)
 check("Fix: accepted, renamed", n1 == 1 and not cmds.objExists("arm_ctrl"))
 print("%d/%d passed" % (sum(ok), len(ok)))
 sys.exit(0 if all(ok) else 1)

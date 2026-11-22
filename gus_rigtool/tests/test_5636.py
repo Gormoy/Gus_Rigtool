@@ -10,6 +10,7 @@ import maya_cases as MC
 from gus_rigtool import scene_check
 from gus_rigtool.core import report as R
 from gus_rigtool.tools import checker
+from gus_rigtool.core import rig_checks as RC   # (5.7.10: the checks' own file)
 ok = []
 def check(label, cond):
     ok.append(bool(cond)); print(("PASS " if cond else "FAIL ") + label)
@@ -58,11 +59,11 @@ check("Skin: the mesh that didn't load is said, the section doesn't crash (it di
       crashed is None and "its mesh isn't loaded (Body) - weights not read" in text and "1 skin(s) read" in text)
 check("MissingMesh is a ValueError, so Repair's skin read still skips it", issubclass(scene_check.MissingMesh,
                                                                                       ValueError))
-src = open(checker.__file__).read()
+src = open(RC.__file__).read()
 check("Vertices over the influence limit: a skin with no influences left is skipped (division by zero on the Mac)",
       "if not count:" in src)
 check("a reference node isn't 'non-deformer history' (Geo_Hare_07RNfosterParent1 on the Mac)",
-      "reference" in checker._NOT_SHAPE)
+      "reference" in RC._NOT_SHAPE)
 
 # --- 3. Speed with no window
 rep = R.Report("x")
