@@ -257,6 +257,11 @@ the code; this file has what Gus said, decided and wants next.
   when its controls are wider than its tiles; = opens the bar's settings under it.
 - 2026-11-21: Gus: tight row "yes"; Publish in its own file "we can do it in the next" (with the Checker rewrite).
   5.7.9 built - waiting for his Maya tests and OK to push.
+- 2026-11-22: 5.7.9 results: Real Maya 112 ok; Test this release 57 ok, 0 FAIL (102 s). Maya fact: shelf tabs
+  Gus_Rigtool 43/43, Gus_Animtool 57/57 - full before opening (the lazy-tab guess was wrong; 5.7.8.1's shelf FAIL
+  still unknown). Gus: the bar's options strip stacks ("doesn't close when I open another or when I right-click
+  again") - my bug (old title / size rows not cleared); the row "doesn't show the settings like you showed me";
+  the shelf "looks the same, do I have to restart Maya?". 5.7.9.1 plan sent - waiting.
 - Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
   "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
