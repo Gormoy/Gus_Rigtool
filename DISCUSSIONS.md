@@ -264,6 +264,9 @@ the code; this file has what Gus said, decided and wants next.
   the shelf "looks the same, do I have to restart Maya?". 5.7.9.1 plan sent - waiting.
 - 2026-11-22: Gus: "1 yes / 2 always show the settings on top" (a row always shows Row / 2R / Col / Grid, names,
   size - short forms when short; never hidden). 5.7.9.1 built - waiting for his tests and OK to push.
+- 2026-11-22: 5.7.9.1 results: Real Maya 112 ok; Test this release 57 ok, 0 FAIL (101 s). Gus: "yes to all" -
+  the strip opens one tool at a time and closes on a second right-click; the shelf shows the new icons; push OK.
+  5.7.9 and 5.7.9.1 pushed, main = 5.7.9.1.
 - Next (5.7.10): Publish in its own file; the Checker as one table; read Mirror / Ribbon / Face for a second
   "lighter" list. Then the Animtool (5.8) plan.
 - After the Rigtool is "completely working and polished": plan the Animtool (5.8) from what we discussed + his
