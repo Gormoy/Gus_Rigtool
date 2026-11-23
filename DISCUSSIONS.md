@@ -295,3 +295,9 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-22: 5.8 Animtool plan sent (5.8.0 one action list + the look ... 5.8.5 dock/search), with questions:
   the animator's copy has no Gus_Rigtool, so the shared new-look parts must travel inside gus_animtool.
   Waiting for Gus's answers; no code yet.
+- 2026-11-23: Gus's answers to the 5.8 plan: 1 yes, move the shared new-look parts into the Animtool (the
+  animator's copy gets them); 2 order OK (bar 5.8.1 before the window 5.8.2); 3 he WANTS the narrow dock + rail;
+  4 rename the profiles and suggest new ones; 5 backtick for the pie; 6 yes, the colour-blind switch.
+  He asked for a preview: design/mockups/anim58.py -> design/screens58/1-6 (bar, profiles, window, pie, dock + rail,
+  search / settings / shelf). Suggested profiles: Blocking, Splining, Polish, Spaces & props, Cycles, Review,
+  Clean-up, All tools. Waiting for his comments on the preview before any code.
