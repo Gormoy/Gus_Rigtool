@@ -146,8 +146,20 @@ def make(nodes):
     try:
         grp = _group()
         for n in nodes:
-            if _trails_of(n):
-                continue
+            old = _trails_of(n)
+            if old:
+                # 5.7.10.1 (Gus: "when I click arcs nothing shows"): an arc already there but hidden was skipped.
+                # One made in this session: shown again. One left from an earlier session (saved in the file,
+                # this session doesn't know it): made again, fresh.
+                ln = (cmds.ls(n, long=True) or [n])[0]
+                if ln in _state["nodes"]:
+                    for name in {ln, n}:                   # (the panel's hidden list may hold either name)
+                        set_visible(name, True)
+                    made.extend(old)
+                    continue
+                for t in old:
+                    if cmds.objExists(t):
+                        cmds.delete(t)
             got = cmds.snapshot(n, motionTrail=True, increment=max(1, opt("arcs_step")), startTime=s, endTime=e,
                                 name=_short(n) + "_arc") or []
             for g in got:

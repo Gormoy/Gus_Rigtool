@@ -1,3 +1,34 @@
+Gus_Rigtool 5.7.10.1 - the Animtool no longer crashes Maya when opened from its shelf; Arcs shows again
+
+Plan approved ("3 - yes"); urgent: Maya crashed every time Gus opened the Animtool from the Gus_Animtool shelf.
+Then "when I click arcs nothing shows on the viewport" - "go ahead with both fixes".
+
+Fixed:
+- Opening a new version of the Animtool rebuilds the Gus_Animtool shelf once (so new tools appear on it). When you
+  opened it from that shelf, the rebuild deleted the very button you had just clicked while Maya was still running
+  it - Maya crashed. And because the "shelf done" mark is kept in memory until Maya quits normally, it was lost in
+  the crash, so it happened again on every open.
+  Now: the mark is saved to disk first, and the shelf is rebuilt a moment later, once your click has finished.
+- If the rebuild ever fails, you get a warning with the fix (Animtool window > Settings > Make the shelf) instead
+  of an error.
+- Arcs showed nothing: the control already had an arc in the scene, but hidden (Gus's check: head_CTRL's arc,
+  visibility off), and the Arcs button skips a control that already has one. Now the Arcs button shows that arc
+  again; an arc left in the file from an earlier session (the Animtool doesn't know it) is made again, fresh.
+
+Test this release has a new part, "the shelf waits": no shelf button is deleted while the shelf is being updated,
+and the mark is already on disk.
+
+Only tested here with the fake Maya: the crash itself can't happen here. Please open the Animtool from its shelf
+after updating.
+
+Decisions I made:
+- The rebuild waits with evalDeferred (lowest priority), as the 5.6.47 notes found it waits for Maya's idle time.
+- The mark is saved with savePrefs(general=True) (Maya's own preferences file, userPrefs.mel) right away.
+- Only the shelf rebuild deleted something during its own click; nothing else in the Animtool does (checked:
+  the window, the bar, the time slider menu, Update).
+- An old arc from the file is made again rather than just shown: its range and look may be out of date.
+- No other changes; the 5.8 preview's tighter column is a picture only (design/screens58/1_bar.png).
+
 Gus_Rigtool 5.7.10 - lighter: Publish and the Checker's checks in their own files, Face reads once; 4 new checks
 
 Plan approved ("1 yes"); the checks: "keep them as they are unless you think there is something good to add" - the

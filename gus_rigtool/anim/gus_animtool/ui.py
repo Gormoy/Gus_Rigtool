@@ -1140,10 +1140,35 @@ def _shelf_up_to_date():
         return False
     if not cmds.shelfLayout(toolbar.SHELF, exists=True):
         return False
-    n = toolbar.make_shelf()
+    # 5.7.10.1 (Gus: Maya crashed every time he opened the Animtool from its shelf): rebuilding the shelf deleted the
+    # button whose click was still running. Now: marked done and saved to disk FIRST (Maya keeps optionVars in memory
+    # until it quits cleanly - after a crash the next open tried again), then rebuilt once the click has finished.
     A.set_opt("shelf_version", gus_animtool.__version__)
-    A.message("the Gus_Animtool shelf is up to date (%d buttons) for %s." % (n, gus_animtool.__version__))
+    save_prefs()
+    cmds.evalDeferred(_rebuild_shelf, lowestPriority=True)
     return True
+
+
+def save_prefs():
+    """Write Maya's preferences (the optionVars: the Animtool's options) to disk now. True: saved."""
+    try:
+        cmds.savePrefs(general=True)
+        return True
+    except (RuntimeError, TypeError, AttributeError):
+        return False
+
+
+def _rebuild_shelf():
+    """The Gus_Animtool shelf made again - run when Maya is idle (never from inside a click on that shelf)."""
+    import gus_animtool
+    from gus_animtool import toolbar
+    try:
+        n = toolbar.make_shelf()
+    except Exception as e:                                   # never stop Maya over the shelf
+        A.message("couldn't remake the Gus_Animtool shelf (%s) - Settings > Make the shelf." % e, "warn")
+        return None
+    A.message("the Gus_Animtool shelf is up to date (%d buttons) for %s." % (n, gus_animtool.__version__))
+    return n
 
 
 def _version_check():

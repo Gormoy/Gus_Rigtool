@@ -157,7 +157,8 @@ A.message = lambda *a, **k: None
 built = []
 import gus_animtool
 with mock.patch.object(TB, "make_shelf", lambda: built.append(1) or 57), \
-        mock.patch.object(cmds, "shelfLayout", lambda *a, **k: True, create=True):
+        mock.patch.object(cmds, "evalDeferred", lambda fn, **k: fn(), create=True), \
+        mock.patch.object(cmds, "shelfLayout", lambda *a, **k: True, create=True):   # 5.7.10.1: rebuilt when idle
     first = AUI._shelf_up_to_date()
     opts["shelf_version"] = gus_animtool.__version__
     again = AUI._shelf_up_to_date()

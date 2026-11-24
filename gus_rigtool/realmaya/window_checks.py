@@ -125,6 +125,34 @@ def shelf(rep):
                (", ".join(missing) + " - fix: Animtool window > Settings > Make the shelf") if missing else "")
 
 
+def shelf_waits(rep):
+    """5.7.10.1: opening a new version from the Gus_Animtool shelf crashed Maya (the rebuild deleted the button whose
+    click was running). The rebuild now waits until Maya is idle; the 'done' mark is saved to disk first."""
+    import os
+    import gus_animtool
+    from gus_animtool import anim as A, toolbar, ui
+    rep.start("The Animtool shelf: rebuilt after the click, not during it (5.7.10.1 crash)")
+    if not cmds.shelfLayout(toolbar.SHELF, exists=True):
+        rep.add(NOTE, "no Gus_Animtool shelf", "Animtool window > Settings > Make the shelf")
+        return
+    before = cmds.shelfLayout(toolbar.SHELF, query=True, childArray=True) or []
+    A.set_opt("shelf_version", "")                       # as if a new version had just been installed
+    rebuilt = ui._shelf_up_to_date()
+    after = cmds.shelfLayout(toolbar.SHELF, query=True, childArray=True) or []
+    rep.expect("a new version: the rebuild is planned", rebuilt is True)
+    rep.expect("...and no button deleted during the call (the click that runs it stays alive)",
+               after == before and all(cmds.shelfButton(b, exists=True) for b in before
+                                       if cmds.objectTypeUI(b) == "shelfButton"), "%d / %d" % (len(after), len(before)))
+    path = os.path.join(cmds.internalVar(userPrefDir=True), "userPrefs.mel")
+    try:
+        with open(path) as f:
+            saved = '"gusAnim_shelf_version" "%s"' % gus_animtool.__version__ in f.read()
+    except (IOError, OSError) as e:
+        saved, path = False, "%s (%s)" % (path, e)
+    rep.expect("the 'shelf done' mark is on disk already (userPrefs.mel) - a crash can't repeat", saved, path)
+    rep.add(INFO, "look at the shelf in a moment", "Gus_Animtool is made again once Maya is idle (after this test)")
+
+
 def rig_shelf(rep):
     """5.7.9: the Gus_Rigtool shelf in the new look - the sidebar's order, Build rig not twice, right-click menus."""
     import gus_rigtool.main as gr
@@ -652,7 +680,7 @@ def arrange(rep):
         reopen()
 
 
-CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the Rigtool shelf", rig_shelf), ("undo", undo),
+CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the shelf waits", shelf_waits), ("the Rigtool shelf", rig_shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
           ("new window", new_window), ("new look", new_look), ("arrange", arrange), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 

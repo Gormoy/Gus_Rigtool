@@ -307,3 +307,10 @@ the code; this file has what Gus said, decided and wants next.
   is still running the click; and the "done" mark is an optionVar, saved only on a clean quit, so after the crash it
   repeats every time. Sent a paste-in way around (mark done + save prefs, open step by step with a log on the
   Desktop) and a 5.7.10.1 fix plan; waiting for his log / OK.
+- 2026-11-24: Gus: 1 he opens the Animtool from the shelf; 2 "no" (the paste-in way around didn't open it / or not
+  tried - asked for the Desktop log if it still crashes after 5.7.10.1); 3 yes to the 5.7.10.1 fix. Built: the
+  shelf rebuild waits until the click has finished, the mark saved to disk first.
+- 2026-11-24: Gus ran the way-around script: the Animtool OPENED (no crash) - the shelf rebuild was the cause.
+  Arcs: "when I click arcs nothing shows" - his check: head_CTRL already had an arc, hidden (visibility off; not in
+  the panel's hidden list - left from an earlier session); the Arcs button skipped it. "go ahead with both fixes":
+  5.7.10.1 = shelf rebuild waits + Arcs shows / remakes an existing arc.

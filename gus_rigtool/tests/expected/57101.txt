@@ -1,0 +1,14 @@
+PASS a new version: the shelf isn't touched during the click (the crash: its own button deleted)
+PASS ...marked done FIRST and saved to disk at once (a crash can't make it try again)
+PASS ...the rebuild waits until Maya is idle (after the click has finished)
+PASS ...then the shelf is made, once, and says so
+PASS opened again: nothing to do (the mark was saved)
+PASS the rebuild fails: a warning that says how to fix it, nothing raised
+PASS save_prefs: True when Maya saved
+PASS ...False (and no error) when it can't
+PASS show(): the shelf check stays inside try (never stops the window)
+PASS Test this release: a check that the shelf isn't touched during the click and the mark is on disk
+PASS MAYA_FACTS: a shelf button deleting itself crashes Maya; optionVars reach disk only on a clean quit
+PASS an arc left in the file from an earlier session (hidden): made again, fresh - it shows
+PASS an arc made in this session, hidden: the Arcs button shows it again (not skipped, not made twice)
+13/13 passed

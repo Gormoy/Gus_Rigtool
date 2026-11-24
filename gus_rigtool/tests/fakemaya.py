@@ -606,7 +606,7 @@ for _name, _fn in list(globals().items()):
                                                                       "set_world", "mock", "types"):
         setattr(cmds, _name, _fn)
 for _name in ("undoInfo", "move", "warning", "reverseSurface", "rebuildSurface", "optionVar", "evalDeferred",
-              "scriptJob", "confirmDialog", "inViewMessage", "refresh", "about"):
+              "scriptJob", "confirmDialog", "inViewMessage", "refresh", "about", "savePrefs"):
     setattr(cmds, _name, mock.MagicMock(return_value=None))
 cmds.optionVar = mock.MagicMock(return_value=False)
 if not hasattr(cmds, "keyframe"):                      # 5.6.24: the picker's keyed dots (no keys here)

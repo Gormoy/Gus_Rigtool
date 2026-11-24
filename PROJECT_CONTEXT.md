@@ -336,6 +336,9 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   core/rig_checks.py (the checks: CHECKS, HELP, DEFAULTS, run_checks, report_text, SETTINGS_KEY; tools/checker.py is
   the page, `from rig_checks import *` then the proxy cmds); new checks jnt_keys, ctrl_rotate_order_twin,
   skin_normalize (+fix), jnt_ssc_scaled; face_kit_tool._snapshot (selection + made parts once per change).
+- **5.7.10.1**: Maya crashed on every Animtool open from its shelf: ui._shelf_up_to_date rebuilt the shelf inside
+  the shelf button's own click. Now: shelf_version set + ui.save_prefs() (savePrefs) first, the rebuild
+  (_rebuild_shelf) via evalDeferred(lowestPriority). Test this release part 'the shelf waits'.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
