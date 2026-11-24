@@ -176,7 +176,7 @@ h1{font-size:20px;margin:0 0 4px} .sub{color:#c9cdd2;margin:0 0 16px;max-width:1
 .track{position:relative;height:4px;background:#4a4f57;border-radius:2px;margin:3px 0}
 .fill{position:absolute;left:50%;width:12%;height:4px;background:#9e70eb} .knob{position:absolute;left:58%;top:-5px;width:13px;height:13px;border-radius:50%;background:#c8b3f5}
 .ticks{display:flex;gap:3px} .ticks i{flex:1;height:3px;background:#3d4249;border-radius:2px}
-.tween.v{width:64px;height:auto;align-items:center;padding:6px 4px}
+.tween.v{width:62px;margin:2px 0;height:auto;align-items:center;padding:6px 4px}
 .vtrack{position:relative;width:4px;height:90px;background:#4a4f57;border-radius:2px;margin:4px 0}
 .vfill{position:absolute;bottom:50%;height:12%;width:4px;background:#9e70eb}.vknob{position:absolute;bottom:58%;left:-5px;width:13px;height:13px;border-radius:50%;background:#c8b3f5}
 .ticks.v{flex-direction:column;justify-content:space-between;font-size:8.5px;color:#bbb;height:90px;margin:4px 0} .ticks.v i{font-style:normal;background:none;height:auto}
@@ -278,14 +278,14 @@ def page():
           + '<div style="height:18px"></div><div class="cap">3 · Right-click Add inbetween <small>- the same strip, '
           'its real options (Step, Scope). One strip at a time.</small></div>' + bar_row(blocking, 28, strip="inbetween_add")
           + '<br>' + inb_strip)
-    col = ('<div class="bar" style="width:auto"><div class="chrome" style="flex-direction:column;align-items:stretch">'
-           '<div style="display:flex;gap:4px"><span class="grip">::</span><span class="px">34px</span><span class="btn sq">=</span></div>'
-           '<div style="display:flex;gap:3px">' + "".join('<span class="seg%s">%s</span>' % (" on" if s == "C" else "", s) for s in "R2CG") + '</div>'
-           + "".join('<span class="pill%s" style="border-left:3px solid %s">%s %d</span>' % (" on" if p[1] == "BLK" else "", "#9aa", p[1], len(p[3])) for p in PROFILES[:4])
-           + '<span class="btn">▾ more</span></div><div style="display:grid;grid-template-columns:repeat(2,38px);gap:2px">'
-           + "".join(tile(k, 34) for k in blocking[:6]) + '</div><div style="display:flex;justify-content:center;margin:4px 0">'
-           + tweener(34, True) + '</div><div style="display:grid;grid-template-columns:repeat(2,38px);gap:2px">'
-           + "".join(tile(k, 34) for k in blocking[6:]) + '</div></div>')
+    sm = "padding:3px 0;font-size:11px;text-align:center;min-width:0"
+    col = ('<div class="bar" style="width:76px;padding:6px 5px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px">'
+           '<span class="px" style="font-size:11px;padding:3px 0;text-align:center">:: 34</span><span class="btn sq" style="%s">=</span>'
+           '<span class="pill on" style="grid-column:span 2;%s">BLK</span><span class="btn" style="grid-column:span 2;%s">▾</span>'
+           % (sm, sm, sm) + "".join('<span class="seg%s" style="%s">%s</span>' % (" on" if x == "C" else "", sm, x) for x in "R2CG")
+           + '<span class="btn" style="grid-column:span 2;%s">Aa</span><span class="slider" style="grid-column:span 2;width:auto;margin:7px 4px"><span></span></span>'
+           '<span class="btn" style="grid-column:span 2;%s">✎</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+           % (sm, sm) + "".join(tile(k, 34) + (tweener(34, True) if k == "tween_prev" else "") for k in blocking) + '</div></div>')
     grid = ('<div class="bar">' + chrome("grid", "ALL", len(ORDER), short=True, px=30) + '<div style="display:grid;'
             'grid-template-columns:repeat(13,34px);gap:2px">' + "".join(tile(k, 30) for k in ORDER) + '</div></div>')
     bar_blk = blk("5.8 preview · 1. The Animtool bar (the Rigtool favourites design)",

@@ -301,3 +301,9 @@ the code; this file has what Gus said, decided and wants next.
   He asked for a preview: design/mockups/anim58.py -> design/screens58/1-6 (bar, profiles, window, pie, dock + rail,
   search / settings / shelf). Suggested profiles: Blocking, Splining, Polish, Spaces & props, Cycles, Review,
   Clean-up, All tools. Waiting for his comments on the preview before any code.
+- 2026-11-24: Gus likes the 5.8 preview; the bar's column wasn't tight like the Rigtool's -> mock-up column now
+  one tile wide (as gr's). URGENT: Maya crashes every time he opens the Animtool. Likely cause found: on a new
+  version, opening the window rebuilds the Gus_Animtool shelf (_shelf_up_to_date) - deleting the shelf button that
+  is still running the click; and the "done" mark is an optionVar, saved only on a clean quit, so after the crash it
+  repeats every time. Sent a paste-in way around (mark done + save prefs, open step by step with a log on the
+  Desktop) and a 5.7.10.1 fix plan; waiting for his log / OK.
