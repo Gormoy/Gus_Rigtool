@@ -116,6 +116,16 @@ def _remove_old_shelf():
         pass
 
 
+def _versions(src):
+    """The version keeper (anim/gus_animtool/versions.py), loaded from the new Gus_Rigtool being installed."""
+    import importlib.util
+    path = os.path.join(src, "anim", "gus_animtool", "versions.py")
+    spec = importlib.util.spec_from_file_location("gus_install_versions", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def install(source_dir):
     src = os.path.join(source_dir, PACKAGE)
     if not os.path.isfile(os.path.join(src, "__init__.py")):
@@ -128,6 +138,15 @@ def install(source_dir):
     old_folders = [os.path.join(version_scripts, PACKAGE), os.path.join(shared, OLD_PACKAGE),
                    os.path.join(version_scripts, OLD_PACKAGE)]
 
+    V = _versions(src)                     # 5.7.12: check first, keep the old one, switch over (never half done)
+    problems = V.check_folder(src, ("main.py", "registry.py", os.path.join("anim", "gus_animtool", "__init__.py")))
+    if problems and cmds.confirmDialog(
+            title="Gus_Rigtool installer", message="This Gus_Rigtool looks broken - %d problem(s):\n\n%s\n\n"
+            "Install it anyway?" % (len(problems), "\n".join(problems[:8])), button=["Cancel", "Install anyway"],
+            defaultButton="Cancel", cancelButton="Cancel", dismissString="Cancel") != "Install anyway":
+        cmds.warning("Gus_Rigtool installer: not installed (the zip looks broken - download it again).")
+        return None
+
     _close_panels()
 
     keep = {}
@@ -136,8 +155,8 @@ def install(source_dir):
         if not os.path.isdir(shared):
             os.makedirs(shared)
         if os.path.isdir(dest):
-            shutil.rmtree(dest)
-        shutil.copytree(src, dest, ignore=IGNORE)
+            V.keep(dest, PACKAGE)               # the version you had: kept in maya/scripts/gus_versions (last 2)
+        V.swap_in(src, dest)
         data_dir = os.path.join(dest, "data")
         if not os.path.isdir(data_dir):
             os.makedirs(data_dir)

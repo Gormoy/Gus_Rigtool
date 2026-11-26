@@ -243,6 +243,11 @@ def _hotkeys(on, *_):
         _done("hotkeys off.")
 
 
+def _go_back(*_):
+    from gus_animtool import versions
+    versions.go_back_dialog()
+
+
 def _update(*_):
     from gus_animtool import updater
     updater.install_dialog()
@@ -1120,9 +1125,11 @@ def _settings_tab():
              ("Back up now", lambda *_: _done("backup: %s" % __import__("gus_animtool.backup", fromlist=["x"])
                                                .backup_now(force=True)), "A copy right now.")])
     end()
-    section("Update", "Pick the newest Gus Animtool zip (or a Gus_Rigtool zip): it installs and restarts. The old "
-            "files are kept as gus_animtool_backup.")
-    buttons([("Update...", _update, "Install a newer zip.")], width=330)
+    section("Update", "Pick the newest Gus Animtool zip (or a Gus_Rigtool zip): it's checked, then installed, and "
+            "Gus Animtool restarts. The last 2 versions you had are kept (maya/scripts/gus_versions): Go back... "
+            "returns to one (then restart Maya).")
+    buttons([("Update...", _update, "Install a newer zip."),
+             ("Go back...", _go_back, "Back to a version you had before (the last 2 are kept).")], width=330)
     cmds.text(label="  Gus Animtool %s" % gus_animtool.__version__, align="left")
     end()
     _end_tab()
@@ -1205,6 +1212,8 @@ def show():
     op = safestart.Opening("animtool", "Gus Animtool")
     safe = op.begin(gus_animtool.__version__)
     try:
+        if not safe and op.run("first open of this version", _first_open) is False:
+            return None                              # 5.7.12: a file didn't load and you went back - restart Maya
         op.run("selection order", A.track_selection_order)
         op.step("the window")
         if cmds.workspaceControl(WINDOW, exists=True):
@@ -1252,6 +1261,14 @@ def restore():
         return build()
     finally:
         op.end()
+
+
+def _first_open():
+    """5.7.12: the first open of a new version - every file of it loads, else you're offered Go back."""
+    import gus_animtool
+    from gus_animtool import versions
+    return versions.first_open("animtool", gus_animtool.ROOT, "gus_animtool", "gus_animtool", "Gus Animtool",
+                               installed_dir=gus_animtool.LOCAL_ROOT)
 
 
 def _toolbar_once():

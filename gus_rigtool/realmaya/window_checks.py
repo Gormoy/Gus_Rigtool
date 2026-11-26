@@ -158,20 +158,25 @@ def open_from_shelf(rep):
     each open's safe-start note cleared and its log saying it opened."""
     from gus_rigtool.core import safe_start
     rep.start("Opening from the shelves (safe start, 5.7.11)")
-    for shelf, label, name in (("Gus_Animtool", "Gus Animtool", "animtool"), ("Gus_Rigtool", "Main", "rigtool")):
+    # 5.7.12: found by what it runs (an older shelf may name it differently - Gus's had no 'Main')
+    for shelf, label, name, runs in (("Gus_Animtool", "Gus Animtool", "animtool", "_ga.run('main')"),
+                                     ("Gus_Rigtool", "Main", "rigtool", "gr.show()")):
         if not cmds.shelfLayout(shelf, exists=True):
             rep.add(NOTE, "no %s shelf" % shelf, "make it, then run this again")
             continue
         command = None
         for b in cmds.shelfLayout(shelf, query=True, childArray=True) or []:
             try:
-                if cmds.objectTypeUI(b) == "shelfButton" and cmds.shelfButton(b, query=True, label=True) == label:
-                    command = cmds.shelfButton(b, query=True, command=True)
+                if cmds.objectTypeUI(b) != "shelfButton":
+                    continue
+                cmd = cmds.shelfButton(b, query=True, command=True) or ""
+                if cmds.shelfButton(b, query=True, label=True) == label or cmd.strip().endswith(runs):
+                    command = cmd
                     break
             except RuntimeError:
                 pass
         if not command:
-            rep.add(NOTE, "%s: no '%s' button" % (shelf, label), "")
+            rep.add(NOTE, "%s: no button that opens it ('%s')" % (shelf, label), "Settings > Update shelf")
             continue
         exec(command, {})
         cmds.refresh()

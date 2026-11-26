@@ -1076,13 +1076,48 @@ def every_file(rep):
                safe_start.died_last_time("selfcheck") is None, safe_start.folder())
 
 
+def updates_case(rep):
+    """r. Updates you can undo (5.7.12), on this computer's disk: a version kept, the new one switched over (your
+    naming carried), Go back - in a temp folder, never your real installs."""
+    import os
+    import shutil
+    import tempfile
+    from gus_rigtool.core.safe_start import versions as V
+    rep.start("r. Updates: check, keep 2, switch over, go back (a temp folder)")
+    tmp = tempfile.mkdtemp(prefix="gus_updates_case_")
+    try:
+        def make(where, v):
+            os.makedirs(where)
+            with open(os.path.join(where, "__init__.py"), "w") as f:
+                f.write('__version__ = "%s"\n' % v)
+        dest = os.path.join(tmp, "scripts", "gus_case")
+        make(dest, "1.0")
+        with open(os.path.join(dest, "defaults.json"), "w") as f:
+            f.write("mine")
+        new = os.path.join(tmp, "new", "gus_case")
+        make(new, "2.0")
+        rep.expect("the new one checked: fine", V.check_folder(new) == [])
+        V.keep(dest, "gus_case")
+        V.swap_in(new, dest, keep_files=("defaults.json",))
+        rep.expect("switched over to 2.0, your file carried", V.version_of(dest) == "2.0" and
+                   open(os.path.join(dest, "defaults.json")).read() == "mine")
+        rep.expect("1.0 kept", [v for v, _f in V.kept(dest, "gus_case")] == ["1.0"])
+        V.go_back(dest, "gus_case", "1.0", ("defaults.json",))
+        rep.expect("Go back: 1.0 in place, 2.0 kept (to return to it)", V.version_of(dest) == "1.0" and
+                   [v for v, _f in V.kept(dest, "gus_case")] == ["2.0"])
+        rep.expect("nothing left beside it", sorted(os.listdir(os.path.dirname(dest))) == ["gus_case", "gus_versions"],
+                   ", ".join(sorted(os.listdir(os.path.dirname(dest)))))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
          ("k. add / remove inbetween", inbetween_case), ("n. shape editing", shape_editing),
          ("o. shapes on the body", body_shapes),
-         ("p. face from two curves", face_curves), ("q. every file loads", every_file),
+         ("p. face from two curves", face_curves), ("q. every file loads", every_file), ("r. updates", updates_case),
          ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

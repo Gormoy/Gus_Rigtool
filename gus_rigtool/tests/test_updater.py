@@ -14,6 +14,8 @@ with zipfile.ZipFile(z, "w") as zf:
     zf.writestr("drag_to_maya.mel", "// mel")
     zf.writestr("gus_rigtool/__init__.py", '__version__ = "9.9.9"\n')
     zf.writestr("gus_rigtool/core/new.py", "y = 2\n")
+    zf.writestr("gus_rigtool/main.py", "m = 1\n")             # 5.7.12: a zip without these is refused
+    zf.writestr("gus_rigtool/registry.py", "r = 1\n")
     zf.writestr("gus_rigtool/tests/test_x.py", "z = 3\n")
 print("zip version:", updater.zip_version(z))
 real_root = gus_rigtool.ROOT

@@ -343,6 +343,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   opens in prefs/gus_safe_start, ask the safe way after a death; restore_call guards every uiScript); Gus_Rigtool
   loads it by path (core/safe_start.py). Animtool ui.show/restore, newui window show/restore/restore_pop use it.
   Test this release 'open from the shelves'; real-Maya case q (every file loads). test_5711 lists every deleteUI.
+- **5.7.12**: gus_animtool/versions.py (stdlib only): check_folder, keep (maya/scripts/gus_versions, last 2),
+  swap_in (incoming / outgoing rename), go_back, go_back_dialog, self_check + first_open (once per version).
+  Used by install.py, core/updater (install + update_animtool), anim updater; Go back buttons in both Settings.
+  Real-Maya case r.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),

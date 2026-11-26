@@ -326,3 +326,8 @@ the code; this file has what Gus said, decided and wants next.
   versions; 4 nothing else. Visual: the Animtool icons had two lines each in the preview (the icon's own + one I
   added) -> one line (and so in 5.8: the icon's own line only). Built 5.7.11 = steps 1-5, 9, 10; 5.7.12 = the
   updater (check the zip, keep 2 versions, Go back, self-check after an update); then 5.8.0.
+- 2026-11-27: 5.7.11 results: real Maya 115 ok (case q: 175 files load); Test this release 63 ok + 1 note (no
+  'Main' button on his older Gus_Rigtool shelf -> the check finds it by its command now). Gus: "The rest is looking
+  good, we can go ahead with the new implementation" -> the anim test's file list accepted; 5.7.12 built (updates
+  checked first, last 2 kept in maya/scripts/gus_versions, Go back buttons + a paste line, first-open self-check).
+  No push OK yet for 5.7.11 / 5.7.12.

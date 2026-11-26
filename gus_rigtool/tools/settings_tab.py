@@ -242,12 +242,17 @@ def build(prefix="p_settings_"):
     _end()
 
     ui.section("Update", help_text="Install a newer Gus_Rigtool from its zip (the one you downloaded - no "
-               "unzipping, no drag and drop). The old files are kept as gus_rigtool_backup; Gus_Rigtool restarts "
-               "and the Script Editor says which version is running.")
+               "unzipping, no drag and drop). It's checked first; the last 2 versions you had are kept "
+               "(maya/scripts/gus_versions) - Go back... returns to one. Gus_Rigtool restarts and the Script Editor "
+               "says which version is running.")
     import gus_rigtool
     ui.note("Installed: Gus_Rigtool %s" % gus_rigtool.__version__)
     from gus_rigtool.core import updater
     cmds.button(label="Install update from zip...", height=26, command=_w(_guard(updater.install_dialog)))
+    from gus_rigtool.core.safe_start import versions as V
+    cmds.button(label="Go back to an earlier version...", height=26, command=_w(_guard(V.go_back_dialog)),
+                annotation="5.7.12: back to a version you had before (Gus_Rigtool or Gus Animtool; the last 2 "
+                           "are kept). Restart Maya after.")
     _end()
 
     ui.section("Defaults", help_text="Options are saved as you change them. 'Save as my defaults' remembers "

@@ -46,8 +46,7 @@ def install(path):
     if not os.path.isfile(path):
         raise RuntimeError("file not found: %s" % path)
     target = gus_rigtool.ROOT
-    parent = os.path.dirname(target)
-    backup = os.path.join(parent, "gus_rigtool_backup")
+    backup = None
     with zipfile.ZipFile(path) as zf:
         prefix, new = _prefix_and_version(zf)
         stage = tempfile.mkdtemp(prefix="gus_rigtool_update_")
@@ -63,10 +62,15 @@ def install(path):
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 with zf.open(name) as src, open(dst, "wb") as out:
                     shutil.copyfileobj(src, out)
-            if os.path.isdir(backup):
-                shutil.rmtree(backup, ignore_errors=True)
-            shutil.copytree(target, backup, ignore=shutil.ignore_patterns("__pycache__"))
-            shutil.copytree(stage, target, dirs_exist_ok=True)
+            # 5.7.12: checked first; the version you had kept (maya/scripts/gus_versions, the last 2); the new
+            # one copied next to it, then switched over - never half installed
+            from gus_rigtool.core.safe_start import versions as V
+            problems = V.check_folder(stage, ("main.py", "registry.py"))
+            if problems:
+                raise RuntimeError("this zip looks broken - not installed (%d problem(s): %s). Download it again."
+                                   % (len(problems), "; ".join(problems[:4])))
+            backup = V.keep(target, "gus_rigtool") or backup
+            V.swap_in(stage, target, keep_files=("data",))
         finally:
             shutil.rmtree(stage, ignore_errors=True)
     for root, dirs, _files in os.walk(target):                    # old compiled files must not win
@@ -91,12 +95,11 @@ def update_animtool(rigtool_root):
     dst = os.path.dirname(spec.origin)
     if os.path.abspath(dst).startswith(os.path.abspath(rigtool_root)):
         return None
-    keep = os.path.join(dst, "defaults.json")
-    saved = open(keep).read() if os.path.isfile(keep) else None
-    shutil.copytree(src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
-    if saved is not None:
-        with open(keep, "w") as f:
-            f.write(saved)
+    from gus_rigtool.core.safe_start import versions as V      # 5.7.12: your copy kept, then switched over
+    if V.check_folder(src):
+        raise RuntimeError("Gus_Rigtool's Animtool copy looks broken - your Gus Animtool was left as it is.")
+    V.keep(dst, "gus_animtool")
+    V.swap_in(src, dst, keep_files=("defaults.json",))           # your naming (defaults.json) stays
     shim = os.path.join(rigtool_root, "anim", "gus_anim.py")
     if os.path.isfile(shim):
         shutil.copy2(shim, os.path.join(os.path.dirname(dst), "gus_anim.py"))

@@ -1,3 +1,45 @@
+Gus_Rigtool 5.7.12 - updates you can undo: checked first, the last 2 kept, Go back
+
+Plan approved (part C of the safety plan; Gus: keep the last TWO versions; "we can go ahead with the new
+implementation" after 5.7.11's results: real Maya 115 ok, Test this release 63 ok + 1 note).
+
+Updating (drag_to_maya.mel, Gus_Rigtool's Update button, Gus Animtool's Update button):
+- Checked first: every file is there and Python can read it. A broken download isn't installed (drag_to_maya asks
+  "Install anyway?"; the Update buttons say so and stop).
+- The version you had is kept, in maya/scripts/gus_versions - the last 2 of each tool. (drag_to_maya used to delete
+  the old one first; the Update buttons kept only one, as gus_..._backup.)
+- The new one is copied next to the old one first, then switched over - so it's never half installed. If the
+  switch fails, the old one is put back. Your data folder (saved shapes, presets) and your Animtool naming
+  (defaults.json) are carried over, as before.
+- Your own Gus Animtool copy, updated together with Gus_Rigtool, is kept and switched over the same way.
+
+Go back:
+- Settings > Update > "Go back to an earlier version..." (Gus_Rigtool) and Animtool Settings > Update > "Go back..."
+  - pick a kept version of either tool; restart Maya. The one you leave is kept, so you can return to it.
+- If a new version can't even open, paste this in the Script Editor (Python) - it works without the tools:
+    g = {}; exec(open(__import__("os").path.expanduser("~/Library/Preferences/Autodesk/maya/scripts/gus_versions/versions.py")).read(), g); g["go_back_dialog"]()
+
+The first open of a new version: before its window opens, every file of it is loaded once. If one doesn't load,
+you're told which and offered "Go back to <the version before>" or "Open anyway". Checked once per version.
+
+Fixed: Test this release found no 'Main' button on your Gus_Rigtool shelf (your shelf was saved with an older
+name for it) - it now finds the button by what it runs.
+
+Tests in your Maya: real-Maya case r - keep, switch over and Go back, done in a temp folder on your Mac's disk (not
+your real installs). Test this release's "Opening from the shelves" should now open Gus_Rigtool too.
+
+Only tested here with the fake Maya, and on real folders here (Linux). Not tested: a real update in your Maya -
+the first time will be updating to 5.7.12 itself (with the old installer: the kept versions start from then).
+
+Decisions I made:
+- The version keeper lives in the Animtool (gus_animtool/versions.py, Python's own library only), like safe start:
+  an animator's copy has it; Gus_Rigtool loads the same file; a copy sits in gus_versions for the paste line.
+- Kept versions go in maya/scripts/gus_versions (next to the tools, one place for both).
+- After Go back, the version you went back to isn't kept twice (it's the installed one); the one you left is.
+- The first-open check skips the safe way (that opens only the window) and Gus_Rigtool's copy of the Animtool (the
+  Animtool checks itself when it opens).
+- The old gus_rigtool_backup / gus_animtool_backup folders are left where they are (not deleted by the tool).
+
 Gus_Rigtool 5.7.11 - safer updates: safe start, an opening log, windows reopened safely
 
 Plan approved ("yes" to all, in that order); safe start asks first ("ask"); Go back keeps 2 versions (5.7.12).

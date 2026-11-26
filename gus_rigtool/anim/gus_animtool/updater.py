@@ -45,7 +45,7 @@ def install(path):
     if getattr(gus_animtool, "REDIRECTED", None):  # copy is the one updated, never the one inside Gus_Rigtool
         target = gus_animtool.LOCAL_ROOT
     parent = os.path.dirname(target)
-    backup = os.path.join(parent, "gus_animtool_backup")
+    backup = None
     with zipfile.ZipFile(path) as zf:
         prefix, new = _prefix_and_version(zf)
         shim = prefix[:-len(PACKAGE)] + "gus_anim.py"
@@ -62,13 +62,18 @@ def install(path):
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 with zf.open(name) as src, open(dst, "wb") as out:
                     shutil.copyfileobj(src, out)
-            keep = os.path.join(target, "defaults.json")             # your rig's naming stays
-            if os.path.isfile(keep) and not os.path.isfile(os.path.join(stage, "defaults.json")):
-                shutil.copy2(keep, os.path.join(stage, "defaults.json"))
-            if os.path.isdir(backup):
-                shutil.rmtree(backup, ignore_errors=True)
-            shutil.copytree(target, backup, ignore=shutil.ignore_patterns("__pycache__"))
-            shutil.copytree(stage, target, dirs_exist_ok=True)
+            # 5.7.12: checked first; the version you had kept (maya/scripts/gus_versions, the last 2); the new one
+            # copied next to it, then switched over - never half installed; your naming (defaults.json) stays
+            from gus_animtool import versions as V
+            problems = V.check_folder(stage)
+            if problems:
+                raise RuntimeError("this zip looks broken - not installed (%d problem(s): %s). Download it again."
+                                   % (len(problems), "; ".join(problems[:4])))
+            keep = os.path.join(target, "defaults.json")
+            if os.path.isfile(keep) and os.path.isfile(os.path.join(stage, "defaults.json")):
+                os.remove(os.path.join(stage, "defaults.json"))     # yours wins over the zip's
+            backup = V.keep(target, "gus_animtool") or backup
+            V.swap_in(stage, target, keep_files=("defaults.json",))
             if shim in zf.namelist():
                 with zf.open(shim) as src, open(os.path.join(parent, "gus_anim.py"), "wb") as out:
                     shutil.copyfileobj(src, out)
@@ -114,7 +119,8 @@ def install_dialog(*_):
                           dismissString="Cancel") != "Install":
         return None
     old, new, backup = install(path)
-    cmds.confirmDialog(title="Gus Animtool update", message="Gus Animtool %s installed (was %s).\nThe old files "
-                       "are in:\n%s\n\nIt restarts now." % (new, old, backup), button=["OK"])
+    cmds.confirmDialog(title="Gus Animtool update", message="Gus Animtool %s installed (was %s).\nThe old one "
+                       "is kept in:\n%s\n(Settings > Update > Go back... to return to it)\n\nIt restarts now." % (
+                           new, old, backup), button=["OK"])
     restart()
     return new

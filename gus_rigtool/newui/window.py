@@ -1467,6 +1467,8 @@ def show(key=None, section=None):
         op = safe_start.Opening("rigtool", "Gus_Rigtool")
         safe = op.begin(gus_rigtool.__version__)
         try:
+            if not safe and op.run("first open of this version", _first_open) is False:
+                return None                          # 5.7.12: a file didn't load and you went back - restart Maya
             op.step("the window")
             if mc.workspaceControl(WS, exists=True):
                 mc.deleteUI(WS)
@@ -1488,6 +1490,13 @@ def show(key=None, section=None):
     if w is not None and key:
         w.go_key(key, section)
     return w
+
+
+def _first_open():
+    """5.7.12: the first open of a new version - every file of it loads, else you're offered Go back."""
+    import gus_rigtool
+    from gus_rigtool.core.safe_start import versions
+    return versions.first_open("rigtool", gus_rigtool.ROOT, "gus_rigtool", "gus_rigtool", "Gus_Rigtool")
 
 
 def restore():

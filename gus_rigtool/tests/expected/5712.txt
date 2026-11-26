@@ -1,0 +1,28 @@
+PASS a good folder: no problems
+PASS a broken file and a missing one: both named
+PASS no version: said
+PASS ...it only reads: nothing written next to the files (no __pycache__)
+PASS the version you had is kept in maya/scripts/gus_versions
+PASS ...with a copy of the version keeper itself (the paste line works even if a version can't load)
+PASS only the last 2 are kept (the oldest goes)
+PASS the new one in place
+PASS ...your naming (defaults.json) and your data folder carried over
+PASS ...nothing left beside it (no _incoming / _outgoing)
+PASS the switch fails half way: the old one is put back, untouched
+PASS Go back to 1.5: it's in place, your naming still yours
+PASS ...the one you left (3.0) is kept, so you can return to it; still 2 kept
+PASS a version that isn't kept: says which are
+PASS self-check: the file that doesn't load is named (Gus_Rigtool's Animtool copy skipped: it checks itself)
+PASS a file doesn't load: you're offered Go back to the version before; you take it -> back, don't open
+PASS ...the version you went back to is checked once too (every file loads: no question)
+PASS ...and once checked, a version isn't checked again (no delay on every open)
+PASS drag_to_maya: checks first (asks before installing a broken one), keeps yours, switches over (no delete first)
+PASS Gus_Rigtool's Update button: checked, kept, switched over (your data folder carried)
+PASS ...your own Gus Animtool copy, updated with it: kept, switched over (your naming carried)
+PASS the Animtool's Update button: checked, kept, switched over
+PASS Go back... in both Settings (Update)
+PASS both windows run the first-open check (not the safe way: that opens only the window)
+PASS Gus_Rigtool uses the Animtool's own file (one code)
+PASS Test this release finds the shelf's open button by what it runs (Gus's older shelf had no 'Main')
+PASS real-Maya case r: keep, switch over, go back on your Mac's disk
+27/27 passed

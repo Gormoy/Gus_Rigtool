@@ -13,19 +13,21 @@ import sys
 _NAME = "gus_rigtool._safestart"
 
 
-def _load():
-    if _NAME in sys.modules:
-        return sys.modules[_NAME]
+def _load(filename="safestart.py", name=_NAME):
+    """One of the Animtool's stand-alone files (they import nothing from it), from Gus_Rigtool's own copy."""
+    if name in sys.modules:
+        return sys.modules[name]
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "anim", "gus_animtool",
-                        "safestart.py")
-    spec = importlib.util.spec_from_file_location(_NAME, path)
+                        filename)
+    spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    sys.modules[_NAME] = mod
+    sys.modules[name] = mod
     return mod
 
 
 _S = _load()
+versions = _load("versions.py", "gus_rigtool._versions")      # 5.7.12: keep / check / go back
 Opening = _S.Opening
 died_last_time = _S.died_last_time
 forget = _S.forget
