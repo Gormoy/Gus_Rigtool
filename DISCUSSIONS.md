@@ -334,3 +334,6 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-27: Gus "yes to all": the 4 changed outputs accepted (anim, anim_ui, animtool, updater); push OK once the
   results pass; then the 5.8.0 plan. The results he sent were still 5.7.11 (115 ok; Test this release 62 ok + the
   'Main' note) -> 5.7.11 pushed to main; 5.7.12 waits for its own results (case r, the shelf check by command).
+- 2026-11-27: 5.7.12 results: real Maya 120 ok (case r passed); Test this release 64 ok + 1 FAIL (the Animtool
+  window's title 5.7.11 - Gus hadn't restarted Maya after updating: not a bug). Gus: push yes -> 5.7.11 + 5.7.12
+  pushed to main. Next: the Animtool 5.8.0 plan (yes).
