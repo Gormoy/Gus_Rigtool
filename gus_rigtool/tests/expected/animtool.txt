@@ -15,6 +15,6 @@ profile: {'left': 'Lf_', 'right': 'Rt_', 'suffix': '_CTRL'} | suffix now: _CTRL 
 controls from the set: ['L_arm_ctrl']
 hotkeys on: Gus_Animtool | keys bound: 9
 zip version: 9.9.9
-installed: 9.9.9 | defaults kept: True | shim: True | backup: gus_animtool_backup
+installed: 9.9.9 | defaults kept: True | shim: True | backup: gus_animtool_2.0.0
 jumps found (fake: none): []
 fix keyed: 1 | keys at 9 / 10: True True | back at frame 3.0

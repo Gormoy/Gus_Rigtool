@@ -2,5 +2,5 @@ zip version: 9.9.9
 old -> new: <this version> -> 9.9.9
 installed version file: __version__ = "9.9.9"
 new file there: True | tests skipped: True | old pycache gone: True
-backup has the old version: __version__ = "1.0.0" | backup name: gus_rigtool_backup
+backup has the old version: __version__ = "1.0.0" | backup name: gus_rigtool_1.0.0
 older check: True

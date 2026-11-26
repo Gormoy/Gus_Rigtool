@@ -331,3 +331,6 @@ the code; this file has what Gus said, decided and wants next.
   good, we can go ahead with the new implementation" -> the anim test's file list accepted; 5.7.12 built (updates
   checked first, last 2 kept in maya/scripts/gus_versions, Go back buttons + a paste line, first-open self-check).
   No push OK yet for 5.7.11 / 5.7.12.
+- 2026-11-27: Gus "yes to all": the 4 changed outputs accepted (anim, anim_ui, animtool, updater); push OK once the
+  results pass; then the 5.8.0 plan. The results he sent were still 5.7.11 (115 ok; Test this release 62 ok + the
+  'Main' note) -> 5.7.11 pushed to main; 5.7.12 waits for its own results (case r, the shelf check by command).
