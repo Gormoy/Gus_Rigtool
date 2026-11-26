@@ -340,3 +340,8 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-27: Gus OK'd the 5.8.0 plan ("yes"); the picker waits while playing ("as you suggest"); the 8 categories
   and colours "yes". Built 5.8.0 (the bar's engine moves in 5.8.1 instead, with the Animtool bar - said in the
   release). Next: 5.8.1 the bar.
+- 2026-11-28: 5.8.0 results: real Maya 120 ok; Test this release 68 ok (the picker waits: 1 / 0 / 1). The first-open
+  check showed a false alarm (build_existing <-> build_tab loop when loaded alone) - "Open anyway" is safe. Gus: put
+  the fix in the next update with the other features (no 5.8.0.1). 5.8.1 plan sent (the fix; the bar engine into
+  the Animtool; the new Animtool bar; real pictures first; Test this release checks). Asked: "My bar" profile from
+  today's chosen buttons; which profile first; push 5.8.0.
