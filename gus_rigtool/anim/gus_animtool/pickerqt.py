@@ -2721,6 +2721,23 @@ class Picker(QtWidgets.QWidget):
         self._keyed = {}
         self.canvas.update()
 
+    def changed_later(self, what):
+        """5.8.0: Maya said the selection or the frame changed - updated once a moment later, not while playing."""
+        if getattr(self, "_later", None) is None:
+            from gus_animtool.look.later import Later
+            self._later = Later(self._catch_up, owner=self)
+            self._pending = set()
+        self._pending.add(what)
+        return self._later()
+
+    def _catch_up(self):
+        pending, self._pending = self._pending, set()
+        if "selection" in pending:
+            self.selection_changed()
+        elif "time" in pending:
+            self.time_changed()
+        return sorted(pending)
+
     # -- using it -----------------------------------------------------------
     def run(self, fn):
         try:
@@ -5575,9 +5592,12 @@ def build():
         host.layout().addWidget(w)
     _state["widget"] = w
     try:
-        cmds.scriptJob(event=["SelectionChanged", lambda: _alive() and _state["widget"].selection_changed()],
+        # 5.8.0: once, 80 ms after the last change, never while the animation plays (Gus: it catches up when
+        # playback stops) - it updated on every selection change and on every frame while playing
+        cmds.scriptJob(event=["SelectionChanged", lambda: _alive() and _state["widget"].changed_later("selection")],
                        parent=WORKSPACE)
-        cmds.scriptJob(event=["timeChanged", lambda: _alive() and _state["widget"].time_changed()], parent=WORKSPACE)
+        cmds.scriptJob(event=["timeChanged", lambda: _alive() and _state["widget"].changed_later("time")],
+                       parent=WORKSPACE)
     except (RuntimeError, TypeError):
         pass
     return w

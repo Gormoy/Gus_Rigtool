@@ -1,24 +1,7 @@
-"""Qt for Maya 2024 (PySide2) and Maya 2025+ (PySide6)."""
-try:
-    from PySide6 import QtCore, QtGui, QtWidgets          # noqa: F401
-    from PySide6 import QtSvg                              # noqa: F401
-    import shiboken6 as shiboken                           # noqa: F401
-    QT6 = True
-except ImportError:
-    from PySide2 import QtCore, QtGui, QtWidgets          # noqa: F401
-    from PySide2 import QtSvg                              # noqa: F401
-    import shiboken2 as shiboken                           # noqa: F401
-    QT6 = False
+"""5.8.0: the new look's qt lives in the Animtool (anim/gus_animtool/look/qt.py) - one copy for both tools.
+Gus_Rigtool uses its own copy of the Animtool's, so this name is the very same module."""
+import sys
 
+from gus_rigtool.core.safe_start import look
 
-def maya_widget(name, kind="layout"):
-    """The Qt widget of a Maya UI control / layout (by its name), or None."""
-    try:
-        import maya.OpenMayaUI as omui
-    except ImportError:
-        return None
-    ptr = {"layout": omui.MQtUtil.findLayout, "control": omui.MQtUtil.findControl,
-           "window": omui.MQtUtil.findWindow}[kind](name)
-    if not ptr:
-        return None
-    return shiboken.wrapInstance(int(ptr), QtWidgets.QWidget)
+sys.modules[__name__] = look("qt")

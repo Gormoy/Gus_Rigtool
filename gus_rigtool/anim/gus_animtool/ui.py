@@ -492,14 +492,15 @@ QUICK = ["key", "tan_auto", "tan_spline", "tan_linear", "tan_flat", "tan_step", 
 def build():
     """The window's content (Maya also runs this when it restores a docked window)."""
     from gus_animtool import actions as AC
+    if cmds.workspaceControl(WINDOW, exists=True):
+        try:                     # 5.6.48: Maya reopens the window at start-up with the title it saved (the old version)
+            cmds.workspaceControl(WINDOW, edit=True, label="Gus Animtool %s" % gus_animtool.__version__)
+        except (RuntimeError, TypeError):           # 5.8.0: every time it's built, even if already filled
+            pass
     if cmds.formLayout(P + "Root", exists=True):
         return
     if cmds.workspaceControl(WINDOW, exists=True):
         cmds.setParent(WINDOW)
-        try:                     # 5.6.48: Maya reopens the window at start-up with the title it saved (the old version)
-            cmds.workspaceControl(WINDOW, edit=True, label="Gus Animtool %s" % gus_animtool.__version__)
-        except (RuntimeError, TypeError):
-            pass
     root = cmds.formLayout(P + "Root")
     top = cmds.columnLayout(P + "Top", adjustableColumn=True, rowSpacing=4)
     head = cmds.formLayout(height=34, backgroundColor=A.HEADER_BG)

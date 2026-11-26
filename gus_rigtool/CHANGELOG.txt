@@ -1,3 +1,39 @@
+Gus_Rigtool 5.8.0 - Gus Animtool's groundwork: one list of tools, the new look in the Animtool, a lighter picker
+
+Plan approved ("yes"; the picker waits while playing - "as you suggest"; the 8 categories and colours - "yes").
+Nothing changes in how the tools look yet: this is what the new bar (5.8.1) and window (5.8.2) stand on.
+
+1. One list of tools: the Animtool's list now also holds each tool's category and colour (the 8 of the preview -
+   your icons' own colours - and a colour-blind safe one), the two windows only the bar shows (Attach window, Arcs
+   panel), every tool's right-click options (the same options and defaults its section in the window has) and the
+   profiles of the preview (Blocking, Splining, Polish, Spaces & props, Cycles, Review, Clean-up). The bar reads it
+   (its own copy is gone); a test checks the toolbar, the window's icons, the menus and the profiles only name tools
+   that exist.
+2. The new look's building blocks (colours, icons, cards, buttons, Qt) moved into the Animtool (gus_animtool/look),
+   so an animator's copy has them. Gus_Rigtool uses the very same files from its own copy of the Animtool - your
+   Gus_Rigtool window and bar are unchanged.
+3. The picker is lighter: it updated on every selection change and on every frame while the animation played. Now
+   it updates once, a moment (80 ms) after the last change, and not while playing - it catches up when you stop.
+4. The Animtool window's title says the running version every time it's built (5.7.12's Test this release found
+   an old title - that one was because Maya wasn't restarted, but Maya reopening a docked window could show it too).
+
+Test this release has a new part, "The picker": a selection change -> one update a moment later; while playing ->
+none; playback stopped -> it catches up once.
+
+Only tested here with the fake Maya. Try by hand: open the picker, play the shot - it stays still; stop - it shows
+the selection and the keyed dots.
+
+Decisions I made:
+- The favourites bar's engine (profiles, shapes, size, the right-click strip) is NOT moved yet: it moves in 5.8.1,
+  when the Animtool bar is built on it - then there are two users to shape it for, and your Gus_Rigtool bar can be
+  checked against it in the same release. (The plan had it in 5.8.0.)
+- The tile drawings stay where they are: the Animtool's tiles are its own icon pictures (one line each).
+- The one list lives in actions.py (where the Animtool's list already was), not in a new file.
+- The old picker made with Maya's own buttons (the simple picker) keeps updating at once: it's rarely used and
+  lighter; only the new picker waits.
+- Gus_Rigtool's old file names (newui/qt.py, theme.py, icons.py, widgets.py) stay, as pointers, so nothing else
+  had to change.
+
 Gus_Rigtool 5.7.12 - updates you can undo: checked first, the last 2 kept, Go back
 
 Plan approved (part C of the safety plan; Gus: keep the last TWO versions; "we can go ahead with the new

@@ -188,6 +188,52 @@ def open_from_shelf(rep):
     rep.add(INFO, "the opening logs", safe_start.folder())
 
 
+def picker_waits(rep):
+    """5.8.0: the picker updates once a moment after a selection change, and not while the animation plays (Gus:
+    'as you suggest') - it catches up when playback stops."""
+    import time
+    from gus_animtool import anim as A
+    from gus_animtool import pickerqt
+    from gus_animtool.look.qt import QtWidgets
+    rep.start("The picker: a moment after a change, not while playing (5.8.0)")
+
+    def pump(seconds):
+        end = time.time() + seconds
+        while time.time() < end:
+            QtWidgets.QApplication.processEvents()
+            time.sleep(0.02)
+    _keyed("picker_wait_ctrl")
+    cmds.playbackOptions(minTime=1, maxTime=40)
+    try:
+        A.show_picker()
+    except Exception as e:
+        rep.add(NOTE, "the picker didn't open here", str(e))
+        return
+    w = pickerqt._state.get("widget")
+    if w is None:
+        rep.add(NOTE, "the picker didn't open here", "")
+        return
+    w.changed_later("selection")
+    before = w._later.runs
+    pump(0.3)
+    rep.expect("a selection change: the picker updated once, a moment later", w._later.runs == before + 1,
+               "%d update(s)" % (w._later.runs - before))
+    cmds.play(forward=True)
+    pump(0.2)
+    if not cmds.play(query=True, state=True):
+        rep.add(NOTE, "the animation didn't play here (a script can't always start it)", "try it by hand: open the "
+                "picker, press play - it stays still, and shows the selection when you stop")
+        return
+    n = w._later.runs
+    for _ in range(5):
+        w.changed_later("time")
+        pump(0.1)
+    rep.expect("while it plays: no update (the picker waits)", w._later.runs == n, "%d update(s)" % (w._later.runs - n))
+    cmds.play(state=False)
+    pump(0.6)
+    rep.expect("playback stopped: it catches up once", w._later.runs == n + 1, "%d update(s)" % (w._later.runs - n))
+
+
 def rig_shelf(rep):
     """5.7.9: the Gus_Rigtool shelf in the new look - the sidebar's order, Build rig not twice, right-click menus."""
     import gus_rigtool.main as gr
@@ -715,7 +761,7 @@ def arrange(rep):
         reopen()
 
 
-CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the shelf waits", shelf_waits), ("open from the shelves", open_from_shelf), ("the Rigtool shelf", rig_shelf), ("undo", undo),
+CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the shelf waits", shelf_waits), ("open from the shelves", open_from_shelf), ("picker waits", picker_waits), ("the Rigtool shelf", rig_shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
           ("new window", new_window), ("new look", new_look), ("arrange", arrange), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 

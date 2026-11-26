@@ -190,7 +190,7 @@ check("old keys (the Shapes / Make controls shelf buttons) open the right page",
       window.area_of("makectrl") == ("controls", "controls_tab", 1))
 
 # --- 6. Maya 2025+ (PySide6) and 2024 (PySide2); the window in Maya
-qt = open(os.path.join(ROOT, "newui", "qt.py")).read()
+qt = open(os.path.join(ROOT, "anim", "gus_animtool", "look", "qt.py")).read()     # 5.8.0: moved to the Animtool
 check("Qt: PySide6 (Maya 2025+) or PySide2 (Maya 2024)", "from PySide6 import" in qt and "from PySide2 import" in qt)
 w = open(os.path.join(ROOT, "newui", "window.py")).read()
 check("the window is rebuilt when Maya reopens it at start-up, with this version's title",

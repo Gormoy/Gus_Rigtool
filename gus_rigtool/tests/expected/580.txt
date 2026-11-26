@@ -1,0 +1,23 @@
+PASS Gus_Rigtool's theme / widgets / icons / qt are the Animtool's own files (one copy)
+PASS ...the very same module whichever name is used (a change in one is a change in the other)
+PASS ...Gus_Rigtool's old names are only pointers now
+PASS the Animtool loads them itself too (an animator's copy has no Gus_Rigtool)
+PASS ...nothing in the look folder needs Gus_Rigtool (no import of it)
+PASS every tool has a category (8: Pick & see, Pose, Tween, Keys & tangents, Timing & cycles, Graph curves, Spaces & props, Windows)
+PASS ...its colour is its icon's own (the line under each icon)
+PASS ...and a colour-blind safe colour
+PASS the two windows only the bar shows are in the list, right after their tool
+PASS the bar reads the one list (its own copy is gone)
+PASS every tool the toolbar, the window's icons, the menus, the options and the profiles name exists
+PASS the profiles of the preview: Blocking, Splining, Polish, Spaces & props, Cycles, Review, Clean-up
+PASS every option in the right-click strips is one the tools really use, with the same default (22 options)
+PASS a tool's options with what's set now (Remove inbetween = Add's: step 3, scope 1)
+PASS outside Maya (the tests): at once
+PASS in Maya: 5 quick changes -> one timer, restarted (80 ms after the last one), nothing yet
+PASS ...then one update
+PASS while playing: no update, it looks again in 300 ms
+PASS playback stopped: it catches up once
+PASS the picker's Maya hooks (selection, every frame) go through it
+PASS the Animtool window's title is set every time it's built (5.7.12's Test this release: an old title)
+PASS Test this release: the picker waits while playing, catches up after
+22/22 passed

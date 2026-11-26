@@ -20,11 +20,10 @@ NAME = "gusAnimtoolBar"
 SIZE = 26                       # a button
 LINES = 2                       # a row: 2 lines of icons
 COLUMNS = 3                     # a column: 3 columns (not too tall for a laptop screen)
-# the windows, right after their tool (not actions of their own on the shelf / toolbar: on the bar only)
-EXTRA = {"release": "attach_window", "arcs": "arcs_panel"}
-EXTRA_INFO = {"attach_window": ("Attach window", "The Attach window: what's attached, who holds it over time, its "
-                                                 "changes"),
-              "arcs_panel": ("Arcs panel", "The Arcs panel: every arc, its colour, range, look")}
+# the windows, right after their tool (not actions of their own on the shelf / toolbar: on the bar only) -
+# 5.8.0: from the one list (actions.EXTRAS)
+EXTRA = dict((after, key) for key, _l, _t, _g, after in AC.EXTRAS)
+EXTRA_INFO = dict((key, (label, tip)) for key, label, tip, _g, _a in AC.EXTRAS)
 STYLE = """
 QWidget#gusAnimtoolBar { background:#3c3c3c; border:1px solid #222; }
 QToolButton { border:none; border-radius:3px; padding:1px; }
@@ -45,14 +44,7 @@ def _maya_window():
 
 def all_keys():
     """Every tool, in the toolbar's order, the windows right after their tool; the bar's own button left out."""
-    out = []
-    for k, _l, _t, _g in AC.ACTIONS:
-        if k == "bar":
-            continue
-        out.append(k)
-        if k in EXTRA:
-            out.append(EXTRA[k])
-    return out
+    return AC.every("bar")
 
 
 def keys():
@@ -73,10 +65,7 @@ def set_keys(chosen):
 
 
 def group_of(key):
-    for k, extra in EXTRA.items():
-        if key == extra:
-            return AC.info(k)[3]
-    return AC.info(key)[3]
+    return AC.describe(key)[3]
 
 
 def label_tip(key):

@@ -337,3 +337,6 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-27: 5.7.12 results: real Maya 120 ok (case r passed); Test this release 64 ok + 1 FAIL (the Animtool
   window's title 5.7.11 - Gus hadn't restarted Maya after updating: not a bug). Gus: push yes -> 5.7.11 + 5.7.12
   pushed to main. Next: the Animtool 5.8.0 plan (yes).
+- 2026-11-27: Gus OK'd the 5.8.0 plan ("yes"); the picker waits while playing ("as you suggest"); the 8 categories
+  and colours "yes". Built 5.8.0 (the bar's engine moves in 5.8.1 instead, with the Animtool bar - said in the
+  release). Next: 5.8.1 the bar.

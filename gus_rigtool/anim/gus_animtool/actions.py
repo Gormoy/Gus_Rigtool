@@ -153,6 +153,120 @@ TOOLBAR_DEFAULT = ["picker", "poses", "tween_prev", "tween_next", "nudge_left", 
                    "playblast", "clips", "main", "bar"]
 
 
+# ---------------------------------------------------------------------------- 5.8.0: the one list, completed
+# Everything the shelf, the bar, the toolbar, the window - and later the pie, the dock and search - need to know
+# about a tool, here: its category and colour, the two windows that only the bar shows, the options its right-click
+# strip shows, and the profiles. (Gus: the categories and colours of the 5.8 preview - the icons' own colours.)
+
+# (key, name, colour, colour-blind safe colour - Okabe-Ito)
+CATEGORIES = [("pick", "Pick & see", "#e15c8f", "#cc79a7"), ("pose", "Pose", "#5cc270", "#009e73"),
+              ("tween", "Tween", "#9e70eb", "#9a8cd9"), ("keys", "Keys & tangents", "#f0ae33", "#e69f00"),
+              ("timing", "Timing & cycles", "#33bdb3", "#56b4e9"), ("curves", "Graph curves", "#f57b3d", "#d55e00"),
+              ("space", "Spaces & props", "#48c2eb", "#0072b2"), ("open", "Windows", "#4c93e7", "#bbbbbb")]
+GROUP_CATEGORY = {"open": "open", "tween": "tween", "keys": "keys", "tangents": "keys", "pose": "pose",
+                  "anim": "timing", "curves": "curves", "space": "space", "view": "pick"}
+
+# the windows the bar shows right after their tool (not on the shelf / toolbar): (key, label, tooltip, group, after)
+EXTRAS = [("attach_window", "Attach window", "The Attach window: what's attached, who holds it over time, its changes",
+           "space", "release"),
+          ("arcs_panel", "Arcs panel", "The Arcs panel: every arc, its colour, range, look", "view", "arcs")]
+
+_STEPS = [1, 2, 3, 5, 10]
+_SCOPE3 = ["Selected controls", "The whole character", "Everything animated"]
+_SCOPE_CHAR = ["The whole character", "Selected controls"]
+# a tool's options for its right-click strip: (option, label, kind, choices) - kind: "bool", "choice" (saved as 1, 2,
+# 3...), "value" (saved as the value itself). The same options its section in the window sets.
+OPTIONS = {
+    "tween_prev": [("tween_mode", "Mode", "choice", ["Between keys", "From rest", "Mirror"]),
+                   ("tween_key", "Key it", "bool", None)],
+    "nudge_left": [("nudge_step", "Step (frames)", "value", _STEPS)],
+    "inbetween_add": [("inbetween_step", "Step (frames)", "value", _STEPS),
+                      ("inbetween_scope", "Scope", "choice", _SCOPE3)],
+    "offset_minus": [("offset_step", "Step (frames)", "value", _STEPS),
+                     ("offset_mode", "Mode", "choice", ["All the same", "Cascade (base to tip)"])],
+    "blocking": [("block_scope", "Scope", "choice", _SCOPE_CHAR)],
+    "paste_keys": [("paste_merge", "Keep mine (merge)", "bool", None)],
+    "cycle_continue": [("cycle_times", "Repeat", "value", [1, 3, 7]), ("cycle_scope", "Scope", "choice", _SCOPE_CHAR)],
+    "bake_keys": [("bake_step", "Every (frames)", "value", [1, 2, 4])],
+    "reduce_keys": [("reduce_tolerance", "How close", "value", [0.005, 0.01, 0.03])],
+    "overlap": [("overlap_cycle", "As a cycle (loops)", "bool", None)],
+    "pull": [("pushpull_factor", "Amount", "value", [0.95, 0.9, 0.8, 0.75, 0.5]),
+             ("pushpull_pivot", "Around", "choice", ["Key on the left", "Key on the right", "Last selected key"])],
+    "noise": [("noise_amount", "Amount", "value", [0.02, 0.05, 0.1, 0.2])],
+    "ghosts": [("ghost_before", "Before", "value", [1, 2, 3, 4, 5]), ("ghost_after", "After", "value", [1, 2, 3, 4, 5]),
+               ("ghost_step", "Every (frames)", "value", _STEPS)],
+    "playblast": [("playblast_scale", "Size (%)", "value", [50, 75, 100])],
+    "ikfk": [("key_switch", "Key the switch", "bool", None)],
+}
+for _a, _b in (("tween_next", "tween_prev"), ("nudge_right", "nudge_left"), ("inbetween_remove", "inbetween_add"),
+               ("offset_plus", "offset_minus"), ("push", "pull")):
+    OPTIONS[_a] = OPTIONS[_b]
+
+# the profiles of the 5.8 preview (Gus: "name them differently and suggest new ones"): (name, short, tools)
+PROFILES = [
+    ("Blocking", "BLK", ["key", "blocking", "tan_step", "tween_prev", "tween_next", "mirror", "flip", "reset",
+                         "copy_keys", "paste_keys", "inbetween_add", "inbetween_remove", "ikfk"]),
+    ("Splining", "SPL", ["blocking", "tan_auto", "tan_spline", "tan_flat", "tan_linear", "nudge_left", "nudge_right",
+                         "offset_minus", "offset_plus", "offset_back", "euler", "redundant"]),
+    ("Polish", "POL", ["overlap", "push", "pull", "negate", "smooth", "noise", "arcs", "arcs_panel", "ghosts",
+                       "tween_prev", "tween_next"]),
+    ("Spaces & props", "SPC", ["attach", "release", "attach_window", "temp_world", "temp_pivot", "bake_back", "ikfk",
+                               "twin", "key"]),
+    ("Cycles", "CYC", ["mirror_cycle", "cycle_continue", "cycle_place", "cycle_forward", "offset_minus",
+                       "offset_plus", "stretch", "time_scale", "reverse"]),
+    ("Review", "REV", ["picker", "poses", "arcs", "ghosts", "hide_ctrls", "hider", "isolate", "playblast"]),
+    ("Clean-up", "CLN", ["bake_keys", "reduce_keys", "smooth", "euler", "redundant", "copy_keys", "paste_keys"]),
+]
+
+
+def every(where="bar"):
+    """Every tool, in order. 'shelf' / 'toolbar': the actions; 'bar': without the bar's own button, each window
+    right after its tool (the All tools profile)."""
+    out = []
+    after = dict((e[4], e[0]) for e in EXTRAS)
+    for k, _l, _t, _g in ACTIONS:
+        if where == "bar" and k == "bar":
+            continue
+        out.append(k)
+        if where == "bar" and k in after:
+            out.append(after[k])
+    return out
+
+
+def describe(key):
+    """(key, label, tooltip, group) of an action or of a window the bar shows."""
+    for e in EXTRAS:
+        if e[0] == key:
+            return e[:4]
+    return info(key)
+
+
+def category(key):
+    return GROUP_CATEGORY[describe(key)[3]]
+
+
+def colour(key, colour_blind=False):
+    cat = category(key)
+    for k, _n, c, cb in CATEGORIES:
+        if k == cat:
+            return cb if colour_blind else c
+    return "#888888"
+
+
+# each option's default: the same as the tool's own (a test checks they agree)
+OPTION_DEFAULTS = {"tween_mode": 1, "tween_key": 1, "nudge_step": 1, "inbetween_step": 1, "inbetween_scope": 1,
+                   "offset_step": 1, "offset_mode": 1, "block_scope": 1, "paste_merge": 0, "cycle_times": 3,
+                   "cycle_scope": 1, "bake_step": 1, "reduce_tolerance": 0.01, "overlap_cycle": 0,
+                   "pushpull_factor": 0.9, "pushpull_pivot": 1, "noise_amount": 0.05, "ghost_before": 2,
+                   "ghost_after": 2, "ghost_step": 2, "playblast_scale": 100, "key_switch": 1}
+
+
+def options(key):
+    """[(option, label, kind, choices, current value)] - the tool's right-click strip."""
+    return [(name, label, kind, choices, A.opt(name, OPTION_DEFAULTS[name]))
+            for name, label, kind, choices in OPTIONS.get(key, [])]
+
+
 def icon(key):
     path = os.path.join(gus_animtool.ROOT, "icons", "ga_%s.png" % key)
     return path.replace("\\", "/") if os.path.isfile(path) else "pythonFamily.png"

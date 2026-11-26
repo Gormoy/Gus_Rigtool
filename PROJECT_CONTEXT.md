@@ -347,6 +347,10 @@ project is, how we work, what was built, the Hare rig's state, and what's open.
   swap_in (incoming / outgoing rename), go_back, go_back_dialog, self_check + first_open (once per version).
   Used by install.py, core/updater (install + update_animtool), anim updater; Go back buttons in both Settings.
   Real-Maya case r.
+- **5.8.0**: gus_animtool/look/ (qt, theme, icons, widgets, later) - newui/{qt,theme,icons,widgets}.py are
+  sys.modules pointers to safe_start.look(name) (package gus_rigtool._look from anim/gus_animtool/look). actions.py:
+  CATEGORIES, GROUP_CATEGORY, EXTRAS, OPTIONS, OPTION_DEFAULTS, PROFILES, every(), describe(), category(), colour(),
+  options(). pickerqt changed_later / _catch_up via look.later.Later. Test this release 'picker waits'.
 - **Onion skin (Nov 19)**: rigs not referenced (model and rig in different groups) work - meshes through the skin,
   keys from the rig; `cmds.ls([])` lists EVERYTHING in Maya - guard empty lists; the onion icon; Mac tool windows.
 - **Later (Gus: "not a priority")**: Edit FK arc - bake the arm to IK over the range (anim.bake exists, every frame),
