@@ -317,3 +317,8 @@ the code; this file has what Gus said, decided and wants next.
 - 2026-11-26: 5.7.10.1 results from Gus: Real Maya 112 ok (no problems); Test this release 60 ok, no problems -
   incl. the new "the shelf waits" (65 / 65 buttons kept during the call; the mark on disk in userPrefs.mel). Not
   said yet: the Animtool from the shelf without a crash, Arcs on head_CTRL; no push OK yet.
+- 2026-11-26: Gus: "We can go ahead" -> 5.7.10.1 pushed (main = ab5f39a). "I need to make sure everything won't
+  crash as soon as we update it. What are the other safe things we can do?" -> safety plan sent (crash-loop
+  breaker / safe start, an opening log, nothing deleted inside a click, one-time marks saved at once, docked
+  windows restored safely, updater checks the zip + keeps the old version + Go back, a self-check after an update,
+  Test this release opens from the shelf). Waiting for his choice; 5.8.0 after.
