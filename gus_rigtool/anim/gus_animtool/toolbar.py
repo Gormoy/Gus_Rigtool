@@ -151,7 +151,7 @@ def show(*_):
     else:
         flags["floating"] = True
     cmds.workspaceControl(BAR, label="Gus Animtool", retain=False, heightProperty="fixed", initialHeight=48,
-                          uiScript="import gus_animtool.toolbar as _tb; _tb.build()", **flags)
+                          uiScript="import gus_animtool.safestart as _s; _s.restore_call('toolbar', 'gus_animtool.toolbar', 'build')", **flags)
     if not cmds.rowLayout(BP + "Row", exists=True):
         build()
     try:

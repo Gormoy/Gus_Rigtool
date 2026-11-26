@@ -1197,49 +1197,91 @@ def _version_check():
 
 
 def show():
-    """The window. Floating by default - drag its tab onto Maya's side to dock it; Maya remembers where."""
-    A.track_selection_order()
-    if cmds.workspaceControl(WINDOW, exists=True):
-        cmds.deleteUI(WINDOW)
-    flags = {"floating": True}
-    if int(A.opt("dock", 1)) == 2 and cmds.workspaceControl("ChannelBoxLayerEditor", exists=True):
-        flags = {"tabToControl": ("ChannelBoxLayerEditor", -1)}
+    """The window. Floating by default - drag its tab onto Maya's side to dock it; Maya remembers where.
+    5.7.11: safe start - each step noted on disk while it opens (gus_animtool.safestart); if Maya died while it
+    opened last time, you're asked whether to open the safe way (only the window)."""
     import gus_animtool
-    cmds.workspaceControl(WINDOW, label="Gus Animtool %s" % gus_animtool.__version__, retain=False, initialWidth=400,
-                          initialHeight=720,
-                          minimumWidth=340, widthProperty="preferred",
-                          uiScript="import gus_animtool.ui as _u; _u.build()", **flags)
-    if not cmds.formLayout(P + "Root", exists=True):
-        build()
-    try:                                     # 5.6.45: an Animtool older than the Gus_Rigtool next to it
-        _version_check()
-    except Exception:
-        pass
-    try:                                     # 5.6.47: a new version: its shelf rebuilt once (new buttons appear)
-        _shelf_up_to_date()
-    except Exception:
-        pass
-    if not A.opt("bar_replaces_toolbar", 0):                  # 5.6.44: the bar does its job - the toolbar off once
-        A.set_opt("bar_replaces_toolbar", 1)                  # (Settings > Toolbar under the Time Slider brings it)
-        A.set_opt("toolbar", 0)
-        try:
-            from gus_animtool import toolbar
-            toolbar.hide()
-        except Exception:
-            pass
-    if A.opt("toolbar", 0):
-        from gus_animtool import toolbar
-        toolbar.show()
-    if A.opt("bar_auto", 1):                                  # 5.6.43: the floating bar opens with the window
-        try:
-            from gus_animtool import bar
-            bar.show()
-        except Exception:
-            pass
+    from gus_animtool import safestart
+    op = safestart.Opening("animtool", "Gus Animtool")
+    safe = op.begin(gus_animtool.__version__)
     try:
-        from gus_animtool import backup, timeslider
-        timeslider.install()
-        backup.ensure()
-    except Exception:                                        # never stop the window from opening
-        pass
+        op.run("selection order", A.track_selection_order)
+        op.step("the window")
+        if cmds.workspaceControl(WINDOW, exists=True):
+            cmds.deleteUI(WINDOW)
+        flags = {"floating": True}
+        if int(A.opt("dock", 1)) == 2 and cmds.workspaceControl("ChannelBoxLayerEditor", exists=True):
+            flags = {"tabToControl": ("ChannelBoxLayerEditor", -1)}
+        cmds.workspaceControl(WINDOW, label="Gus Animtool %s" % gus_animtool.__version__, retain=False,
+                              initialWidth=400, initialHeight=720, minimumWidth=340, widthProperty="preferred",
+                              uiScript="import gus_animtool.ui as _u; _u.restore()", **flags)
+        if not cmds.formLayout(P + "Root", exists=True):
+            op.step("the window's content")
+            build()
+        if safe:
+            A.message("opened the safe way (Maya closed while it opened last time, at: %s). Next time it opens "
+                      "as usual." % op.last, "warn")
+            return WINDOW
+        op.run("version check", _version_check)          # 5.6.45: an Animtool older than the Gus_Rigtool next to it
+        op.run("shelf update", _shelf_up_to_date)        # 5.6.47 / 5.7.10.1: once per version, after the click
+        op.run("toolbar (once)", _toolbar_once)
+        if A.opt("toolbar", 0):
+            op.run("toolbar", _toolbar_show)
+        if A.opt("bar_auto", 1):                         # 5.6.43: the floating bar opens with the window
+            op.run("the bar", _bar_show)
+        op.run("Time Slider menu", _timeslider_install)
+        op.run("crash backup", _backup_ensure)
+    finally:
+        op.end()
     return WINDOW
+
+
+def restore():
+    """Maya reopening the docked window at start-up (its uiScript). 5.7.11: if Maya died while doing this last
+    time, the window isn't filled this time - open it from the shelf (the safe start asks then)."""
+    import gus_animtool
+    from gus_animtool import safestart
+    op = safestart.Opening("animtool_restore", "Gus Animtool (reopened by Maya)", asks=False)
+    safe = op.begin(gus_animtool.__version__)
+    try:
+        if safe:
+            cmds.text(label="  Gus Animtool wasn't reopened here: Maya closed while reopening it last time.\n"
+                            "  Open it from the shelf (Gus Animtool).", align="left")
+            return None
+        op.step("the window's content")
+        return build()
+    finally:
+        op.end()
+
+
+def _toolbar_once():
+    """5.6.44: the bar does the toolbar's job - the toolbar off once (Settings > Toolbar under the Time Slider
+    brings it back). 5.7.11: the 'done' mark saved to disk at once."""
+    if A.opt("bar_replaces_toolbar", 0):
+        return False
+    A.set_opt("bar_replaces_toolbar", 1)
+    A.set_opt("toolbar", 0)
+    save_prefs()
+    from gus_animtool import toolbar
+    toolbar.hide()
+    return True
+
+
+def _toolbar_show():
+    from gus_animtool import toolbar
+    return toolbar.show()
+
+
+def _bar_show():
+    from gus_animtool import bar
+    return bar.show()
+
+
+def _timeslider_install():
+    from gus_animtool import timeslider
+    return timeslider.install()
+
+
+def _backup_ensure():
+    from gus_animtool import backup
+    return backup.ensure()

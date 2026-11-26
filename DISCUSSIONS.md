@@ -322,3 +322,7 @@ the code; this file has what Gus said, decided and wants next.
   breaker / safe start, an opening log, nothing deleted inside a click, one-time marks saved at once, docked
   windows restored safely, updater checks the zip + keeps the old version + Go back, a self-check after an update,
   Test this release opens from the shelf). Waiting for his choice; 5.8.0 after.
+- 2026-11-26: Gus: 1 yes (all of the safety plan, in that order); 2 safe start ASKS first; 3 Go back keeps TWO
+  versions; 4 nothing else. Visual: the Animtool icons had two lines each in the preview (the icon's own + one I
+  added) -> one line (and so in 5.8: the icon's own line only). Built 5.7.11 = steps 1-5, 9, 10; 5.7.12 = the
+  updater (check the zip, keep 2 versions, Go back, self-check after an update); then 5.8.0.

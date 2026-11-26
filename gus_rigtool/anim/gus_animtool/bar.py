@@ -397,12 +397,23 @@ class Chooser(QtWidgets.QDialog):
 def copy_last_problem():
     """The last warning / error, with the details and the versions, on the clipboard - paste it in a message."""
     text = A.problem_report()
-    if not text:
+    logs = _opening_logs()                       # 5.7.11: the last opens, step by step (a crash shows where)
+    if not text and not logs:
         A.message("no problem since Maya started - nothing to copy.")
         return ""
+    text = "\n\n".join(t for t in (text or "No problem since Maya started.", logs) if t)
     QtWidgets.QApplication.clipboard().setText(text)
     A.message("the last problem is on the clipboard - paste it in your message.")
     return text
+
+
+def _opening_logs():
+    """5.7.11: the opening logs (safe start) of both tools, the last 2 opens each."""
+    try:
+        from gus_animtool import safestart
+    except ImportError:
+        return ""
+    return "\n\n".join("Opening log (%s):\n%s" % (name, log) for name, log in safestart.all_logs())
 
 
 def test_this_release():

@@ -1,0 +1,91 @@
+PASS a first open: not the safe way, no question
+PASS while it opens: the note on disk says the step
+PASS opened: the note is gone, the log says 'open'
+PASS Maya died while opening: asked, with the step it died in
+PASS ...the log says so (and the safe way)
+PASS you chose 'As usual' once: the next open is normal, no question
+PASS a step that raises: logged, the open goes on
+PASS the log keeps the last 5 opens
+PASS start-up restores don't ask: after a death they're simply skipped
+PASS restore_call: skipped once after a death at start-up, then runs again
+PASS opened as usual: the window, then version check, shelf, toolbar, bar, Time Slider menu, backup
+PASS ...the note cleared
+PASS Maya died while it opened, 'Safe way': only the window (no bar, no shelf update...), and it says why
+PASS ...next time: as usual again
+PASS Maya reopening it at start-up after it died doing that: not filled, a line says open it from the shelf
+PASS ...next start: filled as usual
+PASS the toolbar switched off once, the mark saved to disk straight away (like the shelf's)
+PASS Gus_Rigtool's safe start is the Animtool's own file (one code, both tools)
+PASS the Gus_Rigtool window: safe start, the safe way skips the favourites bar and the first selection read
+PASS ...its start-up restore and the Pop out panels' are guarded
+PASS every window Maya reopens at start-up goes through a guard (8 windows)
+   places that delete Maya UI (63):
+     anim/gus_animtool/anim.py: _lib_fill_folders
+     anim/gus_animtool/anim.py: fill_characters
+     anim/gus_animtool/anim.py: fill_space_menus
+     anim/gus_animtool/anim.py: fill_space_values
+     anim/gus_animtool/anim.py: library_fill
+     anim/gus_animtool/anim.py: picker_fill
+     anim/gus_animtool/anim.py: show_library
+     anim/gus_animtool/anim.py: show_simple_picker
+     anim/gus_animtool/animlib.py: show
+     anim/gus_animtool/backup.py: open_it
+     anim/gus_animtool/backup.py: show_recover
+     anim/gus_animtool/pickerqt.py: show
+     anim/gus_animtool/pickmore.py: capture_front
+     anim/gus_animtool/timeslider.py: _remove_ours
+     anim/gus_animtool/toolbar.py: hide
+     anim/gus_animtool/toolbar.py: make_shelf
+     anim/gus_animtool/ui.py: _toolbar_pick
+     anim/gus_animtool/ui.py: apply_
+     anim/gus_animtool/ui.py: default_
+     anim/gus_animtool/ui.py: show
+     anim/gus_animtool/updater.py: restart
+     builder/deliver.py: show
+     core/quick.py: joint_size
+     core/rig_map.py: show
+     core/ui.py: close_all
+     core/ui.py: edit_my_tools
+     core/ui.py: fill
+     core/ui.py: open_panel
+     core/ui.py: rebuild_open
+     core/ui.py: rebuild_page
+     core/ui.py: report_window
+     core/ui.py: reset
+     core/ui.py: run_search
+     core/ui.py: save
+     install.py: _close_panels
+     install.py: _remove_old_shelf
+     main.py: _switch
+     main.py: make_shelf
+     maya_check.py: check_network550
+     newui/render.py: values
+     newui/window.py: close
+     newui/window.py: show
+     newui/window.py: show_pop
+     scene_check.py: accept_window
+     scene_check.py: do_accept
+     scene_check.py: do_forget
+     scene_check.py: go_window
+     tools/batch.py: show
+     tools/build_form.py: clear
+     tools/checker.py: _show_now
+     tools/checker.py: fill
+     tools/group_maker.py: _fill_stacks
+     tools/guide.py: _fill
+     tools/guide.py: show
+     tools/home.py: refresh_suggest
+     tools/nodes_tool.py: _setup_menu_fill
+     tools/organize_tool.py: _clear_rows
+     tools/sdk_tool.py: _refresh_attrs
+     tools/selector.py: _fill_recent
+     tools/shape_library.py: _build_custom_frame
+     tools/skin_tool.py: go
+     tools/skin_tool.py: import_window
+     tools/space_tool.py: _refresh
+PASS the shelf rebuilds run after the click (5.7.10.1): the Animtool's waits for idle
+PASS Copy last problem: the opening logs too (even with no other problem)
+PASS ...all the logs there are, by name
+PASS Test this release: opens both tools from their shelves (the buttons' own commands)
+PASS real-Maya case q: every file of both tools loads; it only reads them (nothing written)
+26/26 passed

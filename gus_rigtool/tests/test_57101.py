@@ -63,8 +63,8 @@ with mock.patch.object(cmds, "savePrefs", refuse, create=True):
 # --- 4. the window still opens if any of it fails; the Test this release check exists
 src = open(AUI.__file__).read()
 show = src[src.index("def show():"):]
-check("show(): the shelf check stays inside try (never stops the window)",
-      "try:" in show[:show.index("_shelf_up_to_date()")].split("_version_check()")[-1])
+check("show(): the shelf check stays inside try (never stops the window)",    # 5.7.11: op.run = a guarded step
+      'op.run("shelf update", _shelf_up_to_date)' in show)
 wc = open(os.path.join(ROOT, "realmaya", "window_checks.py")).read()
 check("Test this release: a check that the shelf isn't touched during the click and the mark is on disk",
       "def shelf_waits" in wc and "userPrefs.mel" in wc and '("the shelf waits", shelf_waits)' in wc)

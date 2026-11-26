@@ -1030,13 +1030,59 @@ def maya_facts_case(rep):
     maya_facts.facts(rep)
 
 
+def every_file(rep):
+    """q. Every file of both tools loads in this Maya (5.7.11: a broken file is caught here, before you open
+    anything), and safe start can write its notes in Maya's prefs folder."""
+    import importlib
+    import os
+    import gus_rigtool
+    rep.start("q. Every file loads (both tools) and safe start's notes")
+    root = os.path.dirname(os.path.abspath(gus_rigtool.__file__))
+    bad_compile, bad_import, n = [], [], 0
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in ("tests", "__pycache__", "realmaya")]
+        for f in files:
+            if not f.endswith(".py"):
+                continue
+            path = os.path.join(folder, f)
+            try:
+                with open(path, "rb") as fh:
+                    compile(fh.read(), path, "exec")              # read only: nothing written
+            except Exception as e:
+                bad_compile.append("%s (%s)" % (os.path.relpath(path, root), str(e).splitlines()[-1]))
+                continue
+            rel = os.path.relpath(path, root)[:-3].replace(os.sep, ".")
+            if rel.startswith("anim."):
+                if not rel.startswith("anim.gus_animtool."):
+                    continue
+                mod = rel[len("anim."):]
+            else:
+                mod = "gus_rigtool." + rel if rel != "__init__" else "gus_rigtool"
+            mod = mod[:-len(".__init__")] if mod.endswith(".__init__") else mod
+            n += 1
+            try:
+                importlib.import_module(mod)
+            except Exception as e:
+                bad_import.append("%s (%s: %s)" % (mod, type(e).__name__, e))
+    rep.expect("every file can be read by Python (%d files)" % n, not bad_compile, "; ".join(bad_compile[:8]))
+    rep.expect("every file loads in this Maya", not bad_import, "; ".join(bad_import[:8]))
+    from gus_rigtool.core import safe_start
+    op = safe_start.Opening("selfcheck", "the self-check", asks=False)
+    op.begin()
+    op.step("a step")
+    left = safe_start.died_last_time("selfcheck")
+    op.end()
+    rep.expect("safe start: its note is on disk while opening, gone after", left == "a step" and
+               safe_start.died_last_time("selfcheck") is None, safe_start.folder())
+
+
 CASES = [("a. pupils", pupils), ("b. history", history), ("c. head squash leftovers", squash_leftovers),
          ("e. biped: build, publish, unpublish", rig), ("d. Check this scene", scene_check_run),
          ("l. controllers", controllers), ("f. IK/FK and mirror", ikfk_mirror), ("g. rig self-test", rig_selftest), ("h. arcs", arcs),
          ("i. attach", attach_case), ("j. attach, no divide by zero", attach_quiet),
          ("k. add / remove inbetween", inbetween_case), ("n. shape editing", shape_editing),
          ("o. shapes on the body", body_shapes),
-         ("p. face from two curves", face_curves),
+         ("p. face from two curves", face_curves), ("q. every file loads", every_file),
          ("m. Maya facts", maya_facts_case)]
 WHOLE_RIG = ("d. Check this scene", "f. IK/FK and mirror", "l. controllers")      # they run on the biped e built - no new scene
 # (g makes its own scenes)

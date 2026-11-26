@@ -2271,7 +2271,7 @@ def show_simple_picker(*_):
     if cmds.workspaceControl(PICKER, exists=True):
         cmds.deleteUI(PICKER)
     cmds.workspaceControl(PICKER, label="Gus Animtool - Picker", floating=True, retain=False, initialWidth=PICK_W + 20,
-                          minimumWidth=PICK_W, uiScript="import gus_animtool.anim as _a; _a._build_picker()")
+                          minimumWidth=PICK_W, uiScript="import gus_animtool.safestart as _s; _s.restore_call('picker', 'gus_animtool.anim', '_build_picker')")
     if not cmds.tabLayout(PK + "Tabs", exists=True):
         _build_picker()
     return PICKER
@@ -2856,7 +2856,7 @@ def show_library(*_):
     if cmds.workspaceControl(LIBRARY, exists=True):
         cmds.deleteUI(LIBRARY)
     cmds.workspaceControl(LIBRARY, label="Gus Animtool - Poses", floating=True, retain=False, initialWidth=340,
-                          minimumWidth=320, uiScript="import gus_animtool.anim as _a; _a._build_library()")
+                          minimumWidth=320, uiScript="import gus_animtool.safestart as _s; _s.restore_call('poses', 'gus_animtool.anim', '_build_library')")
     if not cmds.gridLayout(PL + "Grid", exists=True):
         _build_library()
     return LIBRARY

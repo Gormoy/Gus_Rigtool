@@ -165,7 +165,7 @@ h1{font-size:20px;margin:0 0 4px} .sub{color:#c9cdd2;margin:0 0 16px;max-width:1
 .slider span{position:absolute;left:45%;top:-6px;width:14px;height:14px;border-radius:50%;background:var(--acc)}
 .tiles{display:flex;gap:2px;align-items:flex-end;flex-wrap:wrap}
 .tile{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
-.tb{position:relative;display:grid;place-items:center;background:#23262b;border-radius:6px;border-bottom:3px solid}
+.tb{position:relative;display:grid;place-items:center;background:#23262b;border-radius:6px}
 .tb img{image-rendering:auto;border-radius:4px}
 .tile.on .tb{outline:2px solid #fff;outline-offset:-1px}
 .corner{position:absolute;right:2px;bottom:2px;width:0;height:0;border-left:6px solid transparent;border-bottom:6px solid #fff}

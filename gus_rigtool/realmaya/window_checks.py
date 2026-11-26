@@ -153,6 +153,36 @@ def shelf_waits(rep):
     rep.add(INFO, "look at the shelf in a moment", "Gus_Animtool is made again once Maya is idle (after this test)")
 
 
+def open_from_shelf(rep):
+    """5.7.11: both tools opened with their shelf buttons' own commands (what a click runs); Maya still fine,
+    each open's safe-start note cleared and its log saying it opened."""
+    from gus_rigtool.core import safe_start
+    rep.start("Opening from the shelves (safe start, 5.7.11)")
+    for shelf, label, name in (("Gus_Animtool", "Gus Animtool", "animtool"), ("Gus_Rigtool", "Main", "rigtool")):
+        if not cmds.shelfLayout(shelf, exists=True):
+            rep.add(NOTE, "no %s shelf" % shelf, "make it, then run this again")
+            continue
+        command = None
+        for b in cmds.shelfLayout(shelf, query=True, childArray=True) or []:
+            try:
+                if cmds.objectTypeUI(b) == "shelfButton" and cmds.shelfButton(b, query=True, label=True) == label:
+                    command = cmds.shelfButton(b, query=True, command=True)
+                    break
+            except RuntimeError:
+                pass
+        if not command:
+            rep.add(NOTE, "%s: no '%s' button" % (shelf, label), "")
+            continue
+        exec(command, {})
+        cmds.refresh()
+        rep.expect("%s > %s: opened, Maya fine" % (shelf, label), safe_start.died_last_time(name) is None,
+                   command)
+        log = safe_start.last_log(name, 1)
+        rep.expect("...its opening log ends 'open' (every step written)", log.rstrip().endswith(("open", "(the safe way)")),
+                   log.splitlines()[-1] if log else "no log")
+    rep.add(INFO, "the opening logs", safe_start.folder())
+
+
 def rig_shelf(rep):
     """5.7.9: the Gus_Rigtool shelf in the new look - the sidebar's order, Build rig not twice, right-click menus."""
     import gus_rigtool.main as gr
@@ -680,7 +710,7 @@ def arrange(rep):
         reopen()
 
 
-CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the shelf waits", shelf_waits), ("the Rigtool shelf", rig_shelf), ("undo", undo),
+CHECKS = [("versions", versions), ("the bar", bar_in_front), ("the shelf", shelf), ("the shelf waits", shelf_waits), ("open from the shelves", open_from_shelf), ("the Rigtool shelf", rig_shelf), ("undo", undo),
           ("time slider stretches", bookmarks), ("pick-walk", pick_walk), ("inbetween", inbetween), ("controls tab", controls_tab),
           ("new window", new_window), ("new look", new_look), ("arrange", arrange), ("maya facts", lambda rep: __import__("gus_rigtool.realmaya.maya_facts", fromlist=["x"]).facts(rep))]
 

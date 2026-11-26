@@ -1452,23 +1452,38 @@ def _badge(number, icon_name, color, size=22):
 
 # --------------------------------------------------------------------------- in Maya
 def show(key=None, section=None):
-    """Open (or bring forward) the new window; key: a tool to show."""
+    """Open (or bring forward) the new window; key: a tool to show. 5.7.11: safe start (core/safe_start.py) -
+    each step noted on disk while it opens; if Maya died while it opened last time, you're asked whether to open
+    the safe way (only the window: no favourites bar, the selection read later)."""
     import maya.cmds as mc
     import gus_rigtool
+    from gus_rigtool.core import safe_start
     if mc.workspaceControl(WS, exists=True) and alive(_frame.get("w")):
         try:
             mc.workspaceControl(WS, edit=True, restore=True, label="Gus_Rigtool %s" % gus_rigtool.__version__)
         except RuntimeError:
             pass
     else:
-        if mc.workspaceControl(WS, exists=True):
-            mc.deleteUI(WS)
-        _frame["w"] = None
-        mc.workspaceControl(WS, label="Gus_Rigtool %s" % gus_rigtool.__version__, retain=False, floating=True,
-                            initialWidth=640, initialHeight=820, minimumWidth=260, widthProperty="preferred",
-                            uiScript="import gus_rigtool.newui.window as _w; _w.restore()")
-        if not alive(_frame.get("w")):        # 5.7.1: Maya fills it itself (the uiScript) - only when it didn't
-            restore()
+        op = safe_start.Opening("rigtool", "Gus_Rigtool")
+        safe = op.begin(gus_rigtool.__version__)
+        try:
+            op.step("the window")
+            if mc.workspaceControl(WS, exists=True):
+                mc.deleteUI(WS)
+            _frame["w"] = None
+            _frame["opening"] = (op, safe)            # restore() (Maya runs it now, as the uiScript) uses this open
+            mc.workspaceControl(WS, label="Gus_Rigtool %s" % gus_rigtool.__version__, retain=False, floating=True,
+                                initialWidth=640, initialHeight=820, minimumWidth=260, widthProperty="preferred",
+                                uiScript="import gus_rigtool.newui.window as _w; _w.restore()")
+            if not alive(_frame.get("w")):            # 5.7.1: Maya fills it itself (the uiScript) - only when it didn't
+                restore()
+            if safe:
+                from gus_rigtool.core import ui as gui
+                gui.status("Gus_Rigtool opened the safe way (Maya closed while it opened last time, at: %s). "
+                            "Next time it opens as usual." % op.last, "warn")
+        finally:
+            _frame.pop("opening", None)
+            op.end()
     w = _frame.get("w")
     if w is not None and key:
         w.go_key(key, section)
@@ -1476,7 +1491,26 @@ def show(key=None, section=None):
 
 
 def restore():
-    """Fill the window (Maya also runs this when it reopens the window at start-up)."""
+    """Fill the window (Maya also runs this when it reopens the window at start-up). 5.7.11: at start-up, if Maya
+    died while doing this last time, the window isn't filled - open it with the Gus_Rigtool button."""
+    import gus_rigtool
+    from gus_rigtool.core import safe_start
+    if _frame.get("opening"):                         # from show(): its own safe start
+        op, safe = _frame["opening"]
+        op.step("the window's content")
+        return _fill(op, safe)
+    op = safe_start.Opening("rigtool_restore", "Gus_Rigtool (reopened by Maya)", asks=False)
+    safe = op.begin(gus_rigtool.__version__)
+    try:
+        if safe:
+            return None
+        op.step("the window's content")
+        return _fill(op, False)
+    finally:
+        op.end()
+
+
+def _fill(op, safe):
     import maya.cmds as mc
     import gus_rigtool
     from gus_rigtool.newui.qt import maya_widget
@@ -1504,15 +1538,21 @@ def restore():
         mc.scriptJob(event=["SelectionChanged", frame.on_selection], parent=WS)
     except RuntimeError:
         pass
-    frame.on_selection()
-    try:                                       # the favourites bar, if you left it open
-        from gus_rigtool.core import utils
-        from gus_rigtool.newui import favourites
-        if (utils.load_setting(favourites.BAR_KEY, {}) or {}).get("open"):
-            favourites.show_bar()
-    except Exception:
-        pass
+    if safe:
+        return frame
+    op.run("the selection", frame.on_selection)
+    op.run("the favourites bar", _bar_if_open)
     return frame
+
+
+def _bar_if_open():
+    """The favourites bar, if you left it open."""
+    from gus_rigtool.core import utils
+    from gus_rigtool.newui import favourites
+    if (utils.load_setting(favourites.BAR_KEY, {}) or {}).get("open"):
+        favourites.show_bar()
+        return True
+    return False
 
 
 def close():
@@ -1619,6 +1659,22 @@ _pops = {}
 
 
 def restore_pop(tool, page=None):
+    """A Pop out panel (Maya also runs this when it reopens one at start-up). 5.7.11: if Maya died while
+    reopening it last time, it isn't filled - Pop out the page again."""
+    import gus_rigtool
+    from gus_rigtool.core import safe_start
+    op = safe_start.Opening("rigtool_restore", "Gus_Rigtool %s panel (reopened by Maya)" % tool, asks=False)
+    if op.begin(gus_rigtool.__version__):
+        op.end()
+        return None
+    try:
+        op.step("the %s panel" % tool)
+        return _fill_pop(tool, page)
+    finally:
+        op.end()
+
+
+def _fill_pop(tool, page=None):
     import maya.cmds as mc
     from gus_rigtool.newui.qt import maya_widget
     host = maya_widget(pop_name(tool), "control")

@@ -1,3 +1,49 @@
+Gus_Rigtool 5.7.11 - safer updates: safe start, an opening log, windows reopened safely
+
+Plan approved ("yes" to all, in that order); safe start asks first ("ask"); Go back keeps 2 versions (5.7.12).
+Gus: "I need to make sure everything won't crash as soon as we update it."
+
+Safe start (Gus Animtool and Gus_Rigtool):
+- While a window opens, a small note is on disk saying which step it's at; it's cleared once the window is open.
+  If Maya closes while opening (a crash), the note is still there next time: you're asked "Open the safe way?" -
+  only the window opens (no Animtool bar, toolbar, Time Slider menu, crash backup or shelf update; in
+  Gus_Rigtool no favourites bar), and you're told the step it closed in. The open after that is normal again.
+- Every open is written step by step to a small log (the last 5 opens, in Maya's prefs folder, gus_safe_start).
+  Animtool bar > = > Copy last problem now copies these logs too - send that if anything crashes.
+
+Windows Maya reopens by itself at start-up (docked Animtool, picker, pose library, toolbar, Gus_Rigtool and its
+Pop out panels, legacy-look panels): if Maya ever closes while reopening one, it isn't reopened the next time
+(you open it yourself) - so Maya can't close on it at every start.
+
+"Done once" marks: the toolbar's "switched off once" mark is now saved to disk at once, like the shelf's
+(5.7.10.1). Those two are the only run-once marks in both tools.
+
+Nothing deleted inside your click: every place in both tools that deletes Maya UI is now listed by a test (63
+places - lists refilled inside their own windows, windows replaced when opened again, the shelves remade); a new
+one shows up in the test to be checked. Only the shelf rebuild deleted the button being clicked (5.7.10.1).
+
+Tests in your Maya:
+- Test this release: "Opening from the shelves" - opens Gus Animtool and Gus_Rigtool with their shelf buttons'
+  own commands, then checks each open finished (its note cleared, its log ends with "open").
+- Real-Maya tests: case q - every file of both tools loads in your Maya (175 files), and safe start can write its
+  notes in your prefs folder.
+
+Only tested here with the fake Maya. A real crash can't be tested here: the safe-start note was tested by
+leaving it behind on purpose.
+
+Decisions I made:
+- Safe start lives in the Animtool (gus_animtool/safestart.py, it imports nothing else from the Animtool) so an
+  animator's copy has it; Gus_Rigtool loads the same file from its own copy (core/safe_start.py) - one code.
+- A Python error while opening is not a crash: the note is cleared then too (the error is in the log). Only Maya
+  closing leaves it.
+- Windows Maya reopens at start-up don't ask (no question while Maya starts): after a crash they're skipped once.
+- The safe way answers "Safe way" if you close the question with the X (the safe choice).
+- The notes and logs go in Maya's prefs folder (prefs/gus_safe_start), or the temp folder if that can't be used.
+- Case q only reads the files (Python checks them in memory); nothing is written next to them.
+- Gus_Rigtool's own settings are also kept by Maya in memory until a clean quit (like the Animtool's); none of
+  them is a run-once mark, so nothing repeats after a crash - left as it is.
+- The 5.8 preview: one line under each icon (the icons carry their own line; the extra one is gone).
+
 Gus_Rigtool 5.7.10.1 - the Animtool no longer crashes Maya when opened from its shelf; Arcs shows again
 
 Plan approved ("3 - yes"); urgent: Maya crashed every time Gus opened the Animtool from the Gus_Animtool shelf.

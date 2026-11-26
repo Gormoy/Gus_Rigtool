@@ -103,7 +103,7 @@ check("in Release's right-click menu and the Attach window",
 sys.path.insert(0, os.path.join(ROOT, ".."))
 from gus_rigtool.realmaya import window_checks as WC, maya_facts as MF
 check("Test this release: the bar, the shelf, undo, Time Slider, pick-walk, inbetween, versions, Maya facts",
-      [n for n, _f in WC.CHECKS if n not in ("new window", "new look", "arrange", "the Rigtool shelf", "the shelf waits")] == ["versions", "the bar", "the shelf", "undo",
+      [n for n, _f in WC.CHECKS if n not in ("new window", "new look", "arrange", "the Rigtool shelf", "the shelf waits", "open from the shelves")] == ["versions", "the bar", "the shelf", "undo",
                                                           "time slider stretches", "pick-walk", "inbetween",
                                                           "controls tab", "maya facts"])
 cmds.file = mock.MagicMock(side_effect=lambda *a, **k: True if k.get("modified") else ("/x/shot.ma" if

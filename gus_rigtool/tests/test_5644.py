@@ -15,22 +15,26 @@ show = ui.split("def show():")[1]
 
 # --- the toolbar off once (the bar replaces it), then your choice again
 opts = {"toolbar": 1}
-first = show.split('if not A.opt("bar_replaces_toolbar", 0):')[1].split("if A.opt(\"toolbar\", 0):")[0]
+# 5.7.11: the once-only switch is its own function (_toolbar_once), its mark saved to disk at once
+once_src = "def _toolbar_once():" + ui.split("def _toolbar_once():")[1].split("\ndef ")[0]
 hidden = []
 env = {"A": type("A", (), {"opt": staticmethod(lambda k, d: opts.get(k, d)),
-                           "set_opt": staticmethod(lambda k, v: opts.__setitem__(k, v))})}
+                           "set_opt": staticmethod(lambda k, v: opts.__setitem__(k, v))}),
+       "save_prefs": lambda: True}
 toolbar = type("tb", (), {"hide": staticmethod(lambda: hidden.append(1))})
 with mock.patch.dict(sys.modules, {"gus_animtool.toolbar": toolbar}):
     import gus_animtool
     gus_animtool.toolbar = toolbar
-    code = "if not A.opt('bar_replaces_toolbar', 0):" + first
+    exec(once_src, env)
+    code = "_toolbar_once()"
     exec(code, env)
     check("the update: the toolbar turned off and hidden once", opts["toolbar"] == 0 and hidden and
           opts["bar_replaces_toolbar"] == 1)
     opts["toolbar"] = 1                                     # you turn it on again in Settings
     exec(code, env)
 check("...only once: turned on again in Settings, it stays on", opts["toolbar"] == 1 and len(hidden) == 1)
-check("the window still shows the toolbar when you want it", 'if A.opt("toolbar", 0):' in show)
+check("the window still shows the toolbar when you want it", 'if A.opt("toolbar", 0):' in show and
+      'op.run("toolbar", _toolbar_show)' in show)
 check("Settings: the bar opens with the window / Open the bar / Bar buttons...", '"The bar opens with this window"'
       in ui and '"Open the bar"' in ui and '"Bar buttons..."' in ui and '"Toolbar under the Time Slider"' in ui)
 

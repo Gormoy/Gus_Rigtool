@@ -5601,7 +5601,7 @@ def show():
     _state["widget"] = None
     cmds.workspaceControl(WORKSPACE, label="Gus Animtool - Picker", floating=True, retain=False, initialWidth=430,
                           initialHeight=640, minimumWidth=260,
-                          uiScript="import gus_animtool.pickerqt as _p; _p.build()")
+                          uiScript="import gus_animtool.safestart as _s; _s.restore_call('picker', 'gus_animtool.pickerqt', 'build')")
     if not _alive():
         build()
     return WORKSPACE

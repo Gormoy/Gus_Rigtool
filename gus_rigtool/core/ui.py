@@ -605,7 +605,8 @@ def open_panel(key, width=None):
     width = width or utils.load_setting("panelWidths", {}).get(key, 430)
     # Python, because the panel is created from Python: Maya runs it to build the panel,
     # and again when it restores a docked panel at startup.
-    script = "import gus_rigtool.core.ui as _gui; _gui.fill_panel(%r)" % key
+    script = ("import gus_rigtool.core.safe_start as _s; _s.restore_call('legacy_%s', 'gus_rigtool.core.ui', "
+              "'fill_panel', %r)" % (key, key))     # 5.7.11: guarded at start-up
     cmds.workspaceControl(name, label=_label(key), floating=True, retain=False,
                           initialWidth=width, minimumWidth=280, uiScript=script,
                           closeCommand=_remember_width(key))
