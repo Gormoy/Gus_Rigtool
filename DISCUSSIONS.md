@@ -345,3 +345,5 @@ the code; this file has what Gus said, decided and wants next.
   the fix in the next update with the other features (no 5.8.0.1). 5.8.1 plan sent (the fix; the bar engine into
   the Animtool; the new Animtool bar; real pictures first; Test this release checks). Asked: "My bar" profile from
   today's chosen buttons; which profile first; push 5.8.0.
+- 2026-11-28: Gus: 1 yes - today's chosen bar buttons become the profile "My bar"; 2 the bar opens with "My bar"
+  the first time; 3 push 5.8.0 yes; 4 the 5.8.1 plan yes.
